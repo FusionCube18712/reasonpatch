@@ -74,4 +74,76 @@ describe("RepairStudio", () => {
     );
     expect(screen.getByRole("button", { name: "Try again" })).toBeVisible();
   });
+
+  it("turns the learner's revision into an auditable repair receipt", async () => {
+    const user = userEvent.setup();
+    const fetchMock = vi.spyOn(globalThis, "fetch");
+    fetchMock.mockResolvedValueOnce(
+      new Response(
+        JSON.stringify({
+          success: true,
+          data: {
+            runId: "run_demo",
+            diagnosis: {
+              hingeQuote: "The tutoring program caused the improvement",
+              misconception: "association-as-causation",
+              explanation: "A difference alone cannot isolate a cause.",
+              socraticQuestion: "What if more motivated students chose tutoring?",
+              whyThisQuestion: "It tests a selection effect.",
+              rubric: [],
+              limitation: "AI-generated challenge, not a grade.",
+            },
+            probes: [],
+            trace: { degraded: false, probes: [] },
+          },
+          error: null,
+        }),
+        { status: 200, headers: { "Content-Type": "application/json" } },
+      ),
+    );
+    fetchMock.mockResolvedValueOnce(
+      new Response(
+        JSON.stringify({
+          success: true,
+          data: {
+            activityId: "correlation-causation",
+            repairedHinge: "Association is not causation",
+            summary: "The revision now qualifies the causal claim.",
+            changes: [
+              {
+                label: "Causal claim",
+                before: "The program caused the improvement.",
+                after: "The difference alone does not establish causation.",
+              },
+            ],
+            rubric: [
+              {
+                id: "association-causation",
+                label: "Distinguishes association from causation",
+                before: "missing",
+                after: "met",
+                evidence: "does not establish causation",
+              },
+            ],
+            remainingCaveat: "A stronger study design is still needed.",
+            provenance: { model: "gpt-5.6-sol", mode: "demo" },
+          },
+          error: null,
+        }),
+        { status: 200, headers: { "Content-Type": "application/json" } },
+      ),
+    );
+    render(<RepairStudio />);
+
+    await user.click(screen.getByRole("button", { name: "Find the hinge" }));
+    await user.type(
+      screen.getByLabelText("Revised explanation"),
+      "Participants scored higher, but self-selection means the difference alone does not establish causation. We need comparable baselines and random assignment.",
+    );
+    await user.click(screen.getByRole("button", { name: "Create repair receipt" }));
+
+    expect(await screen.findByRole("heading", { name: "Repair receipt" })).toBeVisible();
+    expect(screen.getByText("Association is not causation")).toBeVisible();
+    expect(screen.getByText("AI-generated challenge, not a grade")).toBeVisible();
+  });
 });
