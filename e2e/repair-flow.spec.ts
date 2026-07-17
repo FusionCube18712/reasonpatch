@@ -1,8 +1,9 @@
+import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
 
 test("learner repairs the causal inference hinge and receives a receipt", async ({
   page,
-}) => {
+}, testInfo) => {
   await page.goto("/");
 
   await expect(
@@ -22,6 +23,9 @@ test("learner repairs the causal inference hinge and receives a receipt", async 
   await expect(page.getByRole("heading", { name: "Repair receipt" })).toBeVisible();
   await expect(page.getByText("Association is not causation")).toBeVisible();
   await expect(page.getByText("AI-generated challenge, not a grade")).toBeVisible();
+  const accessibility = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa"]).analyze();
+  expect(accessibility.violations).toEqual([]);
+  await page.screenshot({ path: testInfo.outputPath("repair-receipt.png"), fullPage: true });
 });
 
 test("forced Luna unavailability is transparently handled by Sol", async ({ page }) => {
