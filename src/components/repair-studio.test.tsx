@@ -13,7 +13,7 @@ describe("RepairStudio", () => {
     ).toBeVisible();
     expect(screen.getByText("Distinguishes association from causation")).toBeVisible();
     expect(screen.getByLabelText("Your explanation")).toHaveValue(
-      expect.stringContaining("caused the improvement"),
+      "The tutoring program caused the improvement because participants scored eight points higher. Therefore every school should use it.",
     );
   });
 
@@ -75,4 +75,3 @@ describe("RepairStudio", () => {
     expect(screen.getByRole("button", { name: "Try again" })).toBeVisible();
   });
 });
-
