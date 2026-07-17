@@ -24,14 +24,14 @@ describe("judge-safe demo fixtures", () => {
     });
 
     expect(result.trace.degraded).toBe(true);
-    expect(result.trace.probes).toSatisfy((probes) =>
-      probes.every(
+    expect(
+      result.trace.probes.every(
         (probe) =>
           probe.model === "gpt-5.6-sol" &&
           probe.status === "fallback" &&
           probe.fallbackReason === "forced",
       ),
-    );
+    ).toBe(true);
   });
 
   it("produces a reviewable receipt without claiming mastery", () => {
@@ -48,4 +48,3 @@ describe("judge-safe demo fixtures", () => {
     expect(JSON.stringify(receipt).toLowerCase()).not.toContain("master");
   });
 });
-

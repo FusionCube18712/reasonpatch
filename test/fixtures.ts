@@ -1,10 +1,11 @@
 import type {
+  AnalyzeRequest,
   AnalysisPlan,
   ProbeOutput,
   SynthesisOutput,
 } from "@/features/repair/contracts";
 
-export const validAnalyzeRequest = {
+export const validAnalyzeRequest: AnalyzeRequest = {
   activityId: "correlation-causation",
   response:
     "The tutoring program caused the improvement because participants scored eight points higher. Therefore every school should use it.",
@@ -83,4 +84,3 @@ export const validSynthesis: SynthesisOutput = {
   ],
   limitation: "This is an AI-generated challenge, not a grade or verdict.",
 };
-

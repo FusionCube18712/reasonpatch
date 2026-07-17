@@ -3,7 +3,6 @@ import { describe, expect, it, vi } from "vitest";
 import { AnalysisPlanSchema } from "@/features/repair/contracts";
 import { validPlan } from "../../../test/fixtures";
 import { createOpenAIModelGateway } from "./openai-gateway";
-import { ModelGatewayError } from "./model-gateway";
 
 const call = {
   model: "gpt-5.6-sol" as const,
@@ -48,7 +47,7 @@ describe("OpenAI model gateway", () => {
     });
 
     await expect(gateway.generate(call)).rejects.toEqual(
-      expect.objectContaining<ModelGatewayError>({ kind: "quota" }),
+      expect.objectContaining({ kind: "quota" }),
     );
   });
 
@@ -58,8 +57,7 @@ describe("OpenAI model gateway", () => {
     });
 
     await expect(gateway.generate(call)).rejects.toEqual(
-      expect.objectContaining<ModelGatewayError>({ kind: "invalid_output" }),
+      expect.objectContaining({ kind: "invalid_output" }),
     );
   });
 });
-
