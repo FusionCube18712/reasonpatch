@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { createDemoAnalysis, createDemoReceipt } from "./demo";
+import { getActivity } from "./activities";
 import { validAnalyzeRequest } from "../../../test/fixtures";
 
 describe("judge-safe demo fixtures", () => {
@@ -47,4 +48,32 @@ describe("judge-safe demo fixtures", () => {
     expect(receipt.rubric.every(({ after }) => after === "met")).toBe(true);
     expect(JSON.stringify(receipt).toLowerCase()).not.toContain("master");
   });
+
+  it.each([
+    ["correlation-causation", "association-as-causation", "Association is not causation"],
+    ["base-rate-neglect", "base-rate-neglect", "Accuracy is not the posterior"],
+    ["sampling-bias", "sample-size-erases-bias", "Size is not representativeness"],
+  ] as const)(
+    "keeps the %s demo diagnosis and receipt activity-specific",
+    (activityId, misconception, repairedHinge) => {
+      const activity = getActivity(activityId).public;
+      const analysis = createDemoAnalysis({
+        activityId,
+        response: activity.sampleResponse,
+        mode: "demo",
+        forceLunaFallback: false,
+      });
+      const receipt = createDemoReceipt({
+        activityId,
+        originalResponse: activity.sampleResponse,
+        revisedResponse:
+          "My revision now names the missing comparison, qualifies the original conclusion, and states what stronger evidence would be needed before making the claim.",
+        mode: "demo",
+      });
+
+      expect(analysis.diagnosis.misconception).toBe(misconception);
+      expect(activity.sampleResponse).toContain(analysis.diagnosis.hingeQuote);
+      expect(receipt.repairedHinge).toBe(repairedHinge);
+    },
+  );
 });
