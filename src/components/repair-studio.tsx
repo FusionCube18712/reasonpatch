@@ -17,6 +17,7 @@ import { useMemo, useRef, useState } from "react";
 import {
   getPublicActivity,
   listPublicActivities,
+  type PublicActivity,
 } from "@/features/repair/public-activities";
 import type {
   AnalysisResult,
@@ -31,7 +32,8 @@ type ApiEnvelope<T> = Readonly<{
 }>;
 
 type RunMode = AnalyzeRequest["mode"];
-type LoadingTask = "analysis" | "receipt" | null;
+type LoadingTask = "analysis" | "receipt" | "transfer" | null;
+type ErrorAction = Exclude<LoadingTask, null>;
 
 const activities = listPublicActivities();
 
@@ -47,21 +49,27 @@ export function RepairStudio({
   const [analysis, setAnalysis] = useState<AnalysisResult | null>(null);
   const [revision, setRevision] = useState("");
   const [receipt, setReceipt] = useState<Receipt | null>(null);
+  const [transferResponse, setTransferResponse] = useState("");
+  const [transferReceipt, setTransferReceipt] = useState<Receipt | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loadingTask, setLoadingTask] = useState<LoadingTask>(null);
   const [forceFallback, setForceFallback] = useState(false);
   const [mode, setMode] = useState<RunMode>("demo");
-  const [errorAction, setErrorAction] = useState<"analysis" | "receipt">("analysis");
+  const [errorAction, setErrorAction] = useState<ErrorAction>("analysis");
   const [liveConsent, setLiveConsent] = useState(false);
   const analysisRequestId = useRef(0);
   const receiptRequestId = useRef(0);
+  const transferRequestId = useRef(0);
 
   const invalidateDownstream = () => {
     analysisRequestId.current += 1;
     receiptRequestId.current += 1;
+    transferRequestId.current += 1;
     setAnalysis(null);
     setRevision("");
     setReceipt(null);
+    setTransferResponse("");
+    setTransferReceipt(null);
     setError(null);
   };
 
@@ -116,6 +124,8 @@ export function RepairStudio({
       setAnalysis(envelope.data);
       setRevision("");
       setReceipt(null);
+      setTransferResponse("");
+      setTransferReceipt(null);
     } catch (caught) {
       if (requestId !== analysisRequestId.current) return;
       setAnalysis(null);
@@ -149,11 +159,46 @@ export function RepairStudio({
       }
       if (requestId !== receiptRequestId.current) return;
       setReceipt(envelope.data);
+      setTransferResponse("");
+      setTransferReceipt(null);
     } catch (caught) {
       if (requestId !== receiptRequestId.current) return;
       setError(caught instanceof Error ? caught.message : "The receipt could not be created yet.");
     } finally {
       if (requestId === receiptRequestId.current) setLoadingTask(null);
+    }
+  };
+
+  const createTransferSlip = async () => {
+    const requestId = transferRequestId.current + 1;
+    transferRequestId.current = requestId;
+    setError(null);
+    setErrorAction("transfer");
+    setLoadingTask("transfer");
+    try {
+      const result = await fetch("/api/revise", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          activityId: activity.id,
+          originalResponse: activity.sampleResponse,
+          revisedResponse: transferResponse,
+          mode: "demo",
+        }),
+      });
+      const envelope = (await result.json()) as ApiEnvelope<Receipt>;
+      if (!result.ok || !envelope.success || !envelope.data) {
+        throw new Error(envelope.error?.message ?? "The transfer slip could not be created yet.");
+      }
+      if (requestId !== transferRequestId.current) return;
+      setTransferReceipt(envelope.data);
+    } catch (caught) {
+      if (requestId !== transferRequestId.current) return;
+      setError(
+        caught instanceof Error ? caught.message : "The transfer slip could not be created yet.",
+      );
+    } finally {
+      if (requestId === transferRequestId.current) setLoadingTask(null);
     }
   };
 
@@ -317,7 +362,13 @@ export function RepairStudio({
                     <p>{error}</p>
                     <button
                       type="button"
-                      onClick={errorAction === "analysis" ? analyze : createReceipt}
+                      onClick={
+                        errorAction === "analysis"
+                          ? analyze
+                          : errorAction === "receipt"
+                            ? createReceipt
+                            : createTransferSlip
+                      }
                       className="mt-3 inline-flex items-center gap-2 font-medium underline decoration-[#a24f24]/40 underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#a24f24]"
                     >
                       <ArrowCounterClockwise size={15} aria-hidden="true" />
@@ -381,8 +432,11 @@ export function RepairStudio({
                     value={revision}
                     onChange={(event) => {
                       receiptRequestId.current += 1;
+                      transferRequestId.current += 1;
                       setRevision(event.target.value);
                       setReceipt(null);
+                      setTransferResponse("");
+                      setTransferReceipt(null);
                       setError(null);
                     }}
                     disabled={loadingTask !== null}
@@ -409,7 +463,24 @@ export function RepairStudio({
               </div>
             ) : null}
 
-            {receipt ? <ReceiptView receipt={receipt} /> : null}
+            {receipt ? (
+              <div className="print-receipt">
+                <ReceiptView receipt={receipt} />
+                <FreshCase
+                  activity={activity}
+                  response={transferResponse}
+                  receipt={transferReceipt}
+                  loading={loadingTask === "transfer"}
+                  onResponseChange={(nextResponse) => {
+                    transferRequestId.current += 1;
+                    setTransferResponse(nextResponse);
+                    setTransferReceipt(null);
+                    setError(null);
+                  }}
+                  onSubmit={createTransferSlip}
+                />
+              </div>
+            ) : null}
           </div>
         </div>
       </div>
@@ -475,7 +546,7 @@ function TraceView({ analysis }: Readonly<{ analysis: AnalysisResult }>) {
 
 function ReceiptView({ receipt }: Readonly<{ receipt: Receipt }>) {
   return (
-    <section aria-labelledby="receipt-title" className="print-receipt stage-enter mt-10 rounded-[2rem] border border-[#25231f]/16 bg-white p-6 sm:p-8">
+    <section aria-labelledby="receipt-title" className="stage-enter mt-10 rounded-[2rem] border border-[#25231f]/16 bg-white p-6 sm:p-8">
       <div className="flex flex-col gap-5 border-b border-[#25231f]/10 pb-6 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-[#a24f24]">AI-generated challenge, not a grade</p>
@@ -551,5 +622,122 @@ function ReceiptView({ receipt }: Readonly<{ receipt: Receipt }>) {
         </div>
       ) : null}
     </section>
+  );
+}
+
+function FreshCase({
+  activity,
+  response,
+  receipt,
+  loading,
+  onResponseChange,
+  onSubmit,
+}: Readonly<{
+  activity: PublicActivity;
+  response: string;
+  receipt: Receipt | null;
+  loading: boolean;
+  onResponseChange: (response: string) => void;
+  onSubmit: () => void;
+}>) {
+  return (
+    <section aria-labelledby="transfer-title" className="stage-enter mt-8 rounded-[2rem] border border-[#25231f]/16 bg-[#eee7dc] p-6 sm:p-8">
+      <div className="no-print">
+        <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-[#a24f24]">
+          Step 04 · Fresh case
+        </p>
+        <h2 id="transfer-title" className="mt-2 text-3xl font-semibold tracking-[-0.045em]">
+          Try the reasoning on a fresh case
+        </h2>
+        <p className="mt-3 max-w-[66ch] text-sm leading-6 text-[#625e56]">
+          One successful edit is not evidence of transfer. Apply the same reasoning to a new
+          context without a hinge hint or replacement answer.
+        </p>
+        <div className="mt-6 rounded-2xl border border-[#25231f]/12 bg-[#fbf8f1] p-5 text-sm leading-6 text-[#393631]">
+          {activity.transferPrompt}
+        </div>
+        <label htmlFor="transfer-response" className="mt-6 block text-sm font-medium">
+          Fresh-case explanation
+        </label>
+        <p id="transfer-help" className="mt-1 text-xs leading-5 text-[#625e56]">
+          A transparent guided scan checks only the same visible rubric. It makes no model call.
+        </p>
+        <textarea
+          id="transfer-response"
+          aria-describedby="transfer-help"
+          value={response}
+          onChange={(event) => onResponseChange(event.target.value)}
+          disabled={loading}
+          maxLength={3_000}
+          placeholder="Explain the fresh case in your own words…"
+          className="mt-3 min-h-32 w-full resize-y rounded-2xl border border-[#25231f]/16 bg-white/80 p-4 text-[15px] leading-7 outline-none transition focus:border-[#a24f24] focus:ring-2 focus:ring-[#a24f24]/15"
+        />
+        <div className="mt-5 flex justify-end">
+          <button
+            type="button"
+            onClick={onSubmit}
+            disabled={loading || response.trim().length < 36}
+            className={buttonClass}
+          >
+            {loading ? "Checking fresh-case evidence…" : "Check transfer evidence"}
+            {!loading ? <ArrowRight size={16} aria-hidden="true" /> : null}
+          </button>
+        </div>
+      </div>
+
+      {receipt ? <TransferSlipView receipt={receipt} /> : null}
+    </section>
+  );
+}
+
+function TransferSlipView({ receipt }: Readonly<{ receipt: Receipt }>) {
+  return (
+    <div aria-labelledby="transfer-slip-title" className="mt-8 border-t border-[#25231f]/14 pt-7">
+      <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-[#a24f24]">
+        Observed transfer · not a verdict
+      </p>
+      <h2 id="transfer-slip-title" className="mt-2 text-3xl font-semibold tracking-[-0.045em]">
+        Transfer slip
+      </h2>
+      <p className="mt-3 text-sm leading-6 text-[#514d46]">{receipt.summary}</p>
+      <p className="mt-2 font-mono text-[9px] uppercase tracking-[0.12em] text-[#625e56]">
+        Provenance · guided rubric scan · {receipt.provenance.model}
+      </p>
+      <div className="mt-6">
+        <h3 className="text-sm font-medium">Rubric evidence in the fresh case</h3>
+        <ul className="mt-3 divide-y divide-[#25231f]/10">
+          {receipt.rubric.map((criterion) => (
+            <li key={criterion.id} className="grid gap-2 py-4 sm:grid-cols-[1fr_auto] sm:items-center">
+              <div>
+                <p className="text-sm">{criterion.label}</p>
+                <p className="mt-1 text-xs leading-5 text-[#625e56]">
+                  {criterion.evidence ? `“${criterion.evidence}”` : "No direct evidence yet."}
+                </p>
+              </div>
+              <span
+                aria-label={`Transfer rubric state: ${criterion.after}`}
+                className={`inline-flex w-fit items-center gap-1.5 rounded-full px-3 py-1 text-[10px] font-medium uppercase tracking-[0.1em] ${
+                  criterion.after === "met"
+                    ? "bg-[#e5eee7] text-[#386044]"
+                    : criterion.after === "emerging"
+                      ? "bg-[#f7e9df] text-[#763a1e]"
+                      : "bg-[#f0ebe2] text-[#625e56]"
+                }`}
+              >
+                {criterion.after === "met" ? (
+                  <Check size={12} weight="bold" aria-hidden="true" />
+                ) : (
+                  <Circle size={12} weight="bold" aria-hidden="true" />
+                )}
+                {criterion.after}
+              </span>
+            </li>
+          ))}
+        </ul>
+      </div>
+      <p className="mt-6 rounded-2xl bg-[#fbf8f1] p-4 text-xs leading-5 text-[#625e56]">
+        Observed evidence in a new context — not proof of learning or mastery.
+      </p>
+    </div>
   );
 }
