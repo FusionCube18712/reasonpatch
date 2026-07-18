@@ -81,7 +81,9 @@ describe("RepairStudio", () => {
     expect(
       screen.getByRole("heading", { name: "Causation or coincidence?" }),
     ).toBeVisible();
-    expect(screen.getByText("Distinguishes association from causation")).toBeVisible();
+    expect(
+      screen.getByText("Distinguishes association from causation"),
+    ).toBeVisible();
     expect(screen.getByLabelText("Your explanation")).toHaveValue(
       "The tutoring program caused the improvement because participants scored eight points higher. Therefore every school should use it.",
     );
@@ -99,7 +101,8 @@ describe("RepairStudio", () => {
               hingeQuote: "The tutoring program caused the improvement",
               misconception: "association-as-causation",
               explanation: "A difference alone cannot isolate a cause.",
-              socraticQuestion: "What if more motivated students chose tutoring?",
+              socraticQuestion:
+                "What if more motivated students chose tutoring?",
               whyThisQuestion: "It tests a selection effect.",
               rubric: [],
               limitation: "AI-generated challenge, not a grade.",
@@ -116,11 +119,15 @@ describe("RepairStudio", () => {
 
     await user.click(screen.getByRole("button", { name: "Find the hinge" }));
 
-    expect(await screen.findByRole("status")).toHaveTextContent("Repair crew complete");
+    expect(await screen.findByRole("status")).toHaveTextContent(
+      "Repair crew complete",
+    );
     expect(
       screen.getByRole("heading", { name: "One question before you revise" }),
     ).toBeVisible();
-    expect(screen.getByText("What if more motivated students chose tutoring?")).toBeVisible();
+    expect(
+      screen.getByText("What if more motivated students chose tutoring?"),
+    ).toBeVisible();
   });
 
   it("shows a plain-language recovery state when analysis fails", async () => {
@@ -130,7 +137,10 @@ describe("RepairStudio", () => {
         JSON.stringify({
           success: false,
           data: null,
-          error: { code: "UNAVAILABLE", message: "Analysis is temporarily unavailable." },
+          error: {
+            code: "UNAVAILABLE",
+            message: "Analysis is temporarily unavailable.",
+          },
         }),
         { status: 503, headers: { "Content-Type": "application/json" } },
       ),
@@ -151,7 +161,10 @@ describe("RepairStudio", () => {
 
     await user.click(screen.getByRole("button", { name: "Live GPT-5.6" }));
     await user.clear(screen.getByLabelText("Your explanation"));
-    await user.type(screen.getByLabelText("Your explanation"), "Temporary draft");
+    await user.type(
+      screen.getByLabelText("Your explanation"),
+      "Temporary draft",
+    );
     await user.click(
       screen.getByRole("button", { name: /Accurate test, wrong conclusion/ }),
     );
@@ -173,7 +186,9 @@ describe("RepairStudio", () => {
 
     await user.click(screen.getByRole("button", { name: "Live GPT-5.6" }));
     await user.click(
-      screen.getByRole("checkbox", { name: /I removed names and sensitive details/ }),
+      screen.getByRole("checkbox", {
+        name: /I removed names and sensitive details/,
+      }),
     );
     await user.click(screen.getByRole("button", { name: "Find the hinge" }));
     await screen.findByRole("status");
@@ -191,14 +206,20 @@ describe("RepairStudio", () => {
 
   it("labels demo orchestration as a recorded fixture trace", async () => {
     const user = userEvent.setup();
-    vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(jsonResponse(analysisPayload));
+    vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(
+      jsonResponse(analysisPayload),
+    );
     render(<RepairStudio />);
 
-    await user.click(screen.getByRole("checkbox", { name: "Demonstrate Sol fallback" }));
+    await user.click(
+      screen.getByRole("checkbox", { name: "Demonstrate Sol fallback" }),
+    );
     await user.click(screen.getByRole("button", { name: "Find the hinge" }));
 
     expect(await screen.findByText("Recorded Sol fallback")).toBeVisible();
-    expect(screen.getByText("Guided fixture replay · no model calls")).toBeVisible();
+    expect(
+      screen.getByText("Guided fixture replay · no model calls"),
+    ).toBeVisible();
     expect(screen.queryByText("18 ms · gpt-5.6-sol")).not.toBeInTheDocument();
   });
 
@@ -216,17 +237,24 @@ describe("RepairStudio", () => {
 
   it("invalidates downstream evidence when an upstream response changes", async () => {
     const user = userEvent.setup();
-    vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(jsonResponse(analysisPayload));
+    vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(
+      jsonResponse(analysisPayload),
+    );
     render(<RepairStudio liveModeAvailable />);
 
     await user.click(screen.getByRole("button", { name: "Live GPT-5.6" }));
     await user.click(
-      screen.getByRole("checkbox", { name: /I removed names and sensitive details/ }),
+      screen.getByRole("checkbox", {
+        name: /I removed names and sensitive details/,
+      }),
     );
     await user.click(screen.getByRole("button", { name: "Find the hinge" }));
     expect(await screen.findByRole("status")).toBeVisible();
 
-    await user.type(screen.getByLabelText("Your explanation"), " More context.");
+    await user.type(
+      screen.getByLabelText("Your explanation"),
+      " More context.",
+    );
 
     expect(screen.queryByRole("status")).not.toBeInTheDocument();
     expect(
@@ -237,8 +265,12 @@ describe("RepairStudio", () => {
   it("keeps the curated analysis sample read-only in guided demo mode", () => {
     render(<RepairStudio />);
 
-    expect(screen.getByLabelText("Your explanation")).toHaveAttribute("readonly");
-    expect(screen.queryByRole("button", { name: "Live GPT-5.6" })).not.toBeInTheDocument();
+    expect(screen.getByLabelText("Your explanation")).toHaveAttribute(
+      "readonly",
+    );
+    expect(
+      screen.queryByRole("button", { name: "Live GPT-5.6" }),
+    ).not.toBeInTheDocument();
   });
 
   it("turns the learner's revision into an auditable repair receipt", async () => {
@@ -254,7 +286,8 @@ describe("RepairStudio", () => {
               hingeQuote: "The tutoring program caused the improvement",
               misconception: "association-as-causation",
               explanation: "A difference alone cannot isolate a cause.",
-              socraticQuestion: "What if more motivated students chose tutoring?",
+              socraticQuestion:
+                "What if more motivated students chose tutoring?",
               whyThisQuestion: "It tests a selection effect.",
               rubric: [],
               limitation: "AI-generated challenge, not a grade.",
@@ -306,11 +339,17 @@ describe("RepairStudio", () => {
       screen.getByLabelText("Revised explanation"),
       "Participants scored higher, but self-selection means the difference alone does not establish causation. We need comparable baselines and random assignment.",
     );
-    await user.click(screen.getByRole("button", { name: "Create repair receipt" }));
+    await user.click(
+      screen.getByRole("button", { name: "Create repair receipt" }),
+    );
 
-    expect(await screen.findByRole("heading", { name: "Repair receipt" })).toBeVisible();
+    expect(
+      await screen.findByRole("heading", { name: "Repair receipt" }),
+    ).toBeVisible();
     expect(screen.getByText("Association is not causation")).toBeVisible();
-    expect(screen.getByText("AI-generated challenge, not a grade")).toBeVisible();
+    expect(
+      screen.getByText("AI-generated challenge, not a grade"),
+    ).toBeVisible();
   });
 
   it("checks repaired reasoning on a fresh case without claiming learning", async () => {
@@ -322,7 +361,9 @@ describe("RepairStudio", () => {
     render(<RepairStudio />);
 
     expect(
-      screen.queryByRole("heading", { name: "Try the reasoning on a fresh case" }),
+      screen.queryByRole("heading", {
+        name: "Try the reasoning on a fresh case",
+      }),
     ).not.toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Find the hinge" }));
@@ -330,18 +371,26 @@ describe("RepairStudio", () => {
       screen.getByLabelText("Revised explanation"),
       "The difference does not establish causation because students self-selected; a controlled comparison would be stronger.",
     );
-    await user.click(screen.getByRole("button", { name: "Create repair receipt" }));
+    await user.click(
+      screen.getByRole("button", { name: "Create repair receipt" }),
+    );
 
     expect(
-      screen.queryByRole("heading", { name: "Try the reasoning on a fresh case" }),
+      screen.queryByRole("heading", {
+        name: "Try the reasoning on a fresh case",
+      }),
     ).not.toBeInTheDocument();
     expect(
       await screen.findByRole("button", { name: "Begin isolated fresh case" }),
     ).toBeVisible();
-    await user.click(screen.getByRole("button", { name: "Begin isolated fresh case" }));
+    await user.click(
+      screen.getByRole("button", { name: "Begin isolated fresh case" }),
+    );
 
     expect(
-      screen.getByRole("heading", { name: "Try the reasoning on a fresh case" }),
+      screen.getByRole("heading", {
+        name: "Try the reasoning on a fresh case",
+      }),
     ).toBeVisible();
     expect(
       screen.queryByRole("heading", { name: "Repair receipt" }),
@@ -351,18 +400,31 @@ describe("RepairStudio", () => {
     ).not.toBeInTheDocument();
     expect(screen.queryByText("Visible rubric")).not.toBeInTheDocument();
     expect(
-      screen.getByText(/prior diagnosis, question, rubric, and receipt are hidden/i),
+      screen.getByText(
+        /prior diagnosis, question, rubric, and receipt are hidden/i,
+      ),
     ).toBeVisible();
     const transferResponse =
       "The recovery difference does not establish causation because patients chose to join; random assignment would be stronger.";
-    await user.type(screen.getByLabelText("Fresh-case explanation"), transferResponse);
-    await user.click(screen.getByRole("button", { name: "Check transfer evidence" }));
+    await user.type(
+      screen.getByLabelText("Fresh-case explanation"),
+      transferResponse,
+    );
+    await user.click(
+      screen.getByRole("button", { name: "Check transfer evidence" }),
+    );
 
-    expect(await screen.findByRole("heading", { name: "Transfer slip" })).toBeVisible();
     expect(
-      screen.getByText("Observed evidence in a new context — not proof of learning or mastery."),
+      await screen.findByRole("heading", { name: "Transfer slip" }),
     ).toBeVisible();
-    expect(JSON.parse(String(fetchMock.mock.calls[2]?.[1]?.body))).toMatchObject({
+    expect(
+      screen.getByText(
+        "Observed evidence in a new context — not proof of learning or mastery.",
+      ),
+    ).toBeVisible();
+    expect(
+      JSON.parse(String(fetchMock.mock.calls[2]?.[1]?.body)),
+    ).toMatchObject({
       activityId: "correlation-causation",
       revisedResponse: transferResponse,
       mode: "demo",
@@ -408,19 +470,29 @@ describe("RepairStudio", () => {
         screen.getByLabelText("Revised explanation"),
         "The difference does not establish causation because students self-selected; a controlled comparison would be stronger.",
       );
-      await user.click(screen.getByRole("button", { name: "Create repair receipt" }));
       await user.click(
-        await screen.findByRole("button", { name: "Begin isolated fresh case" }),
+        screen.getByRole("button", { name: "Create repair receipt" }),
+      );
+      await user.click(
+        await screen.findByRole("button", {
+          name: "Begin isolated fresh case",
+        }),
       );
       await user.type(
         await screen.findByLabelText("Fresh-case explanation"),
         "The recovery difference does not establish causation because patients chose to join; random assignment would be stronger.",
       );
-      await user.click(screen.getByRole("button", { name: "Check transfer evidence" }));
       await user.click(
-        await screen.findByRole("button", { name: "Download blinded rater packet" }),
+        screen.getByRole("button", { name: "Check transfer evidence" }),
       );
-      await user.click(screen.getByRole("button", { name: "Download audit manifest" }));
+      await user.click(
+        await screen.findByRole("button", {
+          name: "Download blinded rater packet",
+        }),
+      );
+      await user.click(
+        screen.getByRole("button", { name: "Download audit manifest" }),
+      );
 
       expect(createObjectURL).toHaveBeenCalledTimes(2);
       expect(createObjectURL).toHaveBeenNthCalledWith(
@@ -438,7 +510,9 @@ describe("RepairStudio", () => {
       ]);
       await vi.waitFor(() => {
         expect(revokeObjectURL).toHaveBeenCalledWith("blob:reasonpatch-audit");
-        expect(revokeObjectURL).toHaveBeenCalledWith("blob:reasonpatch-blinded");
+        expect(revokeObjectURL).toHaveBeenCalledWith(
+          "blob:reasonpatch-blinded",
+        );
       });
     } finally {
       Object.defineProperty(URL, "createObjectURL", {
@@ -461,7 +535,10 @@ describe("RepairStudio", () => {
         {
           success: false,
           data: null,
-          error: { code: "UNAVAILABLE", message: "Receipt service is warming up." },
+          error: {
+            code: "UNAVAILABLE",
+            message: "Receipt service is warming up.",
+          },
         },
         503,
       ),
@@ -473,16 +550,22 @@ describe("RepairStudio", () => {
     const revision =
       "The observed difference does not establish causation because students self-selected; a controlled comparison would be stronger.";
     await user.type(screen.getByLabelText("Revised explanation"), revision);
-    await user.click(screen.getByRole("button", { name: "Create repair receipt" }));
+    await user.click(
+      screen.getByRole("button", { name: "Create repair receipt" }),
+    );
     expect(await screen.findByRole("alert")).toHaveTextContent(
       "Receipt service is warming up.",
     );
 
     await user.click(screen.getByRole("button", { name: "Try again" }));
 
-    expect(await screen.findByRole("heading", { name: "Repair receipt" })).toBeVisible();
+    expect(
+      await screen.findByRole("heading", { name: "Repair receipt" }),
+    ).toBeVisible();
     expect(screen.getByLabelText("Revised explanation")).toHaveValue(revision);
-    expect(screen.queryByText(/A stronger study design/)).not.toBeInTheDocument();
+    expect(
+      screen.queryByText(/A stronger study design/),
+    ).not.toBeInTheDocument();
   });
 
   it("prints a completed receipt on request", async () => {
@@ -498,15 +581,21 @@ describe("RepairStudio", () => {
       screen.getByLabelText("Revised explanation"),
       "The observed difference does not establish causation because students self-selected; a controlled comparison would be stronger.",
     );
-    await user.click(screen.getByRole("button", { name: "Create repair receipt" }));
-    await user.click(await screen.findByRole("button", { name: "Print receipt" }));
+    await user.click(
+      screen.getByRole("button", { name: "Create repair receipt" }),
+    );
+    await user.click(
+      await screen.findByRole("button", { name: "Print receipt" }),
+    );
 
     expect(print).toHaveBeenCalledOnce();
     const printTarget = screen
       .getByRole("heading", { name: "Repair receipt" })
       .closest(".print-receipt");
     expect(printTarget).not.toBeNull();
-    expect(printTarget).not.toHaveTextContent("Try the reasoning on a fresh case");
+    expect(printTarget).not.toHaveTextContent(
+      "Try the reasoning on a fresh case",
+    );
   });
 
   it("keeps transfer failures local and retries without restoring prior hints", async () => {
@@ -519,7 +608,10 @@ describe("RepairStudio", () => {
         {
           success: false,
           data: null,
-          error: { code: "UNAVAILABLE", message: "Fresh-case scan is warming up." },
+          error: {
+            code: "UNAVAILABLE",
+            message: "Fresh-case scan is warming up.",
+          },
         },
         503,
       ),
@@ -532,7 +624,9 @@ describe("RepairStudio", () => {
       screen.getByLabelText("Revised explanation"),
       "The difference does not establish causation because students self-selected; a controlled comparison would be stronger.",
     );
-    await user.click(screen.getByRole("button", { name: "Create repair receipt" }));
+    await user.click(
+      screen.getByRole("button", { name: "Create repair receipt" }),
+    );
     await user.click(
       await screen.findByRole("button", { name: "Begin isolated fresh case" }),
     );
@@ -540,13 +634,21 @@ describe("RepairStudio", () => {
       screen.getByLabelText("Fresh-case explanation"),
       "The recovery difference does not establish causation because patients chose to join; random assignment would be stronger.",
     );
-    await user.click(screen.getByRole("button", { name: "Check transfer evidence" }));
+    await user.click(
+      screen.getByRole("button", { name: "Check transfer evidence" }),
+    );
 
     const transferAlert = await screen.findByRole("alert");
     expect(transferAlert).toHaveTextContent("Fresh-case scan is warming up.");
-    expect(screen.queryByRole("heading", { name: "Repair receipt" })).not.toBeInTheDocument();
-    await user.click(screen.getByRole("button", { name: "Retry fresh-case scan" }));
-    expect(await screen.findByRole("heading", { name: "Transfer slip" })).toBeVisible();
+    expect(
+      screen.queryByRole("heading", { name: "Repair receipt" }),
+    ).not.toBeInTheDocument();
+    await user.click(
+      screen.getByRole("button", { name: "Retry fresh-case scan" }),
+    );
+    expect(
+      await screen.findByRole("heading", { name: "Transfer slip" }),
+    ).toBeVisible();
   });
 
   it("renders missing rubric evidence without a green check or fabricated quote", async () => {
@@ -575,7 +677,9 @@ describe("RepairStudio", () => {
       screen.getByLabelText("Revised explanation"),
       "This submitted revision is long enough but still lacks the relevant statistical evidence needed for the rubric.",
     );
-    await user.click(screen.getByRole("button", { name: "Create repair receipt" }));
+    await user.click(
+      screen.getByRole("button", { name: "Create repair receipt" }),
+    );
 
     expect(await screen.findByText("No direct evidence yet.")).toBeVisible();
     expect(screen.getByLabelText("Rubric state: missing")).not.toHaveClass(
@@ -585,7 +689,9 @@ describe("RepairStudio", () => {
 
   it("requires renewed live consent before sending a revision", async () => {
     const user = userEvent.setup();
-    vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(jsonResponse(analysisPayload));
+    vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(
+      jsonResponse(analysisPayload),
+    );
     render(<RepairStudio liveModeAvailable />);
 
     await user.click(screen.getByRole("button", { name: "Live GPT-5.6" }));
@@ -600,6 +706,8 @@ describe("RepairStudio", () => {
     );
     await user.click(consent);
 
-    expect(screen.getByRole("button", { name: "Create repair receipt" })).toBeDisabled();
+    expect(
+      screen.getByRole("button", { name: "Create repair receipt" }),
+    ).toBeDisabled();
   });
 });
