@@ -351,6 +351,66 @@ describe("RepairStudio", () => {
     });
   });
 
+  it("downloads a local educator pilot packet only after the transfer check", async () => {
+    const user = userEvent.setup();
+    const fetchMock = vi.spyOn(globalThis, "fetch");
+    fetchMock.mockResolvedValueOnce(jsonResponse(analysisPayload));
+    fetchMock.mockResolvedValueOnce(jsonResponse(receiptPayload));
+    fetchMock.mockResolvedValueOnce(jsonResponse(receiptPayload));
+    const createObjectURL = vi.fn(() => "blob:reasonpatch-pilot");
+    const revokeObjectURL = vi.fn();
+    const click = vi
+      .spyOn(HTMLAnchorElement.prototype, "click")
+      .mockImplementation(() => undefined);
+    const originalCreateObjectURL = URL.createObjectURL;
+    const originalRevokeObjectURL = URL.revokeObjectURL;
+    Object.defineProperty(URL, "createObjectURL", {
+      configurable: true,
+      value: createObjectURL,
+    });
+    Object.defineProperty(URL, "revokeObjectURL", {
+      configurable: true,
+      value: revokeObjectURL,
+    });
+
+    try {
+      render(<RepairStudio />);
+      expect(
+        screen.queryByRole("button", { name: "Download educator pilot packet" }),
+      ).not.toBeInTheDocument();
+
+      await user.click(screen.getByRole("button", { name: "Find the hinge" }));
+      await user.type(
+        screen.getByLabelText("Revised explanation"),
+        "The difference does not establish causation because students self-selected; a controlled comparison would be stronger.",
+      );
+      await user.click(screen.getByRole("button", { name: "Create repair receipt" }));
+      await user.type(
+        await screen.findByLabelText("Fresh-case explanation"),
+        "The recovery difference does not establish causation because patients chose to join; random assignment would be stronger.",
+      );
+      await user.click(screen.getByRole("button", { name: "Check transfer evidence" }));
+      await user.click(
+        await screen.findByRole("button", { name: "Download educator pilot packet" }),
+      );
+
+      expect(createObjectURL).toHaveBeenCalledWith(
+        expect.objectContaining({ type: "text/plain;charset=utf-8" }),
+      );
+      expect(click).toHaveBeenCalledOnce();
+      expect(revokeObjectURL).toHaveBeenCalledWith("blob:reasonpatch-pilot");
+    } finally {
+      Object.defineProperty(URL, "createObjectURL", {
+        configurable: true,
+        value: originalCreateObjectURL,
+      });
+      Object.defineProperty(URL, "revokeObjectURL", {
+        configurable: true,
+        value: originalRevokeObjectURL,
+      });
+    }
+  });
+
   it("retries a failed receipt without losing the learner revision", async () => {
     const user = userEvent.setup();
     const fetchMock = vi.spyOn(globalThis, "fetch");
