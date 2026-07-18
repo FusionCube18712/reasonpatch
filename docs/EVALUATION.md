@@ -26,16 +26,16 @@ The suite is deterministic and independently rerunnable with `npm test`. It exis
 
 ## Fresh-transfer calibration set
 
-`test/transfer-calibration.test.ts` contains 17 additional cases: complete, partial, irrelevant, evaluator-instruction, and explicit contradiction or negation responses—including reversed negation and wrong-value bait. The suite asserts the exact criterion IDs marked as met—not only a count—and verifies every positive excerpt against the submitted fresh-case text.
+`test/transfer-calibration.test.ts` contains 67 additional cases: complete, partial, stale-context, evaluator-instruction, and explicit contradiction or negation responses—including copied original-context repairs, actor/action/object relation-smuggling, direct and local negation, direct/embedded interrogatives, duplicate-match grounding, and same/next-sentence rejection attacks; valid online-poll and dining-only wording; and correct, reversed, negated, quoted, questioned, and rejected base-rate statements. The suite asserts the exact criterion IDs marked as met—not only a count—and verifies every positive excerpt against the submitted fresh-case text.
 
-Together, the two calibration sets cover 29 responses and 87 visible rubric decisions. This demonstrates deterministic evaluator integrity on the curated domains; it does not demonstrate that learners retain or transfer knowledge.
+Together, the two calibration sets cover 79 responses and 237 visible rubric decisions. This demonstrates deterministic evaluator integrity on the curated domains; it does not demonstrate that learners retain or transfer knowledge.
 
 ## Broader automated evidence
 
 - contract tests cover strict schemas and banned educational claims;
 - gateway tests cover structured output settings, timeout/quota classification, and output budgets;
 - orchestration tests cover model routing, role separation, per-probe Sol fallback, and fabricated hinge rejection;
-- API tests cover malformed, cross-site, oversized, invalid, success, and upstream-failure paths;
+- API tests cover malformed, cross-site, oversized, invalid, success, and upstream-failure paths, including the separate demo-only transfer boundary;
 - browser tests cover the learner journey, all three labs, fallback disclosure, the isolated fresh-case Transfer Slip, both real local artifact downloads, responsive overflow, keyboard reachability, and WCAG A/AA checks.
 
 ## What is not claimed

@@ -3,6 +3,8 @@ import {
   AnalyzeRequestSchema,
   ReceiptSchema,
   ReviseRequestSchema,
+  TransferRequestSchema,
+  TransferSlipSchema,
   type AnalysisResult,
   type ActivityId,
   type AnalyzeRequest,
@@ -10,7 +12,15 @@ import {
   type Receipt,
   type ReviseRequest,
   type SynthesisOutput,
+  type TransferRequest,
+  type TransferSlip,
 } from "./contracts";
+import {
+  TRANSFER_EVIDENCE_RULES,
+  groundTransferRubric,
+  type DemoEvidenceRule,
+  type EvaluatedRubric,
+} from "./transfer-evaluator";
 
 type DemoFixture = Readonly<{
   diagnosis: SynthesisOutput;
@@ -180,7 +190,7 @@ const samplingDiagnosis: SynthesisOutput = {
 const correlationReceipt: DemoFixture["receipt"] = {
   repairedHinge: "Association is not causation",
   summary:
-    "The revision now qualifies the causal claim, introduces self-selection, and asks for stronger comparison evidence.",
+    "The submitted response now qualifies the causal claim, introduces self-selection, and asks for stronger comparison evidence.",
   changes: [
     {
       label: "Causal claim",
@@ -219,7 +229,7 @@ const correlationReceipt: DemoFixture["receipt"] = {
     },
   ],
   remainingCaveat:
-    "The revision identifies what evidence is needed; it does not establish whether the program works.",
+    "The submitted response identifies what evidence is needed; it does not establish whether the program works.",
 };
 
 const DEMO_FIXTURES: Readonly<Record<ActivityId, DemoFixture>> = {
@@ -234,7 +244,7 @@ const DEMO_FIXTURES: Readonly<Record<ActivityId, DemoFixture>> = {
     receipt: {
       repairedHinge: "Accuracy is not the posterior",
       summary:
-        "The revision now brings the rare base rate into the positive-result comparison and distinguishes true from false positives.",
+        "The submitted response now brings the rare base rate into the positive-result comparison and distinguishes true from false positives.",
       changes: [
         {
           label: "Probability direction",
@@ -273,7 +283,7 @@ const DEMO_FIXTURES: Readonly<Record<ActivityId, DemoFixture>> = {
         },
       ],
       remainingCaveat:
-        "The revision sets up the comparison; it does not show the final arithmetic.",
+        "The submitted response sets up the comparison; it does not show the final arithmetic.",
     },
   },
   "sampling-bias": {
@@ -282,7 +292,7 @@ const DEMO_FIXTURES: Readonly<Record<ActivityId, DemoFixture>> = {
     receipt: {
       repairedHinge: "Size is not representativeness",
       summary:
-        "The revision now separates the number of responses from the way respondents entered the sample.",
+        "The submitted response now separates the number of responses from the way respondents entered the sample.",
       changes: [
         {
           label: "Sample claim",
@@ -321,15 +331,10 @@ const DEMO_FIXTURES: Readonly<Record<ActivityId, DemoFixture>> = {
         },
       ],
       remainingCaveat:
-        "The revision improves the inference but does not estimate actual campus opinion.",
+        "The submitted response improves the inference but does not estimate actual campus opinion.",
     },
   },
 };
-
-type DemoEvidenceRule = Readonly<{
-  supports: RegExp;
-  contradicts?: RegExp;
-}>;
 
 const DEMO_EVIDENCE_RULES: Readonly<
   Record<ActivityId, ReadonlyArray<DemoEvidenceRule>>
@@ -402,6 +407,205 @@ const isEvaluatorInstruction = (value: string): boolean =>
     value,
   );
 
+const evidenceIsInsideRejectedClaim = (
+  response: string,
+  match: RegExpExecArray,
+): boolean => {
+  const delimiters = [".", "?", "!", ";", "\n"] as const;
+  const clauseStart = delimiters.reduce(
+    (latest, delimiter) =>
+      Math.max(latest, response.lastIndexOf(delimiter, match.index - 1)),
+    -1,
+  );
+  const matchEnd = match.index + match[0].length;
+  const nextDelimiters = delimiters
+    .map((delimiter) => response.indexOf(delimiter, matchEnd))
+    .filter((index) => index >= 0);
+  const clauseEnd =
+    nextDelimiters.length === 0 ? response.length : Math.min(...nextDelimiters);
+  const before = response.slice(clauseStart + 1, match.index);
+  const after = response.slice(matchEnd, clauseEnd);
+  const introducedAsClaim =
+    /\b(?:claim|statement|assertion|idea)\s+(?:that|to)\b[^.!?;\n]*$/iu.test(
+      before,
+    ) ||
+    /\b(?:claim|statement|assertion|idea)\s+(?:that|to)\b/iu.test(match[0]);
+  const rejectedAfter =
+    /^[^.!?;\n]{0,100}\b(?:(?:is|was)\s+(?:false|wrong|incorrect|unsupported|untrue|inaccurate|invalid|not\s+true)|(?:isn't|wasn't)\s+true)\b/iu.test(
+      after,
+    );
+  const rejectedBefore =
+    /\b(?:false|wrong|incorrect|unsupported|untrue|inaccurate|invalid|not\s+true|isn't\s+true|wasn't\s+true)\s+(?:that|to)\b[^.!?;\n]*$/iu.test(
+      before,
+    );
+  const rejectedWrapper =
+    /\b(?:false|wrong|incorrect|unsupported|untrue|inaccurate|invalid)\s+(?:claim|statement|assertion|idea)\s+(?:that|to)\b/iu.test(
+      `${before}${match[0]}`,
+    );
+
+  return (introducedAsClaim && rejectedAfter) || rejectedBefore || rejectedWrapper;
+};
+
+const evidenceHasDisallowedPolarity = (
+  activityId: ActivityId,
+  criterionId: string,
+  response: string,
+  match: RegExpExecArray,
+): boolean => {
+  const matchEnd = match.index + match[0].length;
+  const clauseStart = Math.max(
+    response.lastIndexOf(".", match.index - 1),
+    response.lastIndexOf("?", match.index - 1),
+    response.lastIndexOf("!", match.index - 1),
+    response.lastIndexOf(";", match.index - 1),
+    response.lastIndexOf("\n", match.index - 1),
+  );
+  const nextBoundary = [".", "?", "!", ";", "\n"]
+    .map((delimiter) => response.indexOf(delimiter, matchEnd))
+    .filter((index) => index >= 0)
+    .sort((left, right) => left - right)[0] ?? response.length;
+  const clauseBefore = response.slice(clauseStart + 1, match.index);
+  const after = response.slice(matchEnd, Math.min(nextBoundary, matchEnd + 100));
+  const allowedMatch =
+    activityId === "correlation-causation" &&
+    criterionId === "association-causation"
+      ? match[0].replace(
+          /\b(?:does not|cannot|is not enough to)\s+(?:establish|prove|show|imply|support|conclude)\s+causation\b/giu,
+          "",
+        )
+      : activityId === "sampling-bias" && criterionId === "confounder"
+        ? match[0].replace(/\bnot represent\w*\b/giu, "")
+        : match[0];
+  const negatedInside =
+    /\b(?:not|never|isn't|wasn't|wouldn't|shouldn't|cannot|can't)\b/iu.test(
+      allowedMatch,
+    );
+  const allowedBefore = clauseBefore
+    .replace(
+      /\b(?:does not|cannot|is not enough to)\s+(?:establish|prove|show|imply|support|conclude)\s+causation\b/giu,
+      "",
+    )
+    .replace(/\bnot represent\w*\b/giu, "");
+  const negatedBefore =
+    /\b(?:not|never|isn't|wasn't|do not|don't|cannot|can't)\b[^.!?;\n]*$/iu.test(
+      allowedBefore,
+    );
+  const rejectedAfter =
+    /^[^.!?;\n]{0,60}\b(?:(?:is|was|would be)\s+(?:wrong|false|incorrect|unsupported|untrue|inaccurate|invalid|unnecessary|not\s+(?:true|needed|stronger))|(?:isn't|wasn't)\s+true)\b/iu.test(
+      after,
+    );
+
+  return negatedInside || negatedBefore || rejectedAfter;
+};
+
+const nextEvidenceBoundary = (
+  response: string,
+  matchEnd: number,
+): Readonly<{ index: number; delimiter: string }> | null => {
+  const candidates = [".", "?", "!", ";", "\n"]
+    .map((delimiter) => ({ index: response.indexOf(delimiter, matchEnd), delimiter }))
+    .filter(({ index }) => index >= 0)
+    .sort((left, right) => left.index - right.index);
+  return candidates[0] ?? null;
+};
+
+const evidenceIsInterrogative = (
+  response: string,
+  match: RegExpExecArray,
+): boolean =>
+  nextEvidenceBoundary(response, match.index + match[0].length)?.delimiter === "?";
+
+const evidenceIsInsideQuestionFrame = (
+  response: string,
+  match: RegExpExecArray,
+): boolean => {
+  const clauseStart = Math.max(
+    response.lastIndexOf(".", match.index - 1),
+    response.lastIndexOf("?", match.index - 1),
+    response.lastIndexOf("!", match.index - 1),
+    response.lastIndexOf(";", match.index - 1),
+    response.lastIndexOf("\n", match.index - 1),
+  );
+  const frame = `${response.slice(clauseStart + 1, match.index)}${match[0]}`;
+  return /\b(?:question|issue|uncertainty)\s+(?:(?:is|was|remains?)\s+)?(?:whether|if)\b/iu.test(
+    frame,
+  );
+};
+
+const evidenceIsRejectedByFollowingSentence = (
+  response: string,
+  match: RegExpExecArray,
+): boolean => {
+  const boundary = nextEvidenceBoundary(
+    response,
+    match.index + match[0].length,
+  );
+  if (!boundary) return false;
+  const following = response.slice(boundary.index, boundary.index + 140);
+  return /^\s*[.!;]\s*(?:that|this)\s+(?:(?:claim|statement|comparison|idea|inference|conclusion)\s+)?(?:(?:is|was)\s+(?:false|wrong|incorrect|unsupported|untrue|inaccurate|invalid|not\s+true)|(?:isn't|wasn't)\s+true)\b/iu.test(
+    following,
+  );
+};
+
+const findSupportMatches = (
+  pattern: RegExp,
+  response: string,
+): ReadonlyArray<RegExpExecArray> => {
+  const flags = pattern.flags.includes("g") ? pattern.flags : `${pattern.flags}g`;
+  const matcher = new RegExp(pattern.source, flags);
+  return [...response.matchAll(matcher)] as ReadonlyArray<RegExpExecArray>;
+};
+
+const evaluateRubric = (
+  activityId: ActivityId,
+  response: string,
+  rules: Readonly<Record<ActivityId, ReadonlyArray<DemoEvidenceRule>>>,
+): ReadonlyArray<EvaluatedRubric> => {
+  const fixture = DEMO_FIXTURES[activityId];
+  const evaluatorInstruction = isEvaluatorInstruction(response);
+
+  return fixture.receipt.rubric.map((criterion, index) => {
+    const rule = rules[activityId][index];
+    const contradicted = rule?.contradicts?.test(response) ?? false;
+    const candidateMatches =
+      evaluatorInstruction || contradicted || !rule
+        ? []
+        : findSupportMatches(rule.supports, response);
+    const match = candidateMatches.find(
+      (candidateMatch) =>
+        !evidenceIsInsideRejectedClaim(response, candidateMatch) &&
+        !evidenceHasDisallowedPolarity(
+          activityId,
+          criterion.id,
+          response,
+          candidateMatch,
+        ) &&
+        !evidenceIsInterrogative(response, candidateMatch) &&
+        !evidenceIsInsideQuestionFrame(response, candidateMatch) &&
+        !evidenceIsRejectedByFollowingSentence(response, candidateMatch),
+    );
+    return {
+      id: criterion.id,
+      label: criterion.label,
+      state: match ? ("met" as const) : ("missing" as const),
+      evidence: match?.[0] ?? null,
+      evidenceIndex: match?.index ?? null,
+    };
+  });
+};
+
+const evaluateDemoRubric = (
+  activityId: ActivityId,
+  response: string,
+): ReadonlyArray<EvaluatedRubric> =>
+  evaluateRubric(activityId, response, DEMO_EVIDENCE_RULES);
+
+const evaluateTransferRubric = (
+  activityId: ActivityId,
+  response: string,
+): ReadonlyArray<EvaluatedRubric> =>
+  evaluateRubric(activityId, response, TRANSFER_EVIDENCE_RULES);
+
 export const createDemoAnalysis = (
   rawRequest: AnalyzeRequest,
 ): AnalysisResult => {
@@ -449,21 +653,14 @@ export const createDemoReceipt = (rawRequest: ReviseRequest): Receipt => {
     throw new Error("Guided demo requires the curated sample response.");
   }
 
-  const evaluatorInstruction = isEvaluatorInstruction(request.revisedResponse);
-  const evaluatedRubric = fixture.receipt.rubric.map((criterion, index) => {
-    const rule = DEMO_EVIDENCE_RULES[request.activityId][index];
-    const contradicted =
-      rule?.contradicts?.test(request.revisedResponse) ?? false;
-    const match =
-      evaluatorInstruction || contradicted
-        ? null
-        : rule?.supports.exec(request.revisedResponse);
-    return {
-      ...criterion,
-      after: match ? ("met" as const) : ("missing" as const),
-      evidence: match?.[0] ?? null,
-    };
-  });
+  const evaluatedRubric = evaluateDemoRubric(
+    request.activityId,
+    request.revisedResponse,
+  ).map((criterion, index) => ({
+    ...fixture.receipt.rubric[index],
+    after: criterion.state,
+    evidence: criterion.evidence,
+  }));
   const metCount = evaluatedRubric.filter(
     ({ after }) => after === "met",
   ).length;
@@ -471,10 +668,10 @@ export const createDemoReceipt = (rawRequest: ReviseRequest): Receipt => {
   return ReceiptSchema.parse({
     activityId: request.activityId,
     repairedHinge: fixture.receipt.repairedHinge,
-    summary: `The revision addresses ${metCount} of ${evaluatedRubric.length} visible rubric criteria with traceable text evidence.`,
+    summary: `The submitted response addresses ${metCount} of ${evaluatedRubric.length} visible rubric criteria with traceable text evidence.`,
     changes: [
       {
-        label: "Submitted revision",
+        label: "Submitted response",
         before: boundedExcerpt(request.originalResponse),
         after: boundedExcerpt(request.revisedResponse),
       },
@@ -483,7 +680,40 @@ export const createDemoReceipt = (rawRequest: ReviseRequest): Receipt => {
     remainingCaveat:
       metCount === evaluatedRubric.length
         ? fixture.receipt.remainingCaveat
-        : "One or more visible criteria still lack direct evidence in this revision.",
+        : "One or more visible criteria still lack direct evidence in this response.",
+    provenance: { model: "demo-fixture", mode: "demo" },
+  });
+};
+
+export const createDemoTransferSlip = (
+  rawRequest: TransferRequest,
+): TransferSlip => {
+  const request = TransferRequestSchema.parse(rawRequest);
+  const evaluatedRubric = evaluateTransferRubric(
+    request.activityId,
+    request.response,
+  );
+  const rubric = groundTransferRubric(
+    request.activityId,
+    request.response,
+    evaluatedRubric,
+  );
+  const publicRubric = rubric.map(({ id, label, state, evidence }) => ({
+    id,
+    label,
+    state,
+    evidence,
+  }));
+  const metCount = publicRubric.filter(({ state }) => state === "met").length;
+
+  return TransferSlipSchema.parse({
+    activityId: request.activityId,
+    summary: `The fresh-case response contains candidate evidence for ${metCount} of ${publicRubric.length} visible rubric criteria.`,
+    rubric: publicRubric,
+    remainingCaveat:
+      metCount === publicRubric.length
+        ? "This immediate scan is not a delayed or validated measure of learning."
+        : "One or more visible criteria still lack direct evidence in this fresh-case response.",
     provenance: { model: "demo-fixture", mode: "demo" },
   });
 };

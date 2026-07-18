@@ -65,6 +65,12 @@ test("learner repairs the causal inference hinge and receives a receipt", async 
   await expect(transferHeading).toBeInViewport();
   await expect(
     page.getByText(
+      "The fresh-case response contains candidate evidence for 3 of 3 visible rubric criteria.",
+    ),
+  ).toBeVisible();
+  await expect(page.getByText(/^The revision addresses /u)).not.toBeVisible();
+  await expect(
+    page.getByText(
       "Observed evidence in a new context — not proof of learning or mastery.",
     ),
   ).toBeVisible();

@@ -15,7 +15,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 import { FreshCase } from "@/components/fresh-case";
 import { RepairReceipt } from "@/components/repair-receipt";
-import type { Receipt } from "@/features/repair/contracts";
+import type { Receipt, TransferSlip } from "@/features/repair/contracts";
 import {
   buildPilotArtifacts,
   pilotArtifactFilenames,
@@ -56,7 +56,7 @@ export function RepairStudio({
   const [revision, setRevision] = useState("");
   const [receipt, setReceipt] = useState<Receipt | null>(null);
   const [transferResponse, setTransferResponse] = useState("");
-  const [transferReceipt, setTransferReceipt] = useState<Receipt | null>(null);
+  const [transferReceipt, setTransferReceipt] = useState<TransferSlip | null>(null);
   const [transferStarted, setTransferStarted] = useState(false);
   const [transferError, setTransferError] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -219,7 +219,7 @@ export function RepairStudio({
     setTransferError(null);
     setLoadingTask("transfer");
     try {
-      const result = await fetch("/api/revise", {
+      const result = await fetch("/api/transfer", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -227,12 +227,11 @@ export function RepairStudio({
         },
         body: JSON.stringify({
           activityId: activity.id,
-          originalResponse: activity.sampleResponse,
-          revisedResponse: transferResponse,
+          response: transferResponse,
           mode: "demo",
         }),
       });
-      const envelope = (await result.json()) as ApiEnvelope<Receipt>;
+      const envelope = (await result.json()) as ApiEnvelope<TransferSlip>;
       if (!result.ok || !envelope.success || !envelope.data) {
         throw new Error(
           envelope.error?.code === "UNAVAILABLE"

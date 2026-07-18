@@ -73,6 +73,9 @@ describe("judge-safe demo fixtures", () => {
     expect(receipt.changes).toHaveLength(1);
     expect(receipt.rubric.every(({ after }) => after === "met")).toBe(true);
     expect(receipt.provenance).toEqual({ model: "demo-fixture", mode: "demo" });
+    expect(receipt.summary).toMatch(/^The submitted response addresses /u);
+    expect(receipt.changes[0]?.label).toBe("Submitted response");
+    expect(receipt.remainingCaveat).not.toMatch(/\brevision\b/iu);
     expect(JSON.stringify(receipt).toLowerCase()).not.toContain("master");
   });
 
@@ -88,7 +91,7 @@ describe("judge-safe demo fixtures", () => {
 
     expect(receipt.rubric.some(({ after }) => after !== "met")).toBe(true);
     expect(receipt.changes[0]?.after).toBe(revisedResponse);
-    expect(receipt.changes[0]?.label).toBe("Submitted revision");
+    expect(receipt.changes[0]?.label).toBe("Submitted response");
     expect(
       receipt.rubric
         .filter(({ after }) => after === "missing")

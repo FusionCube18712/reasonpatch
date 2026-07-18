@@ -1,4 +1,4 @@
-import type { ActivityId, Receipt } from "./contracts";
+import type { ActivityId, Receipt, TransferSlip } from "./contracts";
 import type { PublicActivity } from "./public-activities";
 
 type PilotArtifactInput = Readonly<{
@@ -7,7 +7,7 @@ type PilotArtifactInput = Readonly<{
   revisedResponse: string;
   revisionReceipt: Receipt;
   transferResponse: string;
-  transferReceipt: Receipt;
+  transferReceipt: TransferSlip;
 }>;
 
 type PilotStage = "original" | "revision" | "fresh";
@@ -97,9 +97,14 @@ const formatAuditRubric = (
   stage: PilotStage,
   { revisionReceipt, transferReceipt }: PilotArtifactInput,
 ): ReadonlyArray<string> => {
-  const receipt = stage === "fresh" ? transferReceipt : revisionReceipt;
+  if (stage === "fresh") {
+    return transferReceipt.rubric.flatMap((criterion) => [
+      `[${criterion.state.toUpperCase()}] ${encodeInline(criterion.label)}`,
+      `Evidence: ${criterion.evidence ? `“${encodeInline(criterion.evidence)}”` : "No direct evidence."}`,
+    ]);
+  }
 
-  return receipt.rubric.flatMap((criterion) => {
+  return revisionReceipt.rubric.flatMap((criterion) => {
     const state = stage === "original" ? criterion.before : criterion.after;
     const evidence = stage === "original" ? null : criterion.evidence;
     return [
@@ -113,11 +118,12 @@ const formatAuditRecord = (
   record: ResponseRecord,
   input: PilotArtifactInput,
 ): ReadonlyArray<string> => {
-  const receipt = record.stage === "fresh" ? input.transferReceipt : input.revisionReceipt;
   const provenance =
     record.stage === "original"
       ? "learner submission · no automated scan"
-      : `${receipt.provenance.mode} · ${receipt.provenance.model}`;
+      : record.stage === "fresh"
+        ? `${input.transferReceipt.provenance.mode} · ${input.transferReceipt.provenance.model}`
+        : `${input.revisionReceipt.provenance.mode} · ${input.revisionReceipt.provenance.model}`;
 
   return [
     `RESPONSE ${record.id}`,

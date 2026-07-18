@@ -15,7 +15,7 @@ The command records the deployed app, synthesizes narration, burns captions into
 
 **On screen:** Hero, visible rubric, “Answer withheld,” and the intentionally flawed statistics explanation.
 
-**Narration:** Most AI tutors race to the answer, erasing the reasoning step an educator needs to see. ReasonPatch takes the opposite approach: repair the step while keeping the thinking with the learner.
+**Narration:** AI tutors can ask Socratic questions, but an educator still needs to see what the learner actually repaired. ReasonPatch turns that gap into the product surface: repair the step while keeping the thinking with the learner.
 
 ## 0:18–0:42 — Sol orchestrates Luna honestly
 
@@ -67,15 +67,15 @@ End on: **ReasonPatch — repair the step, keep the thinking yours.**
 
 ## Verified media
 
-- Duration: `146.93 seconds` (`2:27` rounded).
+- Duration: `147.20 seconds` (`2:27` rounded).
 - Video: H.264, 1440 × 900, 25 fps.
-- Audio: AAC, synchronized within 0.02 seconds of video; mean volume `-16.1 dB`, peak `-1.2 dB`.
+- Audio: AAC, synchronized within 0.04 seconds of video; mean volume `-16.1 dB`, peak `-1.2 dB`.
 - Burned-in captions: 18 narration segments.
-- SHA-256: `4937e7cf6dc9871b310d1aa64eb9fe9ff5ad65f749a4832d3360184261c47e74`.
+- SHA-256: `020026134fbd56d99527128c3f430b8d587caa70c1e8057e2be64af181bd91dc`.
 
 ## Recording checklist
 
 - Keep the final export below 3:00.
 - Show the isolated transfer transition and both educator artifacts.
 - Show the product, Codex collaboration, and GPT-5.6 Sol/Luna architecture.
-- Upload as a public or unlisted-publicly-viewable YouTube video and verify playback with audio in an incognito window.
+- Upload as a Public YouTube video and verify playback with audio in an incognito window.

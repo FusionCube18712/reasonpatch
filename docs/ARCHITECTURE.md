@@ -26,6 +26,14 @@ ReasonPatch may challenge a learner's reasoning and describe observable revision
 5. The server overwrites model-authored activity and provenance with canonical request values.
 6. The final schema rejects claims of mastery, authorship, or proof of learning.
 
+### Fresh-case transfer scan
+
+1. A separate `/api/transfer` boundary accepts one 36–3,000 character fresh-case response in guided mode only.
+2. The service never compares answers from different prompts as a before/after revision and never calls a model.
+3. Candidate evidence is recorded only after the response is grounded in the fresh prompt's context.
+4. Activity-specific checks prevent stale original-case facts from satisfying fresh-case criteria while preserving credit for an explicit correction.
+5. The Transfer Slip labels every match as candidate evidence and explicitly rejects learning or mastery claims.
+
 ## Model calls
 
 | Task | Model | Reasoning | Output budget |
@@ -44,6 +52,7 @@ All calls use Responses Structured Outputs, `store: false`, a 12-second SDK time
 - `activities.ts` contains instructor intent and is imported only from server execution paths.
 - The OpenAI API key and live-mode gate are server-only.
 - Learner text is untrusted data in the user message payload; models have no tools.
+- The transfer scanner is demo-only, isolated from the live revision service, and returns no cross-prompt change claim.
 - Model output is untrusted until schema, role, evidence, and provenance checks pass.
 
 ## Failure behavior

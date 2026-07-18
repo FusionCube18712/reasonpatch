@@ -68,6 +68,27 @@ const receiptPayload = {
   error: null,
 };
 
+const transferPayload = {
+  success: true,
+  data: {
+    activityId: "correlation-causation",
+    summary:
+      "The fresh-case response contains candidate evidence for 1 of 1 visible rubric criteria.",
+    rubric: [
+      {
+        id: "association-causation",
+        label: "Distinguishes association from causation",
+        state: "met",
+        evidence: "does not establish causation",
+      },
+    ],
+    remainingCaveat:
+      "This immediate scan is not a delayed or validated measure of learning.",
+    provenance: { model: "demo-fixture", mode: "demo" },
+  },
+  error: null,
+};
+
 const jsonResponse = (payload: unknown, status = 200) =>
   new Response(JSON.stringify(payload), {
     status,
@@ -135,7 +156,7 @@ describe("RepairStudio", () => {
     const fetchMock = vi.spyOn(globalThis, "fetch");
     fetchMock.mockResolvedValueOnce(jsonResponse(analysisPayload));
     fetchMock.mockResolvedValueOnce(jsonResponse(receiptPayload));
-    fetchMock.mockResolvedValueOnce(jsonResponse(receiptPayload));
+    fetchMock.mockResolvedValueOnce(jsonResponse(transferPayload));
     render(<RepairStudio />);
 
     await user.click(screen.getByRole("button", { name: "Find the hinge" }));
@@ -405,7 +426,7 @@ describe("RepairStudio", () => {
     const fetchMock = vi.spyOn(globalThis, "fetch");
     fetchMock.mockResolvedValueOnce(jsonResponse(analysisPayload));
     fetchMock.mockResolvedValueOnce(jsonResponse(receiptPayload));
-    fetchMock.mockResolvedValueOnce(jsonResponse(receiptPayload));
+    fetchMock.mockResolvedValueOnce(jsonResponse(transferPayload));
     render(<RepairStudio />);
 
     expect(
@@ -468,6 +489,7 @@ describe("RepairStudio", () => {
     expect(
       await screen.findByRole("heading", { name: "Transfer slip" }),
     ).toBeVisible();
+    expect(fetchMock.mock.calls[2]?.[0]).toBe("/api/transfer");
     expect(
       screen.getByText(
         "Observed evidence in a new context — not proof of learning or mastery.",
@@ -475,9 +497,9 @@ describe("RepairStudio", () => {
     ).toBeVisible();
     expect(
       JSON.parse(String(fetchMock.mock.calls[2]?.[1]?.body)),
-    ).toMatchObject({
+    ).toEqual({
       activityId: "correlation-causation",
-      revisedResponse: transferResponse,
+      response: transferResponse,
       mode: "demo",
     });
     expect(fetchMock.mock.calls[2]?.[1]?.headers).toMatchObject({
@@ -490,7 +512,7 @@ describe("RepairStudio", () => {
     const fetchMock = vi.spyOn(globalThis, "fetch");
     fetchMock.mockResolvedValueOnce(jsonResponse(analysisPayload));
     fetchMock.mockResolvedValueOnce(jsonResponse(receiptPayload));
-    fetchMock.mockResolvedValueOnce(jsonResponse(receiptPayload));
+    fetchMock.mockResolvedValueOnce(jsonResponse(transferPayload));
     const createObjectURL = vi
       .fn()
       .mockReturnValueOnce("blob:reasonpatch-audit")
@@ -671,7 +693,7 @@ describe("RepairStudio", () => {
         503,
       ),
     );
-    fetchMock.mockResolvedValueOnce(jsonResponse(receiptPayload));
+    fetchMock.mockResolvedValueOnce(jsonResponse(transferPayload));
     render(<RepairStudio />);
 
     await user.click(screen.getByRole("button", { name: "Find the hinge" }));

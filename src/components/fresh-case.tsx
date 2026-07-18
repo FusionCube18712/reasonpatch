@@ -11,7 +11,7 @@ import {
 } from "@phosphor-icons/react";
 import { useEffect, useRef, type RefObject } from "react";
 
-import type { Receipt } from "@/features/repair/contracts";
+import type { TransferSlip } from "@/features/repair/contracts";
 import type { PublicActivity } from "@/features/repair/public-activities";
 import { revealStage } from "@/lib/ui/reveal-stage";
 
@@ -24,7 +24,7 @@ const downloadButtonClass =
 type FreshCaseProps = Readonly<{
   activity: PublicActivity;
   response: string;
-  receipt: Receipt | null;
+  receipt: TransferSlip | null;
   busy: boolean;
   error: string | null;
   onResponseChange: (response: string) => void;
@@ -171,7 +171,7 @@ function TransferSlipView({
   onDownloadBlinded,
   onDownloadAudit,
 }: Readonly<{
-  receipt: Receipt;
+  receipt: TransferSlip;
   headingRef: RefObject<HTMLHeadingElement | null>;
   onDownloadBlinded: () => void;
   onDownloadAudit: () => void;
@@ -216,21 +216,21 @@ function TransferSlipView({
                 </p>
               </div>
               <span
-                aria-label={`Transfer rubric state: ${criterion.after}`}
+                aria-label={`Transfer rubric state: ${criterion.state}`}
                 className={`inline-flex w-fit items-center gap-1.5 rounded-full px-3 py-1 text-[10px] font-medium uppercase tracking-[0.1em] ${
-                  criterion.after === "met"
+                  criterion.state === "met"
                     ? "bg-[#e5eee7] text-[#386044]"
-                    : criterion.after === "emerging"
+                    : criterion.state === "emerging"
                       ? "bg-[#f7e9df] text-[#763a1e]"
                       : "bg-[#f0ebe2] text-[#625e56]"
                 }`}
               >
-                {criterion.after === "met" ? (
+                {criterion.state === "met" ? (
                   <Check size={12} weight="bold" aria-hidden="true" />
                 ) : (
                   <Circle size={12} weight="bold" aria-hidden="true" />
                 )}
-                {criterion.after}
+                {criterion.state}
               </span>
             </li>
           ))}

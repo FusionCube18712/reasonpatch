@@ -6,6 +6,8 @@ import {
   ProbeOutputSchema,
   ReceiptSchema,
   ReviseRequestSchema,
+  TransferRequestSchema,
+  TransferSlipSchema,
 } from "./contracts";
 import { probeFor, validAnalyzeRequest, validPlan } from "../../../test/fixtures";
 
@@ -67,6 +69,17 @@ describe("repair contracts", () => {
         ...valid,
         revisedResponse: valid.originalResponse,
       }),
+    ).toThrow();
+
+    const transfer = {
+      activityId: "correlation-causation",
+      response:
+        "The hospital recovery difference does not establish causation because patients chose whether to join.",
+      mode: "demo" as const,
+    };
+    expect(TransferRequestSchema.parse(transfer)).toEqual(transfer);
+    expect(() =>
+      TransferRequestSchema.parse({ ...transfer, mode: "live" }),
     ).toThrow();
   });
 
@@ -141,6 +154,32 @@ describe("repair contracts", () => {
       ReceiptSchema.parse({
         ...baseReceipt,
         rubric: [{ ...baseReceipt.rubric[0], after: "met", evidence: null }],
+      }),
+    ).toThrow();
+  });
+
+  it("keeps transfer state separate from revision before-and-after fields", () => {
+    const slip = {
+      activityId: "correlation-causation" as const,
+      summary:
+        "The fresh-case response contains candidate evidence for 1 of 3 visible rubric criteria.",
+      rubric: [
+        {
+          id: "association-causation",
+          label: "Distinguishes association from causation",
+          state: "met" as const,
+          evidence: "does not establish causation",
+        },
+      ],
+      remainingCaveat: "Human review is still required.",
+      provenance: { model: "demo-fixture" as const, mode: "demo" as const },
+    };
+
+    expect(TransferSlipSchema.parse(slip)).toEqual(slip);
+    expect(() =>
+      TransferSlipSchema.parse({
+        ...slip,
+        rubric: [{ ...slip.rubric[0], before: "missing" }],
       }),
     ).toThrow();
   });

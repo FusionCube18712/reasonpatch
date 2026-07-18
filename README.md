@@ -62,6 +62,7 @@ Key implementation choices:
 - per-task output budgets, 12-second request timeout, and no SDK retries;
 - truthful fallback and fixture provenance in the UI;
 - server-only instructor intent, verified absent from production client chunks.
+- a dedicated demo-only transfer boundary with fresh-context grounding and stale-case rejection;
 - an immediate fresh-context check and local, explicitly unvalidated coordinator audit manifest.
 
 See [the architecture notes](docs/ARCHITECTURE.md) for boundaries and failure modes.
@@ -114,14 +115,14 @@ npm run test:e2e    # Chromium + Pixel 7 flows, visual QA, keyboard, axe
 
 Current verified baseline:
 
-- 125 tests across unit, integration, and 29 repair/transfer calibration cases;
+- 125+ tests across unit, integration, and 79 repair/transfer calibration cases;
 - 95%+ statements, 83%+ branches, 99%+ functions, and 97%+ lines;
 - 16 Playwright checks across desktop/mobile projects;
 - no serious WCAG A/AA violations in tested initial, receipt, and transfer states;
 - zero production dependency audit vulnerabilities;
 - no instructor-only strings in the generated client bundle.
 
-The calibration suite is a deterministic functional check of repair and fresh-case evidence across complete, partial, irrelevant, and prompt-injection-like responses. It is not a learning-outcomes study. See [evaluation notes](docs/EVALUATION.md) and the [draft educator pilot protocol](docs/PILOT_PROTOCOL.md).
+The calibration suite is a deterministic functional check of repair and fresh-case evidence across complete, partial, stale-context, factually inconsistent, and prompt-injection-like responses. The transfer path uses a separate demo-only API and requires grounding in the fresh prompt before it records candidate evidence. It is not a learning-outcomes study. See [evaluation notes](docs/EVALUATION.md) and the [draft educator pilot protocol](docs/PILOT_PROTOCOL.md).
 
 ## Impact case, stated carefully
 

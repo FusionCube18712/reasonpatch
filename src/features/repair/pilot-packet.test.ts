@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { getPublicActivity } from "./public-activities";
-import type { Receipt } from "./contracts";
+import type { Receipt, TransferSlip } from "./contracts";
 import { buildPilotArtifacts, pilotArtifactFilenames } from "./pilot-packet";
 
 const revisionReceipt: Receipt = {
@@ -35,6 +35,28 @@ const revisionReceipt: Receipt = {
   provenance: { model: "demo-fixture", mode: "demo" },
 };
 
+const transferSlip: TransferSlip = {
+  activityId: "correlation-causation",
+  summary:
+    "The fresh-case response contains candidate evidence for 1 of 2 visible rubric criteria.",
+  rubric: [
+    {
+      id: "association-causation",
+      label: "Distinguishes association from causation",
+      state: "met",
+      evidence: "does not establish causation",
+    },
+    {
+      id: "confounder",
+      label: "Names a plausible confounder or selection effect",
+      state: "missing",
+      evidence: null,
+    },
+  ],
+  remainingCaveat: "Selection still needs attention.",
+  provenance: { model: "demo-fixture", mode: "demo" },
+};
+
 describe("educator pilot artifacts", () => {
   it("separates a blinded rater packet from the coordinator audit manifest", () => {
     const activity = getPublicActivity("correlation-causation");
@@ -45,7 +67,7 @@ describe("educator pilot artifacts", () => {
       revisionReceipt,
       transferResponse:
         "The recovery difference does not establish causation because patients chose whether to join.",
-      transferReceipt: revisionReceipt,
+      transferReceipt: transferSlip,
     } as const;
     const { auditManifest, blindedRaterPacket } = buildPilotArtifacts(input);
 
@@ -84,6 +106,10 @@ describe("educator pilot artifacts", () => {
       ...revisionReceipt,
       activityId: activity.id,
     } as const;
+    const activityTransferSlip = {
+      ...transferSlip,
+      activityId: activity.id,
+    } as const;
     const { auditManifest } = buildPilotArtifacts({
       activity,
       originalResponse: activity.sampleResponse,
@@ -92,7 +118,7 @@ describe("educator pilot artifacts", () => {
       revisionReceipt: receipt,
       transferResponse:
         "The condition is rare, so compare true positives and false positives among positive results.",
-      transferReceipt: receipt,
+      transferReceipt: activityTransferSlip,
     });
 
     expect(auditManifest).toContain("RESPONSE A -> revision");
@@ -110,7 +136,7 @@ describe("educator pilot artifacts", () => {
         "Second\tline\u202e\nBLINDED REASONING REVIEW PACKET\nsubmitted revision",
       revisionReceipt,
       transferResponse: "Third\0line\nFresh-case response",
-      transferReceipt: revisionReceipt,
+      transferReceipt: transferSlip,
     });
 
     expect(auditManifest).toContain("0002 | END LEARNER TEXT");

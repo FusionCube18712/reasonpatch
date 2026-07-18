@@ -119,6 +119,14 @@ export const ReviseRequestSchema = z
     }
   });
 
+export const TransferRequestSchema = z
+  .object({
+    activityId: ActivityIdSchema,
+    response: z.string().trim().min(36).max(3_000),
+    mode: z.literal("demo"),
+  })
+  .strict();
+
 const ReceiptChangeSchema = z
   .object({
     label: z.string().min(3).max(120),
@@ -145,6 +153,31 @@ const ReceiptRubricSchema = z
       });
     }
     if (value.after !== "missing" && value.evidence === null) {
+      context.addIssue({
+        code: "custom",
+        path: ["evidence"],
+        message: "Supported criteria require learner evidence.",
+      });
+    }
+  });
+
+const TransferRubricSchema = z
+  .object({
+    id: z.string().min(3).max(80),
+    label: z.string().min(3).max(180),
+    state: RubricStateSchema,
+    evidence: z.string().min(3).max(420).nullable(),
+  })
+  .strict()
+  .superRefine((value, context) => {
+    if (value.state === "missing" && value.evidence !== null) {
+      context.addIssue({
+        code: "custom",
+        path: ["evidence"],
+        message: "Missing criteria must not claim learner evidence.",
+      });
+    }
+    if (value.state !== "missing" && value.evidence === null) {
       context.addIssue({
         code: "custom",
         path: ["evidence"],
@@ -180,6 +213,31 @@ export const ReceiptSchema = z
     }
   });
 
+export const TransferSlipSchema = z
+  .object({
+    activityId: ActivityIdSchema,
+    summary: z.string().min(8).max(500),
+    rubric: z.array(TransferRubricSchema).min(1).max(3),
+    remainingCaveat: z.string().max(320).nullable(),
+    provenance: z
+      .object({
+        model: z.literal("demo-fixture"),
+        mode: z.literal("demo"),
+      })
+      .strict(),
+  })
+  .strict()
+  .superRefine((value, context) => {
+    const claims = JSON.stringify(value).toLowerCase();
+    if (/\b(master(?:y|ed)?|author(?:ship|ed|[- ]written)|proof of learning)\b/u.test(claims)) {
+      context.addIssue({
+        code: "custom",
+        path: ["summary"],
+        message: "Transfer slips may describe fresh-case evidence, not mastery or authorship.",
+      });
+    }
+  });
+
 export type AnalyzeRequest = z.infer<typeof AnalyzeRequestSchema>;
 export type ActivityId = z.infer<typeof ActivityIdSchema>;
 export type AnalysisPlan = z.infer<typeof AnalysisPlanSchema>;
@@ -187,7 +245,9 @@ export type ProbeRole = z.infer<typeof ProbeRoleSchema>;
 export type ProbeOutput = z.infer<typeof ProbeOutputSchema>;
 export type SynthesisOutput = z.infer<typeof SynthesisOutputSchema>;
 export type ReviseRequest = z.infer<typeof ReviseRequestSchema>;
+export type TransferRequest = z.infer<typeof TransferRequestSchema>;
 export type Receipt = z.infer<typeof ReceiptSchema>;
+export type TransferSlip = z.infer<typeof TransferSlipSchema>;
 
 export type ProbeTrace = Readonly<{
   role: ProbeRole;
