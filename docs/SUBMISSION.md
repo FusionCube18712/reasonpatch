@@ -68,7 +68,7 @@ ReasonPatch could help instructors preserve student agency while making formativ
 
 ## URLs and IDs to fill in
 
-- Public demo: `TODO`
-- Public repository: `TODO`
+- Public demo: `https://reasonpatch.vercel.app`
+- Public repository: `https://github.com/FusionCube18712/reasonpatch`
 - YouTube demo: `TODO`
 - Codex `/feedback` session ID: `TODO`

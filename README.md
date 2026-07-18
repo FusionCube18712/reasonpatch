@@ -2,6 +2,8 @@
 
 > Repair the step. Keep the thinking yours.
 
+**[Try the public guided demo](https://reasonpatch.vercel.app)** · **[View the source](https://github.com/FusionCube18712/reasonpatch)**
+
 ReasonPatch is an Education-track reasoning repair studio for introductory statistics. It finds the earliest unsupported inference in a learner's explanation, asks one Socratic question, and turns the learner's own revision into an evidence-bound Repair Receipt.
 
 It is deliberately not a chatbot, answer generator, grade, or mastery detector.
