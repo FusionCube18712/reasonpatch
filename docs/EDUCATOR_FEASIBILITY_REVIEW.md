@@ -1,5 +1,9 @@
 # Rapid educator feasibility review
 
+**Instrument version:** 1.0 · fixed July 18, 2026
+
+**Product version under review:** [`92d0549`](https://github.com/FusionCube18712/reasonpatch/tree/92d05495c4092b1217c7bade68dc8a98f3494f61) · [public demo](https://reasonpatch.vercel.app)
+
 ## Purpose and boundary
 
 This fixed instrument asks whether ReasonPatch's demonstrated workflow is understandable and potentially usable for formative introductory-statistics instruction. It is designed for a convenience sample of 3–5 instructors or teaching assistants who are not project contributors.
@@ -7,6 +11,14 @@ This fixed instrument asks whether ReasonPatch's demonstrated workflow is unders
 It does **not** test learning outcomes, comparative effectiveness, retention, grades, instructor workload, adoption, or product efficacy. Do not describe the results as a learner study.
 
 Target completion time: 8–10 minutes.
+
+## Neutral recruitment message
+
+Send the same message to every prospective reviewer and do not describe expected results:
+
+> Would you be willing to spend 8–10 minutes independently reviewing an Education-track prototype for formative introductory-statistics reasoning? I am seeking current introductory-statistics instructors or teaching assistants who did not contribute to the project. The review uses only a public guided demo and asks about clarity, answer leakage, traceability, fresh-case separation, educator artifacts, and pilot plausibility. Please do not enter real student work or identifying information. This is product-feasibility feedback, not a learning study. The fixed instrument is: https://github.com/FusionCube18712/reasonpatch/blob/main/docs/EDUCATOR_FEASIBILITY_REVIEW.md
+
+Ask reviewers to return a completed copy of questions 1–13 through the separately agreed channel. Do not request names, institutions, email addresses, demographics, or real student data. Record incomplete attempts and reasons; do not replace or exclude unfavorable responses.
 
 ## Reviewer instructions
 

@@ -61,7 +61,7 @@ Key implementation choices:
 - exact evidence-substring validation and executor-role verification;
 - per-task output budgets, 12-second request timeout, and no SDK retries;
 - truthful fallback and fixture provenance in the UI;
-- server-only instructor intent, verified absent from production client chunks.
+- server-only instructor intent, verified absent from production client chunks;
 - a dedicated demo-only transfer boundary with fresh-context grounding and stale-case rejection;
 - an immediate fresh-context check and local, explicitly unvalidated coordinator audit manifest.
 
@@ -171,7 +171,18 @@ Codex contributed to:
 - accessibility, privacy, dependency, and production-bundle verification;
 - demo narrative and submission packaging.
 
-The Git history preserves dated RED/GREEN checkpoints. The primary Codex build task has session ID `019f71f8-76e3-7462-b8a5-7d571dbe5466`; this task predates the first commit and contains the majority of the core implementation.
+### Judge-visible build trail
+
+The repository started empty during Build Week. These dated checkpoints expose the actual Codex collaboration loop instead of asking judges to infer it from the final code:
+
+| Decision and verification gate | RED evidence | GREEN / hardening evidence |
+|---|---|---|
+| Define the earliest-hinge repair contract before implementation | [`8670c21`](https://github.com/FusionCube18712/reasonpatch/commit/8670c21) | [`01e4c35`](https://github.com/FusionCube18712/reasonpatch/commit/01e4c35) |
+| Add the live GPT-5.6 gateway, Structured Outputs, and evidence-bound receipt | [`45909e4`](https://github.com/FusionCube18712/reasonpatch/commit/45909e4) | [`80724d1`](https://github.com/FusionCube18712/reasonpatch/commit/80724d1) |
+| Refuse to treat one successful edit as transfer; add an isolated fresh case | [`91cc199`](https://github.com/FusionCube18712/reasonpatch/commit/91cc199) | [`c157d79`](https://github.com/FusionCube18712/reasonpatch/commit/c157d79) |
+| Attack stale-copy, contradiction, negation, and relation-smuggling failures | [`cc5a9ad`](https://github.com/FusionCube18712/reasonpatch/commit/cc5a9ad) | [`9c82d97`](https://github.com/FusionCube18712/reasonpatch/commit/9c82d97), [`92d0549`](https://github.com/FusionCube18712/reasonpatch/commit/92d0549) |
+
+The primary Codex build task has session ID `019f71f8-76e3-7462-b8a5-7d571dbe5466`; this task predates the first commit and contains the majority of the core implementation. The implementation itself is inspectable in the [Sol/Luna orchestrator](src/features/repair/orchestrator.ts), [Responses API gateway](src/lib/ai/openai-gateway.ts), [strict contracts](src/features/repair/contracts.ts), and [fresh-context evaluator](src/features/repair/transfer-evaluator.ts).
 
 ## Submission kit
 

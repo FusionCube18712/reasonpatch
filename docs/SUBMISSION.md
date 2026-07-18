@@ -30,7 +30,7 @@ AI tutors can ask good Socratic questions, but a helpful chat can still leave an
 
 ReasonPatch uses Next.js 16, React 19, TypeScript, Tailwind CSS, Zod, the OpenAI JavaScript SDK, Responses Structured Outputs, Vitest, Playwright, and axe-core. Sol plans and synthesizes; three Luna calls run concurrently; failed Luna roles reroute individually to Sol. All model output passes strict schemas plus evidence and provenance checks. The deterministic fresh-case scan runs behind a separate demo-only API boundary with prompt grounding and stale-fact rejection. Model storage is disabled.
 
-Codex was the end-to-end engineering environment: product planning, official documentation research, TDD, implementation, browser QA, accessibility, security review, adversarial judge review, and submission packaging. Dated Git commits preserve RED and GREEN checkpoints.
+Codex was the end-to-end engineering environment: product planning, official documentation research, TDD, implementation, browser QA, accessibility, security review, adversarial judge review, and submission packaging. The public README links dated RED → GREEN and adversarial-hardening checkpoints, plus the exact Sol/Luna orchestrator, Responses API gateway, strict contracts, and fresh-context evaluator.
 
 ## Accomplishments
 
