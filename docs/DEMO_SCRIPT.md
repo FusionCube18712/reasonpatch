@@ -1,4 +1,4 @@
-# Demo script — final cut 1:52
+# Demo script — final cut 2:26
 
 The rules require a public YouTube video under three minutes with audio, a clear product demo, and visible Codex/GPT-5.6 usage.
 
@@ -11,67 +11,71 @@ npm run demo:video
 
 The command records the deployed app, synthesizes narration, burns captions into the browser recording, and rejects any export at or above three minutes. Output is written to `artifacts/demo-video/reasonpatch-build-week-demo.mp4` and excluded from Git.
 
-## 0:00–0:19 — Problem and product contract
+## 0:00–0:18 — Problem and product contract
 
-**On screen:** Hero and the flawed tutoring explanation.
+**On screen:** Hero, visible rubric, “Answer withheld,” and the intentionally flawed statistics explanation.
 
-**Say:** “Most AI tutors race to the correct answer. That can erase the reasoning step an educator actually needs to see. ReasonPatch repairs the step while keeping the thinking with the learner.”
+**Narration:** Most AI tutors race to the answer, erasing the reasoning step an educator needs to see. ReasonPatch takes the opposite approach: repair the step while keeping the thinking with the learner.
 
-**On screen:** Visible rubric and “Answer withheld.”
+## 0:18–0:42 — Sol orchestrates Luna honestly
 
-**Say:** “This is a focused intro-statistics lab. The rubric is visible, the replacement answer is withheld, and the sample makes one causal-inference mistake.”
+**Action:** Toggle **Demonstrate Sol fallback**, then click **Find the hinge**.
 
-## 0:19–0:34 — Sol orchestrates Luna
+**Narration:** In protected live mode, GPT-5.6 Sol locates the earliest unsupported inference and creates three bounded jobs. Role-separated Luna probes inspect a counterexample, a hidden assumption, and rubric evidence in parallel. The free public path is explicitly a fixture replay; a failed live Luna role alone reruns on Sol and discloses the takeover.
 
-**Action:** Click **Find the hinge**.
+## 0:42–1:16 — Learner repair and signature receipt
 
-**Say:** “GPT-5.6 Sol locates the earliest unsupported inference and creates three bounded jobs. GPT-5.6 Luna inspects a counterexample, a hidden assumption, and rubric evidence in parallel. Sol reconciles them into one smallest-useful Socratic question.”
-
-## 0:34–0:50 — Truthful fallback and Socratic question
-
-**On screen:** Point to the explicitly labeled fixture provenance. Toggle **Demonstrate Sol fallback**, run again, and point to recorded fallback disclosure.
-
-**Say:** “The public guided path is an honest fixture replay for reliability. In live mode, any Luna quota, timeout, wrong-role, or invalid-evidence failure reruns only that job on Sol and discloses the takeover.”
-
-## 0:50–0:58 — Learner performs the repair
+**On screen:** Sol's smallest-useful Socratic question.
 
 **Action:** Enter:
 
 > Participants averaged eight points higher, but students chose whether to participate, so the difference alone does not establish causation. We need comparable baseline scores and a randomized controlled comparison.
 
-**Say:** “ReasonPatch asks rather than answers. The learner has to name self-selection, qualify the causal claim, and request stronger evidence in their own words.”
+Then click **Create repair receipt**.
 
-## 0:58–1:17 — Signature artifact
+**Narration:** The learner performs the repair in their own words. The printable Repair Receipt compares submitted excerpts, maps only supported evidence, and records honest provenance. It is a challenge—not a grade, mastery label, authorship claim, or proof of learning.
 
-**Action:** Click **Create repair receipt**.
+## 1:16–1:47 — Isolated fresh case and educator handoff
 
-**Say:** “The Repair Receipt compares before and after, maps only text-backed rubric evidence, records provenance, and stays printable. It is an AI-generated challenge—not a grade or a mastery claim.”
+**Action:** Click **Begin isolated fresh case**. Show that the prior diagnosis, question, rubric, receipt, and lab labels disappear. Enter:
 
-## 1:17–1:24 — Breadth without losing focus
+> The recovery difference does not establish causation because patients chose whether to join. Random assignment or a controlled comparison would be stronger.
 
-**Action:** Quickly click the base-rate and sampling labs.
+Then click **Check transfer evidence**.
 
-**Say:** “The same repair loop covers three high-frequency introductory-statistics misconceptions without turning into a generic chatbot.”
+**Narration:** One good edit is not transfer evidence. The isolated case creates a separate Transfer Slip using a transparent deterministic scan with no model call and no mastery claim. Educators can download two separate draft artifacts: an anonymous, unscored rater packet and a coordinator audit manifest with provenance and automated evidence.
 
-## 1:24–1:41 — GPT-5.6 source and Codex collaboration
+## 1:47–1:55 — Breadth without losing focus
 
-**On screen:** The public orchestrator source, followed by the README's Codex collaboration section.
+**Action:** Reopen the demo and select the sampling lab.
 
-**Say:** “Under the hood, the source shows Sol planning and synthesis, concurrent Luna execution, strict structured outputs, evidence checks, and per-probe fallback. I built ReasonPatch with Codex through test-first checkpoints and independent planning, architecture, code, security, and judge reviews.”
+**Narration:** The same loop covers correlation and causation, base-rate neglect, and sampling bias without becoming a generic chatbot.
 
-## 1:41–1:52 — Close
+## 1:55–2:11 — GPT-5.6 source and Codex collaboration
+
+**On screen:** Public orchestrator source, followed by the README's Codex collaboration section.
+
+**Narration:** The source shows Sol planning and synthesis, concurrent Luna execution, strict structured outputs, evidence checks, and per-probe fallback. Codex collaboration is documented through test-first checkpoints and independent planning, architecture, code, security, and judge reviews.
+
+## 2:11–2:26 — Close
 
 **On screen:** Return to the ReasonPatch hero.
 
-**Say:** “The result has ninety-one tests, desktop and mobile browser coverage, accessible states, and a free public demo.”
+**Narration:** The result has more than one hundred automated tests, adversarial repair and transfer calibration, desktop and mobile browser coverage, accessible states, and a free public demo.
 
-End on the hero line: **Repair the step. Keep the thinking yours.**
+End on: **ReasonPatch — repair the step, keep the thinking yours.**
+
+## Verified media
+
+- Duration: `145.98 seconds` (`2:26` rounded).
+- Video: H.264, 1440 × 900, 25 fps.
+- Audio: AAC, synchronized within 0.02 seconds of video; mean volume `-16.2 dB`, peak `-1.2 dB`.
+- Burned-in captions: 18 narration segments.
+- SHA-256: `c141dc519359b2e91011dcae93b65c75ad2cf139ded0ccbc1a2dd9045cc68a57`.
 
 ## Recording checklist
 
-- Record at 1440 × 900 or 1920 × 1080.
-- Zoom browser to 100%; hide bookmarks and personal tabs.
-- Use a clear microphone and burned-in captions.
-- Keep the final export below 3:00; the generated cut is approximately 1:52.
+- Keep the final export below 3:00.
+- Show the isolated transfer transition and both educator artifacts.
 - Show the product, Codex collaboration, and GPT-5.6 Sol/Luna architecture.
-- Upload as a public or unlisted-publicly-viewable YouTube video and verify in an incognito window.
+- Upload as a public or unlisted-publicly-viewable YouTube video and verify playback with audio in an incognito window.

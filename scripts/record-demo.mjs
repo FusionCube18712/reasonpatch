@@ -132,6 +132,7 @@ const segments = [
   {
     text: "The same focused repair loop covers correlation and causation, base-rate neglect, and sampling bias without becoming a generic chatbot.",
     action: async (page) => {
+      await gotoExpected(page, "https://reasonpatch.vercel.app", "Repair the step.");
       const samplingLab = page.getByRole("button", { name: /Who answered the survey/ });
       await samplingLab.scrollIntoViewIfNeeded();
       await samplingLab.click();
