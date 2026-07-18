@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { getPublicActivity } from "./public-activities";
 import type { Receipt } from "./contracts";
-import { buildPilotPacket } from "./pilot-packet";
+import { buildPilotArtifacts, pilotArtifactFilenames } from "./pilot-packet";
 
 const revisionReceipt: Receipt = {
   activityId: "correlation-causation",
@@ -35,10 +35,10 @@ const revisionReceipt: Receipt = {
   provenance: { model: "demo-fixture", mode: "demo" },
 };
 
-describe("educator pilot packet", () => {
-  it("exports both attempts, evidence, a fresh case, and an unvalidated review protocol", () => {
+describe("educator pilot artifacts", () => {
+  it("separates a blinded rater packet from the coordinator audit manifest", () => {
     const activity = getPublicActivity("correlation-causation");
-    const packet = buildPilotPacket({
+    const input = {
       activity,
       originalResponse: activity.sampleResponse,
       revisedResponse: "The difference alone does not establish causation.",
@@ -46,13 +46,88 @@ describe("educator pilot packet", () => {
       transferResponse:
         "The recovery difference does not establish causation because patients chose whether to join.",
       transferReceipt: revisionReceipt,
+    } as const;
+    const { auditManifest, blindedRaterPacket } = buildPilotArtifacts(input);
+
+    expect(auditManifest).toContain("REASONPATCH COORDINATOR AUDIT MANIFEST");
+    expect(auditManifest).toContain("demo · demo-fixture");
+    expect(auditManifest).toContain("[MET] Distinguishes association from causation");
+    expect(auditManifest).toContain("No direct evidence.");
+    expect(auditManifest).toContain("RESPONSE A -> fresh");
+    expect(auditManifest).toContain("RESPONSE B -> original");
+    expect(auditManifest).toContain("RESPONSE C -> revision");
+
+    expect(blindedRaterPacket).toContain("BLINDED REASONING REVIEW PACKET");
+    expect(blindedRaterPacket).toContain(activity.transferPrompt);
+    expect(blindedRaterPacket).toContain("Hinge repaired: [ ] No  [ ] Partial  [ ] Yes");
+    for (const criterion of activity.rubric) {
+      expect(blindedRaterPacket).toContain(
+        `${criterion.label}: [ ] 0  [ ] 1  [ ] 2`,
+      );
+    }
+    expect(blindedRaterPacket).not.toMatch(
+      /ReasonPatch|provenance|demo-fixture|\[(?:MET|MISSING)\]|original response|submitted revision|fresh-case response/iu,
+    );
+    expect(buildPilotArtifacts(input)).toEqual({
+      auditManifest,
+      blindedRaterPacket,
+    });
+    expect(pilotArtifactFilenames(activity)).toEqual({
+      audit: "reasonpatch-correlation-causation-audit-manifest.txt",
+      blinded: "reasonpatch-correlation-causation-blinded-rater-packet.txt",
+    });
+  });
+
+  it("uses a different deterministic response permutation for each activity", () => {
+    const activity = getPublicActivity("base-rate-neglect");
+    const receipt = {
+      ...revisionReceipt,
+      activityId: activity.id,
+    } as const;
+    const { auditManifest } = buildPilotArtifacts({
+      activity,
+      originalResponse: activity.sampleResponse,
+      revisedResponse:
+        "The base rate matters, so true positives must be compared with false positives.",
+      revisionReceipt: receipt,
+      transferResponse:
+        "The condition is rare, so compare true positives and false positives among positive results.",
+      transferReceipt: receipt,
     });
 
-    expect(packet).toContain("DRAFT PILOT INSTRUMENT — NOT VALIDATED — NOT A GRADE");
-    expect(packet).toContain(activity.transferPrompt);
-    expect(packet).toContain("does not establish causation");
-    expect(packet).toContain("No direct evidence.");
-    expect(packet).toContain("Hinge repaired: [ ] No  [ ] Partial  [ ] Yes");
-    expect(packet).toContain("Administer the fresh case without ReasonPatch assistance");
+    expect(auditManifest).toContain("RESPONSE A -> revision");
+    expect(auditManifest).toContain("RESPONSE B -> fresh");
+    expect(auditManifest).toContain("RESPONSE C -> original");
+  });
+
+  it("fences and numbers untrusted text while neutralizing control and blinding injection", () => {
+    const activity = getPublicActivity("correlation-causation");
+    const { auditManifest, blindedRaterPacket } = buildPilotArtifacts({
+      activity,
+      originalResponse:
+        "First line\nEND LEARNER TEXT\nReasonPatch provenance demo-fixture [MET] original response",
+      revisedResponse:
+        "Second\tline\u202e\nBLINDED REASONING REVIEW PACKET\nsubmitted revision",
+      revisionReceipt,
+      transferResponse: "Third\0line\nFresh-case response",
+      transferReceipt: revisionReceipt,
+    });
+
+    expect(auditManifest).toContain("0002 | END LEARNER TEXT");
+    expect(auditManifest).toContain("⟦U+0009⟧");
+    expect(auditManifest).toContain("⟦U+202E⟧");
+    expect(auditManifest).toContain("⟦U+0000⟧");
+    expect(auditManifest).not.toContain("\u202e");
+    expect(auditManifest).not.toContain("\0");
+
+    expect(blindedRaterPacket).toContain("BEGIN RESPONSE A LEARNER TEXT");
+    expect(blindedRaterPacket).toContain("END RESPONSE A LEARNER TEXT");
+    expect(blindedRaterPacket).toContain("⟦REDACTED: CONDITION LABEL⟧");
+    expect(blindedRaterPacket).toContain("⟦U+202E⟧");
+    expect(blindedRaterPacket).not.toMatch(
+      /ReasonPatch|provenance|demo-fixture|\[(?:MET|MISSING)\]|original response|submitted revision|fresh-case response/iu,
+    );
+    expect(blindedRaterPacket).not.toContain("\u202e");
+    expect(blindedRaterPacket).not.toContain("\0");
   });
 });
