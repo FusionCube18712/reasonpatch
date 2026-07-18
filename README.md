@@ -96,10 +96,10 @@ npm run test:e2e    # Chromium + Pixel 7 flows, visual QA, keyboard, axe
 
 Current verified baseline:
 
-- 107 tests across unit, integration, and 24 repair/transfer calibration cases;
-- 94%+ statements, 82%+ branches, 99%+ functions, and 96%+ lines;
+- 113 tests across unit, integration, and 27 repair/transfer calibration cases;
+- 96%+ statements, 85%+ branches, 99%+ functions, and 97%+ lines;
 - 16 Playwright checks across desktop/mobile projects;
-- no serious WCAG A/AA violations in tested initial and receipt states;
+- no serious WCAG A/AA violations in tested initial, receipt, and transfer states;
 - zero production dependency audit vulnerabilities;
 - no instructor-only strings in the generated client bundle.
 
@@ -111,7 +111,7 @@ ReasonPatch is informed by established work on prompted self-explanation, attemp
 
 The product therefore refuses to call one good revision “learning.” Its demo creates a second observable artifact through an immediate fresh-context step isolated as a separate response. That demo step is not a delayed or blinded transfer measure.
 
-The local export is a coordinator audit manifest, not a blinded rater packet. It contains raw submitted text, prompt and time-point labels, provenance, and automated evidence states; a coordinator must de-identify it before any approved sharing. A real comparison with answer-first help would use a separate rater packet stripped of product, condition, time-point, model, and automated-score cues, plus an isolated delayed case delivered from a held-out server-side prompt pool. The proposed study, measures, citations, and caveats are documented in the [educator pilot protocol](docs/PILOT_PROTOCOL.md).
+The local export produces two deliberately separate artifacts: a blinded rater packet with anonymous response IDs, non-chronological order, and blank rubrics; and a coordinator audit manifest with the private stage map, provenance, and automated evidence. Both still contain submitted text, so a coordinator must de-identify them before approved sharing. A real comparison with answer-first help would pair this separation with an isolated delayed case delivered from a held-out server-side prompt pool. The proposed study, measures, citations, and caveats are documented in the [educator pilot protocol](docs/PILOT_PROTOCOL.md).
 
 ## Reproduce the narrated demo
 
@@ -169,7 +169,7 @@ The Git history preserves dated RED/GREEN checkpoints. Before submission, the en
 - The included limiter is bounded and useful for a single demo instance, not a substitute for a distributed production limiter.
 - The Transfer Slip is immediate text evidence in a fresh context, not a validated measure of retention or learning.
 - The demo's small fresh-case prompt pool is shipped in the public client bundle, so those prompts are neither secret nor held out; a pilot would need access-controlled server delivery from a larger preregistered pool.
-- The local coordinator manifest contains raw submitted text and must be de-identified before approved sharing; it is not suitable for direct use by blinded raters.
+- Both local educator artifacts contain submitted text and must be de-identified before approved sharing; only the stripped, unscored rater packet is suitable for blinded review.
 - No claim is made that ReasonPatch improves learning outcomes until an educator-reviewed comparison is run.
 
 ## License

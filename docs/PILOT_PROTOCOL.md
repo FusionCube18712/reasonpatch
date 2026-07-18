@@ -6,7 +6,7 @@ This is a preregistration-ready **draft**, not a completed or validated study. R
 
 The demo's fresh-context step happens immediately in the same session and is isolated as a separate response from the revision. It is not a delayed, blinded, or validated transfer measure.
 
-The current local export is a **coordinator audit manifest**, not a blinded rater packet. It contains raw submitted text, prompts, time-point labels, model or fixture provenance, and automated evidence states. It contains no synthetic outcome score, but a coordinator must de-identify it before any approved sharing.
+The current local export creates two separate draft artifacts. The **blinded rater packet** uses anonymous IDs, non-chronological order, and blank rubrics while excluding product, condition, time-point, provenance, and automated-score cues. The **coordinator audit manifest** retains the private stage map, prompts, model or fixture provenance, and automated evidence states. Both contain submitted text and require coordinator de-identification before approved sharing.
 
 ## Research-grounded rationale
 
@@ -42,7 +42,7 @@ The pilot should produce two distinct artifacts:
 - **Coordinator audit manifest:** participant key, condition and time-point mapping, prompt assignment, raw submissions, model or fixture provenance, and automated evidence states. Keep this access-controlled. De-identify it before approved sharing, and never give it to blinded raters.
 - **Blinded rater packet:** randomized participant ID, only the response text and scoring context required by the preregistered design, and a blank rubric. Remove ReasonPatch branding, condition and time-point labels, model provenance, and automated rubric states. Store the re-identification key separately from raters.
 
-The current in-product export supplies the coordinator-facing audit material only. It does not by itself create a valid blinded rater packet.
+The current in-product export supplies both structures and keeps their contents separate. It does not by itself make the submitted text de-identified or turn the immediate demo case into a valid delayed transfer measure.
 
 ## Measures to preregister
 
@@ -79,4 +79,4 @@ The guided demo uses a small fresh-case prompt pool that is shipped in the publi
 
 ## Current automated evidence
 
-The deterministic suite currently covers 12 repair cases and 12 fresh-transfer cases across complete, partial, irrelevant, and evaluator-instruction responses with domain-keyword bait. It checks exact rubric states and verifies that every positive excerpt occurs in submitted text. This is functional calibration—not a learner study.
+The deterministic suite currently covers 12 repair cases and 15 fresh-transfer cases across complete, partial, irrelevant, evaluator-instruction, contradiction, and negation responses. It checks exact rubric states and verifies that every positive excerpt occurs in submitted text. This is functional calibration—not a learner study.

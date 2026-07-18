@@ -12,7 +12,7 @@
 
 ## Short description
 
-AI tutors are good at producing answers, but answer-first help can hide the reasoning step an instructor needs to inspect. ReasonPatch takes the opposite approach: GPT-5.6 Sol locates the learner's reasoning hinge, three parallel GPT-5.6 Luna probes test it from distinct educational roles, and Sol asks one smallest-useful question without writing the answer. After the learner submits a revision, ReasonPatch produces a printable Repair Receipt showing verified before/after evidence. It then presents an immediate fresh-context case isolated as a separate response step and creates a Transfer Slip from only the evidence in the submitted response. Educators can download a local, explicitly unvalidated coordinator audit manifest containing both submissions and their evidence trail.
+AI tutors are good at producing answers, but answer-first help can hide the reasoning step an instructor needs to inspect. ReasonPatch takes the opposite approach: GPT-5.6 Sol locates the learner's reasoning hinge, three parallel GPT-5.6 Luna probes test it from distinct educational roles, and Sol asks one smallest-useful question without writing the answer. After the learner submits a revision, ReasonPatch produces a printable Repair Receipt showing verified before/after evidence. It then presents an immediate fresh-context case in an isolated interface and creates a Transfer Slip from only the evidence in that response. Educators can download two explicitly unvalidated local artifacts: an anonymous, unscored rater packet and a separate coordinator audit manifest.
 
 ## What makes it different
 
@@ -23,7 +23,7 @@ AI tutors are good at producing answers, but answer-first help can hide the reas
 - **Truthful reliability.** Guided mode says it is a fixture replay; live Luna failures disclose per-probe Sol fallback.
 - **No inflated educational claim.** Receipts are challenges, not grades, mastery labels, or proof of learning.
 - **One edit is not called learning.** A fresh-case check asks whether the reasoning appears in a new context, then labels the result as observed text evidence—not a verdict.
-- **A concrete evaluation handoff.** The coordinator manifest and public pilot protocol define the next study without fabricating users or outcomes; blinded ratings require a separate de-identified rater packet.
+- **A concrete evaluation handoff.** A stripped rater packet, separate coordinator manifest, and public pilot protocol define the next study without fabricating users or outcomes.
 
 ## How it was built
 
@@ -37,9 +37,9 @@ Codex was the end-to-end engineering environment: product planning, official doc
 - three focused intro-statistics labs;
 - transparent Sol/Luna trace and fallback behavior;
 - evidence-bound printable receipt;
-- fresh-case Transfer Slip plus downloadable coordinator audit manifest and a protocol for separate blinded review;
-- 24-case calibration covering 72 repair and transfer rubric decisions;
-- 107 automated tests, strong coverage, desktop/mobile browser checks, and a clean production audit.
+- fresh-case Transfer Slip plus separate blinded-review and coordinator-audit artifacts;
+- 27-case calibration covering 81 repair and transfer rubric decisions;
+- 113 automated tests, strong coverage, desktop/mobile browser checks, and a clean production audit.
 
 ## Challenges and lessons
 
@@ -49,7 +49,7 @@ The hardest product decision was refusing the easy “AI tutor” shape. The str
 
 ReasonPatch could help instructors preserve student agency while making formative reasoning changes easier to review. The immediate wedge is introductory statistics, where conceptual errors can persist after instruction: a [1,470-student, 33-institution assessment](https://iase-pub.org/ojs/SERJ/article/view/483) documented continuing problems with causal interpretation, sampling, and conditional probability. The interaction is informed by meta-analyses of [prompted self-explanation](https://doi.org/10.1007/s10648-018-9434-x) and [problem-solving before instruction](https://doi.org/10.3102/00346543211019105), plus [field guidance](https://www.amstat.org/asa/files/pdfs/gaise/gaisecollege_full.pdf) emphasizing statistical reasoning and active learning. These adjacent findings motivate the design; they do not validate this product.
 
-ReasonPatch makes that boundary visible. It does not call one revision learning. The demo's immediate fresh-context case creates a second observable artifact, but it is not a delayed or blinded learning measure. The downloadable coordinator manifest contains raw submitted text, prompt and time-point labels, provenance, and automated evidence states; it must be de-identified before approved sharing and must not be given directly to blinded raters.
+ReasonPatch makes that boundary visible. It does not call one revision learning. The demo's immediate fresh-context case creates a second observable artifact, but it is not a delayed or blinded learning measure. The downloadable rater packet uses anonymous IDs and removes product, condition, time-point, provenance, and automated-score cues; the separate coordinator manifest retains the private mapping and evidence trail. Both contain submitted text and must be de-identified before approved sharing.
 
 The proposed comparison with answer-first assistance would instead use an isolated delayed case from a held-out server-side prompt pool and a separate rater packet stripped of product, condition, time-point, model, and automated-score cues. The public demo's small prompt pool is client-bundled and therefore not held out. The study has not yet been run; the protocol is [public and falsifiable](PILOT_PROTOCOL.md).
 
@@ -59,7 +59,7 @@ The proposed comparison with answer-first assistance would instead use an isolat
 |---|---|
 | Technological implementation | Sol/Luna orchestration, concurrent probes, per-role fallback, Structured Outputs, evidence/provenance verification, safe boundaries, tests |
 | Design | focused four-step workflow, visible rubric, answer withholding, responsive/a11y-tested interface, printable signature artifact |
-| Potential impact | documented statistics misconceptions, fresh-case evidence, coordinator audit manifest, and a public protocol for separate blinded evaluation |
+| Potential impact | documented statistics misconceptions, fresh-case evidence, split rater/audit artifacts, and a public protocol for blinded evaluation |
 | Quality of idea | reasoning repair rather than answer generation; earliest-hinge targeting; evidence-bound Receipt + Transfer Slip |
 
 ## Final submission checklist
