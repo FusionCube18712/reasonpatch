@@ -73,6 +73,22 @@ The proposed comparison with answer-first assistance would instead use an isolat
 - [ ] Run `/feedback` in Codex and paste the session ID below.
 - [ ] Submit before **July 21, 2026 at 5:00 PM Pacific Time**.
 
+## YouTube upload copy
+
+**Title:** ReasonPatch — Repair the Step | OpenAI Build Week Education Demo
+
+**Description:**
+
+> ReasonPatch is a reasoning-repair studio for introductory statistics. GPT-5.6 Sol locates the earliest unsupported inference, three role-separated GPT-5.6 Luna probes test it, and Sol asks one smallest-useful question without writing the learner's answer. The learner creates an evidence-bound Repair Receipt, then applies the reasoning in an isolated fresh case that produces a separate Transfer Slip.
+>
+> Public demo: https://reasonpatch.vercel.app  
+> Public source: https://github.com/FusionCube18712/reasonpatch  
+> Track: Education · OpenAI Build Week 2026
+>
+> The guided public path is an explicitly labeled fixture replay. Transfer evidence is not a grade, mastery claim, or proof of learning.
+
+**Verified upload file:** `artifacts/demo-video/reasonpatch-build-week-demo.mp4` · `145.98s` · SHA-256 `c141dc519359b2e91011dcae93b65c75ad2cf139ded0ccbc1a2dd9045cc68a57`
+
 ## URLs and IDs to fill in
 
 - Public demo: `https://reasonpatch.vercel.app`
