@@ -87,6 +87,24 @@ NEXT_PUBLIC_REASONPATCH_LIVE_MODE=true
 
 `REASONPATCH_LIVE_MODE` is the authoritative server gate. The public flag only reveals the UI control. Do not enable public paid mode without a signed session gate, a distributed atomic rate limiter, and a spend/concurrency budget.
 
+## Judge test path (about 90 seconds)
+
+The deployed guided path needs no account, API key, or rebuild:
+
+1. Open the [public demo](https://reasonpatch.vercel.app) and select **Find the hinge**.
+2. In the revision box, enter:
+
+   > Participants averaged eight points higher, but students chose whether to participate, so the difference alone does not establish causation. We need comparable baseline scores and a randomized controlled comparison.
+
+3. Create the Repair Receipt, then select **Begin isolated fresh case**.
+4. In the fresh-case box, enter:
+
+   > The recovery difference does not establish causation because patients chose whether to join. Random assignment or a controlled comparison would be stronger.
+
+5. Create the Transfer Slip and open the two separate educator artifacts.
+
+The replay is explicitly labeled and makes no model calls. To test genuine Sol/Luna execution locally, enable protected live mode using the environment settings above; the same interface then accepts an original explanation and displays live model provenance.
+
 ## Verification
 
 ```bash
@@ -152,7 +170,7 @@ Codex contributed to:
 - accessibility, privacy, dependency, and production-bundle verification;
 - demo narrative and submission packaging.
 
-The Git history preserves dated RED/GREEN checkpoints. Before submission, the entrant should run `/feedback` in Codex and paste that session ID into the submission form.
+The Git history preserves dated RED/GREEN checkpoints. The primary Codex build task has session ID `019f71f8-76e3-7462-b8a5-7d571dbe5466`; this task predates the first commit and contains the majority of the core implementation.
 
 ## Submission kit
 
@@ -161,6 +179,7 @@ The Git history preserves dated RED/GREEN checkpoints. Before submission, the en
 - [Architecture and threat boundaries](docs/ARCHITECTURE.md)
 - [Evaluation protocol](docs/EVALUATION.md)
 - [Educator pilot protocol and research rationale](docs/PILOT_PROTOCOL.md)
+- [Fixed rapid educator feasibility-review instrument](docs/EDUCATOR_FEASIBILITY_REVIEW.md)
 
 ## Honest limitations
 

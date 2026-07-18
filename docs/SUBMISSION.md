@@ -41,6 +41,32 @@ Codex was the end-to-end engineering environment: product planning, official doc
 - 29-case calibration covering 87 repair and transfer rubric decisions;
 - 116 automated tests, strong coverage, desktop/mobile browser checks, and a clean production audit.
 
+## Judge testing instructions
+
+No account, API key, or rebuild is required for the guided path.
+
+1. Open `https://reasonpatch.vercel.app` and select **Find the hinge**.
+2. Use this revision:
+
+   > Participants averaged eight points higher, but students chose whether to participate, so the difference alone does not establish causation. We need comparable baseline scores and a randomized controlled comparison.
+
+3. Create the Repair Receipt and begin the isolated fresh case.
+4. Use this fresh-case response:
+
+   > The recovery difference does not establish causation because patients chose whether to join. Random assignment or a controlled comparison would be stronger.
+
+5. Create the Transfer Slip and open both educator artifacts.
+
+Expected time: about 90 seconds. The public guided path is an explicitly labeled deterministic replay. Protected/local live mode accepts original text and runs the genuine Sol/Luna orchestration described in the repository.
+
+## Built with
+
+`Codex`, `GPT-5.6 Sol`, `GPT-5.6 Luna`, `OpenAI Responses API`, `Structured Outputs`, `Next.js`, `React`, `TypeScript`, `Zod`, `Vitest`, `Playwright`, `axe-core`, `Vercel`
+
+## What is next
+
+The next evidence gate is a small independent educator feasibility review using the fixed instrument in [`EDUCATOR_FEASIBILITY_REVIEW.md`](EDUCATOR_FEASIBILITY_REVIEW.md). A later approved pilot would compare ReasonPatch with answer-first assistance using an isolated 48–72-hour case, a held-out server-side prompt pool, and blinded educator scoring. Until those studies are run, ReasonPatch will not claim improved learning, retention, grades, or workload.
+
 ## Challenges and lessons
 
 The hardest product decision was refusing the easy “AI tutor” shape. The strongest artifact was not another answer, but a receipt that makes revision evidence inspectable. Then a judge-style review exposed a deeper integrity gap: one successful edit is not evidence that reasoning transfers. The product now asks for an immediate fresh-context explanation isolated as a separate response, while reserving delayed transfer and blinded scoring for the proposed pilot. Independent review also caught early fixtures that overstated evidence and client code that accidentally bundled instructor intent; both were redesigned and regression-tested.
@@ -70,7 +96,8 @@ The proposed comparison with answer-first assistance would instead use an isolat
 - [x] Regenerate the narrated, captioned demo with the fresh-case Transfer Slip; verified at 145.98 seconds.
 - [ ] Upload to YouTube and verify public/incognito playback.
 - [x] Run `npm run check`, `npm run test:e2e`, and `npm audit --omit=dev`.
-- [ ] Run `/feedback` in Codex and paste the session ID below.
+- [ ] Optional high-impact gate: collect 3–5 independent educator reviews with the [fixed feasibility instrument](EDUCATOR_FEASIBILITY_REVIEW.md), then report every result without efficacy claims.
+- [x] Record the primary Codex build task session ID from Codex session metadata.
 - [ ] Submit before **July 21, 2026 at 5:00 PM Pacific Time**.
 
 ## YouTube upload copy
@@ -94,4 +121,4 @@ The proposed comparison with answer-first assistance would instead use an isolat
 - Public demo: `https://reasonpatch.vercel.app`
 - Public repository: `https://github.com/FusionCube18712/reasonpatch`
 - YouTube demo: `TODO`
-- Codex `/feedback` session ID: `TODO`
+- Codex `/feedback` session ID: `019f71f8-76e3-7462-b8a5-7d571dbe5466`
