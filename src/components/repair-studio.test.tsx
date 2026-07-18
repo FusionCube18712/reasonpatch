@@ -333,7 +333,25 @@ describe("RepairStudio", () => {
     await user.click(screen.getByRole("button", { name: "Create repair receipt" }));
 
     expect(
-      await screen.findByRole("heading", { name: "Try the reasoning on a fresh case" }),
+      screen.queryByRole("heading", { name: "Try the reasoning on a fresh case" }),
+    ).not.toBeInTheDocument();
+    expect(
+      await screen.findByRole("button", { name: "Begin isolated fresh case" }),
+    ).toBeVisible();
+    await user.click(screen.getByRole("button", { name: "Begin isolated fresh case" }));
+
+    expect(
+      screen.getByRole("heading", { name: "Try the reasoning on a fresh case" }),
+    ).toBeVisible();
+    expect(
+      screen.queryByRole("heading", { name: "Repair receipt" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("heading", { name: "One question before you revise" }),
+    ).not.toBeInTheDocument();
+    expect(screen.queryByText("Visible rubric")).not.toBeInTheDocument();
+    expect(
+      screen.getByText(/prior diagnosis, question, rubric, and receipt are hidden/i),
     ).toBeVisible();
     const transferResponse =
       "The recovery difference does not establish causation because patients chose to join; random assignment would be stronger.";
@@ -357,11 +375,17 @@ describe("RepairStudio", () => {
     fetchMock.mockResolvedValueOnce(jsonResponse(analysisPayload));
     fetchMock.mockResolvedValueOnce(jsonResponse(receiptPayload));
     fetchMock.mockResolvedValueOnce(jsonResponse(receiptPayload));
-    const createObjectURL = vi.fn(() => "blob:reasonpatch-pilot");
+    const createObjectURL = vi
+      .fn()
+      .mockReturnValueOnce("blob:reasonpatch-audit")
+      .mockReturnValueOnce("blob:reasonpatch-blinded");
     const revokeObjectURL = vi.fn();
+    const downloadedFilenames: Array<string> = [];
     const click = vi
       .spyOn(HTMLAnchorElement.prototype, "click")
-      .mockImplementation(() => undefined);
+      .mockImplementation(function captureDownload(this: HTMLAnchorElement) {
+        downloadedFilenames.push(this.download);
+      });
     const originalCreateObjectURL = URL.createObjectURL;
     const originalRevokeObjectURL = URL.revokeObjectURL;
     Object.defineProperty(URL, "createObjectURL", {
@@ -376,7 +400,7 @@ describe("RepairStudio", () => {
     try {
       render(<RepairStudio />);
       expect(
-        screen.queryByRole("button", { name: "Download educator pilot packet" }),
+        screen.queryByRole("button", { name: "Download blinded rater packet" }),
       ).not.toBeInTheDocument();
 
       await user.click(screen.getByRole("button", { name: "Find the hinge" }));
@@ -385,20 +409,37 @@ describe("RepairStudio", () => {
         "The difference does not establish causation because students self-selected; a controlled comparison would be stronger.",
       );
       await user.click(screen.getByRole("button", { name: "Create repair receipt" }));
+      await user.click(
+        await screen.findByRole("button", { name: "Begin isolated fresh case" }),
+      );
       await user.type(
         await screen.findByLabelText("Fresh-case explanation"),
         "The recovery difference does not establish causation because patients chose to join; random assignment would be stronger.",
       );
       await user.click(screen.getByRole("button", { name: "Check transfer evidence" }));
       await user.click(
-        await screen.findByRole("button", { name: "Download educator pilot packet" }),
+        await screen.findByRole("button", { name: "Download blinded rater packet" }),
       );
+      await user.click(screen.getByRole("button", { name: "Download audit manifest" }));
 
-      expect(createObjectURL).toHaveBeenCalledWith(
+      expect(createObjectURL).toHaveBeenCalledTimes(2);
+      expect(createObjectURL).toHaveBeenNthCalledWith(
+        1,
         expect.objectContaining({ type: "text/plain;charset=utf-8" }),
       );
-      expect(click).toHaveBeenCalledOnce();
-      expect(revokeObjectURL).toHaveBeenCalledWith("blob:reasonpatch-pilot");
+      expect(createObjectURL).toHaveBeenNthCalledWith(
+        2,
+        expect.objectContaining({ type: "text/plain;charset=utf-8" }),
+      );
+      expect(click).toHaveBeenCalledTimes(2);
+      expect(downloadedFilenames).toEqual([
+        "reasonpatch-correlation-causation-blinded-rater-packet.txt",
+        "reasonpatch-correlation-causation-audit-manifest.txt",
+      ]);
+      await vi.waitFor(() => {
+        expect(revokeObjectURL).toHaveBeenCalledWith("blob:reasonpatch-audit");
+        expect(revokeObjectURL).toHaveBeenCalledWith("blob:reasonpatch-blinded");
+      });
     } finally {
       Object.defineProperty(URL, "createObjectURL", {
         configurable: true,
@@ -461,6 +502,51 @@ describe("RepairStudio", () => {
     await user.click(await screen.findByRole("button", { name: "Print receipt" }));
 
     expect(print).toHaveBeenCalledOnce();
+    const printTarget = screen
+      .getByRole("heading", { name: "Repair receipt" })
+      .closest(".print-receipt");
+    expect(printTarget).not.toBeNull();
+    expect(printTarget).not.toHaveTextContent("Try the reasoning on a fresh case");
+  });
+
+  it("keeps transfer failures local and retries without restoring prior hints", async () => {
+    const user = userEvent.setup();
+    const fetchMock = vi.spyOn(globalThis, "fetch");
+    fetchMock.mockResolvedValueOnce(jsonResponse(analysisPayload));
+    fetchMock.mockResolvedValueOnce(jsonResponse(receiptPayload));
+    fetchMock.mockResolvedValueOnce(
+      jsonResponse(
+        {
+          success: false,
+          data: null,
+          error: { code: "UNAVAILABLE", message: "Fresh-case scan is warming up." },
+        },
+        503,
+      ),
+    );
+    fetchMock.mockResolvedValueOnce(jsonResponse(receiptPayload));
+    render(<RepairStudio />);
+
+    await user.click(screen.getByRole("button", { name: "Find the hinge" }));
+    await user.type(
+      screen.getByLabelText("Revised explanation"),
+      "The difference does not establish causation because students self-selected; a controlled comparison would be stronger.",
+    );
+    await user.click(screen.getByRole("button", { name: "Create repair receipt" }));
+    await user.click(
+      await screen.findByRole("button", { name: "Begin isolated fresh case" }),
+    );
+    await user.type(
+      screen.getByLabelText("Fresh-case explanation"),
+      "The recovery difference does not establish causation because patients chose to join; random assignment would be stronger.",
+    );
+    await user.click(screen.getByRole("button", { name: "Check transfer evidence" }));
+
+    const transferAlert = await screen.findByRole("alert");
+    expect(transferAlert).toHaveTextContent("Fresh-case scan is warming up.");
+    expect(screen.queryByRole("heading", { name: "Repair receipt" })).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Retry fresh-case scan" }));
+    expect(await screen.findByRole("heading", { name: "Transfer slip" })).toBeVisible();
   });
 
   it("renders missing rubric evidence without a green check or fabricated quote", async () => {
