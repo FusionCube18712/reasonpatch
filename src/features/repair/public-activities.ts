@@ -5,6 +5,7 @@ export type PublicActivity = Readonly<{
   title: string;
   eyebrow: string;
   prompt: string;
+  transferPrompt: string;
   sampleResponse: string;
   rubric: ReadonlyArray<Readonly<{ id: string; label: string }>>;
 }>;
@@ -16,6 +17,8 @@ const PUBLIC_ACTIVITIES: ReadonlyArray<PublicActivity> = [
     eyebrow: "Intro statistics · causal inference",
     prompt:
       "A school says its tutoring program caused scores to rise because participants averaged eight points higher than non-participants. Evaluate the claim.",
+    transferPrompt:
+      "Patients who voluntarily joined a hospital nutrition program recovered two days faster than patients who did not. A reporter says the program caused faster recovery. Evaluate the claim. Explain your reasoning.",
     sampleResponse:
       "The tutoring program caused the improvement because participants scored eight points higher. Therefore every school should use it.",
     rubric: [
@@ -39,6 +42,8 @@ const PUBLIC_ACTIVITIES: ReadonlyArray<PublicActivity> = [
     eyebrow: "Intro statistics · conditional probability",
     prompt:
       "A rare condition affects 1 in 1,000 people. A test detects it 99% of the time and has a 1% false-positive rate. Explain what a positive result means.",
+    transferPrompt:
+      "One in 500 transactions is fraudulent. A detector catches 98% of fraudulent transactions and flags 2% of legitimate ones. A flagged transaction is declared 98% likely to be fraud. Evaluate that conclusion. Explain your reasoning.",
     sampleResponse:
       "The test is 99% accurate, so a person who tests positive has a 99% chance of having the condition.",
     rubric: [
@@ -56,6 +61,8 @@ const PUBLIC_ACTIVITIES: ReadonlyArray<PublicActivity> = [
     eyebrow: "Intro statistics · sampling",
     prompt:
       "A campus newspaper posts an online poll and reports that 82% of students want all lectures recorded. Evaluate the conclusion.",
+    transferPrompt:
+      "A city library posts a QR-code poll inside its branches and reports that 76% of residents want longer weekend hours. Evaluate whether the poll supports a claim about all city residents. Explain your reasoning.",
     sampleResponse:
       "Because hundreds of students answered, the poll proves most students want every lecture recorded.",
     rubric: [
