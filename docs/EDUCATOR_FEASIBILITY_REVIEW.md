@@ -177,8 +177,8 @@ Incomplete reviews: [n and reasons]
 Procedure
 Reviewers independently used the public guided demo, completed the Repair Receipt
 and isolated fresh-case flow, and inspected the blinded rater packet and coordinator
-audit manifest. They then completed the fixed anonymous instrument. Reviewers were
-instructed not to enter personal or real student data.
+audit manifest. They then completed the fixed instrument, which requested no direct
+identifiers. Reviewers were instructed not to enter personal or real student data.
 
 Results
 
