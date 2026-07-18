@@ -47,6 +47,14 @@ test("primary journey is keyboard reachable", async ({ page }) => {
   await page.goto("/");
   await page.keyboard.press("Tab");
 
+  await expect(
+    page.getByRole("link", { name: "Try the 90-second demo" }),
+  ).toBeFocused();
+  await page.keyboard.press("Tab");
+  await expect(
+    page.getByRole("link", { name: "View Sol/Luna source" }),
+  ).toBeFocused();
+  await page.keyboard.press("Tab");
   await expect(page.getByRole("button", { name: /Causation or coincidence/ })).toBeFocused();
   await page.keyboard.press("Tab");
   await expect(page.getByRole("button", { name: /Accurate test, wrong conclusion/ })).toBeFocused();

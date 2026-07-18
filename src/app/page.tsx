@@ -42,9 +42,26 @@ export default function Page() {
           <div className="flex flex-col justify-end gap-8 lg:pl-[8vw]">
             <p className="max-w-[62ch] text-base leading-7 text-[#625e56] sm:text-lg">
               ReasonPatch finds the earliest unsupported inference, asks one
-              small question, and records what changed. It never writes the
-              learner&apos;s replacement answer.
+              small question, then creates an evidence-bound before/after
+              receipt and a fresh-context check. It never writes the learner&apos;s
+              replacement answer.
             </p>
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+              <a
+                href="#reasoning-workspace"
+                className="inline-flex min-h-11 w-fit items-center justify-center rounded-full bg-[#25231f] px-5 text-sm font-medium text-[#f8f4eb] transition hover:bg-[#a24f24] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#a24f24] focus-visible:ring-offset-2 focus-visible:ring-offset-[#f5f1e8]"
+              >
+                Try the 90-second demo
+              </a>
+              <a
+                href="https://github.com/FusionCube18712/reasonpatch/blob/main/src/features/repair/orchestrator.ts"
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex min-h-11 w-fit items-center px-2 text-sm font-medium underline decoration-[#a24f24]/45 underline-offset-4 transition hover:text-[#a24f24] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#a24f24]"
+              >
+                View Sol/Luna source
+              </a>
+            </div>
             <ol
               aria-label="Learning journey"
               className="grid border-y border-[#25231f]/14 sm:grid-cols-4"

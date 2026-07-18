@@ -130,6 +130,51 @@ describe("RepairStudio", () => {
     ).toBeVisible();
   });
 
+  it("moves focus through each newly revealed judge-path stage", async () => {
+    const user = userEvent.setup();
+    const fetchMock = vi.spyOn(globalThis, "fetch");
+    fetchMock.mockResolvedValueOnce(jsonResponse(analysisPayload));
+    fetchMock.mockResolvedValueOnce(jsonResponse(receiptPayload));
+    fetchMock.mockResolvedValueOnce(jsonResponse(receiptPayload));
+    render(<RepairStudio />);
+
+    await user.click(screen.getByRole("button", { name: "Find the hinge" }));
+    expect(
+      await screen.findByRole("heading", {
+        name: "One question before you revise",
+      }),
+    ).toHaveFocus();
+
+    await user.type(
+      screen.getByLabelText("Revised explanation"),
+      "The difference does not establish causation because students self-selected; a controlled comparison would be stronger.",
+    );
+    await user.click(
+      screen.getByRole("button", { name: "Create repair receipt" }),
+    );
+    expect(
+      await screen.findByRole("heading", { name: "Repair receipt" }),
+    ).toHaveFocus();
+
+    await user.click(
+      screen.getByRole("button", { name: "Begin isolated fresh case" }),
+    );
+    expect(
+      screen.getByRole("heading", { name: "Try the reasoning on a fresh case" }),
+    ).toHaveFocus();
+
+    await user.type(
+      screen.getByLabelText("Fresh-case explanation"),
+      "The recovery difference does not establish causation because patients chose to join; random assignment would be stronger.",
+    );
+    await user.click(
+      screen.getByRole("button", { name: "Check transfer evidence" }),
+    );
+    expect(
+      await screen.findByRole("heading", { name: "Transfer slip" }),
+    ).toHaveFocus();
+  });
+
   it("shows a plain-language recovery state when analysis fails", async () => {
     const user = userEvent.setup();
     vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(
@@ -195,6 +240,9 @@ describe("RepairStudio", () => {
 
     const request = fetchMock.mock.calls[0];
     expect(request?.[0]).toBe("/api/analyze");
+    expect(request?.[1]?.headers).toMatchObject({
+      "X-ReasonPatch-Mode": "live",
+    });
     expect(JSON.parse(String(request?.[1]?.body))).toMatchObject({
       mode: "live",
       forceLunaFallback: false,
@@ -431,6 +479,9 @@ describe("RepairStudio", () => {
       activityId: "correlation-causation",
       revisedResponse: transferResponse,
       mode: "demo",
+    });
+    expect(fetchMock.mock.calls[2]?.[1]?.headers).toMatchObject({
+      "X-ReasonPatch-Mode": "demo",
     });
   });
 

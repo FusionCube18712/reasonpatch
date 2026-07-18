@@ -12,7 +12,7 @@ It is deliberately not a chatbot, answer generator, grade, or mastery detector.
 
 ## Why this matters
 
-Most AI learning tools optimize for producing a correct answer. That can erase the exact reasoning step an instructor needs to see. ReasonPatch withholds the replacement answer and requires a submitted repair instead of supplying one. The resulting receipt records observable changes against a visible rubric. A second, isomorphic case checks whether the same reasoning appears in a new context—without pretending that one transfer slip proves learning, authorship, or mastery.
+AI tutors can ask useful Socratic questions, but a helpful chat can still leave an instructor unable to inspect exactly what the learner repaired. ReasonPatch turns that gap into the product surface: it withholds the replacement answer and requires a submitted repair. The resulting receipt records observable changes against a visible rubric. A second, isomorphic case checks whether the same reasoning appears in a new context—without pretending that one transfer slip proves learning, authorship, or mastery.
 
 The working prototype includes three focused introductory-statistics labs:
 
@@ -114,8 +114,8 @@ npm run test:e2e    # Chromium + Pixel 7 flows, visual QA, keyboard, axe
 
 Current verified baseline:
 
-- 116 tests across unit, integration, and 29 repair/transfer calibration cases;
-- 95%+ statements, 84%+ branches, 99%+ functions, and 97%+ lines;
+- 125 tests across unit, integration, and 29 repair/transfer calibration cases;
+- 95%+ statements, 83%+ branches, 99%+ functions, and 97%+ lines;
 - 16 Playwright checks across desktop/mobile projects;
 - no serious WCAG A/AA violations in tested initial, receipt, and transfer states;
 - zero production dependency audit vulnerabilities;

@@ -39,13 +39,132 @@ const revision =
 const transferResponse =
   "The recovery difference does not establish causation because patients chose whether to join. Random assignment or a controlled comparison would be stronger.";
 
+const orchestratorSource = readFileSync(
+  resolve(projectRoot, "src/features/repair/orchestrator.ts"),
+  "utf8",
+);
+const requireSourceLine = (source, fragment) => {
+  const line = source
+    .split("\n")
+    .find((candidate) => candidate.includes(fragment));
+  if (!line) throw new Error(`Demo source proof is missing: ${fragment}`);
+  return line.trim();
+};
+
+const sourceExcerpt = [
+  "// Sol planning + strict schema + exact evidence",
+  requireSourceLine(orchestratorSource, "const rawPlan = await gateway.generate"),
+  requireSourceLine(orchestratorSource, 'model: "gpt-5.6-sol"'),
+  requireSourceLine(orchestratorSource, 'task: "plan"'),
+  requireSourceLine(orchestratorSource, "schema: AnalysisPlanSchema"),
+  requireSourceLine(orchestratorSource, "assertEvidenceOccursIn("),
+  "",
+  "// Three bounded Luna roles execute concurrently",
+  requireSourceLine(orchestratorSource, "const probeRuns = await Promise.all"),
+  requireSourceLine(orchestratorSource, "plan.jobs.map"),
+  requireSourceLine(
+    orchestratorSource,
+    'generateProbe(role, "gpt-5.6-luna", input)',
+  ),
+  "",
+  "// A failed Luna role alone reruns on Sol",
+  requireSourceLine(orchestratorSource, "const reason = classifyFailure(error)"),
+  requireSourceLine(
+    orchestratorSource,
+    'generateProbe(role, "gpt-5.6-sol", input)',
+  ),
+  "",
+  "// Sol synthesizes the final question",
+  requireSourceLine(
+    orchestratorSource,
+    "const rawSynthesis = await gateway.generate",
+  ),
+  requireSourceLine(orchestratorSource, 'task: "synthesize"'),
+  requireSourceLine(orchestratorSource, "schema: SynthesisOutputSchema"),
+].join("\n");
+
+const escapeHtml = (value) =>
+  value
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+
+const showTechnicalProofSlide = async (
+  page,
+  { eyebrow, title, statement, rail, proof, metrics },
+) => {
+  const proofMarkup = proof
+    ? `<pre aria-label="Local source excerpt"><code>${escapeHtml(proof)}</code></pre>`
+    : `<div class="trace" aria-label="Codex build trace">${rail
+        .slice(1)
+        .map(
+          (item, index) =>
+            `<div class="trace-card"><span>0${index + 1}</span><strong>${escapeHtml(item.title)}</strong><p>${escapeHtml(item.detail)}</p></div>`,
+        )
+        .join("")}</div>`;
+  const bodyMarkup = proof
+    ? `<aside class="rail"><div><span class="source-label">Execution contract</span><div class="flow">${escapeHtml(rail[0].detail)}</div></div><ul>${rail
+        .slice(1)
+        .map((item) => `<li><strong>${escapeHtml(item.title)}</strong> · ${escapeHtml(item.detail)}</li>`)
+        .join("")}</ul></aside>${proofMarkup}`
+    : proofMarkup;
+
+  await page.setContent(`<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>${escapeHtml(title)}</title>
+    <style>
+      * { box-sizing: border-box; }
+      body { margin: 0; min-height: 100vh; overflow: hidden; background: #f5f1e8; color: #25231f; font-family: Arial, sans-serif; }
+      main { min-height: 900px; padding: 34px 48px 96px; display: grid; grid-template-rows: auto auto 1fr auto; gap: 28px; }
+      header { display: flex; align-items: center; justify-content: space-between; padding-bottom: 20px; border-bottom: 1px solid rgba(37,35,31,.16); }
+      .brand { display: flex; align-items: center; gap: 12px; font-weight: 700; }
+      .mark { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; background: #25231f; color: #f5f1e8; }
+      .eyebrow, .source-label { color: #a24f24; font: 700 12px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .18em; text-transform: uppercase; }
+      .intro { display: grid; grid-template-columns: .9fr 1.1fr; gap: 72px; align-items: end; }
+      h1 { margin: 0; max-width: 10ch; font-size: 62px; line-height: .96; letter-spacing: -.055em; }
+      .statement { margin: 0; max-width: 59ch; color: #625e56; font-size: 22px; line-height: 1.45; }
+      .proof { min-height: 0; display: grid; grid-template-columns: 1fr 1.55fr; gap: 24px; }
+      .rail { padding: 28px; border: 1px solid rgba(37,35,31,.14); border-radius: 28px; background: #ede6da; display: flex; flex-direction: column; justify-content: space-between; }
+      .flow { font-size: 34px; font-weight: 700; letter-spacing: -.04em; }
+      .rail ul { margin: 20px 0 0; padding: 0; list-style: none; }
+      .rail li { padding: 13px 0; border-top: 1px solid rgba(37,35,31,.13); color: #57534c; font-size: 16px; }
+      pre { margin: 0; height: 472px; overflow: hidden; border: 1px solid rgba(37,35,31,.14); border-radius: 28px; background: #25231f; color: #f7f2e8; padding: 26px 30px; box-shadow: 0 26px 60px rgba(37,35,31,.12); }
+      code { white-space: pre-wrap; font: 500 12.5px/1.42 ui-monospace, SFMono-Regular, Menlo, monospace; }
+      .trace { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+      .trace-card { min-height: 340px; padding: 28px; border: 1px solid rgba(37,35,31,.14); border-radius: 26px; background: #ede6da; }
+      .trace-card span { color: #a24f24; font: 700 12px/1 ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .16em; }
+      .trace-card strong { display: block; margin-top: 58px; font-size: 27px; letter-spacing: -.03em; }
+      .trace-card p { margin: 12px 0 0; color: #625e56; font-size: 16px; line-height: 1.45; }
+      footer { display: flex; align-items: center; justify-content: space-between; padding-top: 18px; border-top: 1px solid rgba(37,35,31,.14); color: #625e56; font: 600 13px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace; }
+      .metrics { display: flex; gap: 24px; }
+      .metrics strong { color: #25231f; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header><div class="brand"><span class="mark">R</span>ReasonPatch</div><span class="eyebrow">${escapeHtml(eyebrow)}</span></header>
+      <section class="intro"><h1>${escapeHtml(title)}</h1><p class="statement">${escapeHtml(statement)}</p></section>
+      <section class="proof">${bodyMarkup}</section>
+      <footer><span>${escapeHtml(metrics.label)}</span><div class="metrics">${metrics.items
+        .map((item) => `<span><strong>${escapeHtml(item.value)}</strong> ${escapeHtml(item.label)}</span>`)
+        .join("")}</div></footer>
+    </main>
+  </body>
+</html>`);
+};
+
 const segments = [
   {
-    text: "Most AI tutors race to the correct answer. That can erase the reasoning step an educator actually needs to see.",
+    text: "AI tutors can ask Socratic questions, but an educator still needs to see what the learner actually repaired.",
     action: async (page) => page.evaluate(() => window.scrollTo({ top: 0 })),
   },
   {
-    text: "ReasonPatch takes the opposite approach: repair the step, while keeping the thinking with the learner.",
+    text: "ReasonPatch turns that gap into the product surface: repair the step, while keeping the thinking with the learner.",
     action: async (page) =>
       page.getByRole("region", { name: "Reasoning repair workspace" }).scrollIntoViewIfNeeded(),
   },
@@ -140,23 +259,55 @@ const segments = [
   },
   {
     text: "Under the hood, the source shows Sol planning and synthesis, concurrent Luna execution, strict structured outputs, evidence checks, and per-probe fallback.",
-    action: async (page) => {
-      await gotoExpected(
-        page,
-        "https://github.com/FusionCube18712/reasonpatch/blob/main/src/features/repair/orchestrator.ts#L100-L190",
-        "gpt-5.6-luna",
-      );
-    },
+    action: async (page) =>
+      showTechnicalProofSlide(page, {
+        eyebrow: "Technical implementation · local source snapshot",
+        title: "Sol → Luna ×3 → Sol",
+        statement:
+          "One orchestrator plans the hinge, three bounded executor roles run concurrently, and every output must survive schema, evidence, and provenance checks.",
+        rail: [
+          { title: "Orchestration", detail: "Sol → Luna ×3 → Sol" },
+          { title: "Plan", detail: "gpt-5.6-sol" },
+          { title: "Execute", detail: "Promise.all · three Luna roles" },
+          { title: "Recover", detail: "failed role only → Sol" },
+          { title: "Verify", detail: "strict schema + exact evidence" },
+        ],
+        proof: sourceExcerpt,
+        metrics: {
+          label: "src/features/repair/orchestrator.ts · repository HEAD",
+          items: [
+            { value: "3", label: "parallel probes" },
+            { value: "1", label: "bounded fallback per role" },
+          ],
+        },
+      }),
   },
   {
     text: "I built ReasonPatch with Codex through test-first checkpoints and independent planning, architecture, code, security, and judge reviews.",
-    action: async (page) => {
-      await gotoExpected(
-        page,
-        "https://github.com/FusionCube18712/reasonpatch#codex-collaboration",
-        "Codex collaboration",
-      );
-    },
+    action: async (page) =>
+      showTechnicalProofSlide(page, {
+        eyebrow: "Codex collaboration · verifiable build process",
+        title: "Codex build trace",
+        statement:
+          "The project moved through RED → GREEN → adversarial review. Its 125 automated tests and independent agents challenged architecture, security, UX, evidence claims, and judge readiness.",
+        rail: [
+          { title: "Workflow", detail: "RED → GREEN → adversarial review" },
+          { title: "Plan", detail: "product + architecture decisions" },
+          { title: "Test first", detail: "failing gates before implementation" },
+          { title: "Review", detail: "code + security + judge critique" },
+          { title: "Verify", detail: "browser + accessibility + build" },
+        ],
+        proof: null,
+        metrics: {
+          label: "Primary Codex session · 019f71f8-76e3-7462-b8a5-7d571dbe5466",
+          items: [
+            { value: "125", label: "automated tests" },
+            { value: "29", label: "calibration cases" },
+            { value: "16", label: "browser checks" },
+            { value: "0", label: "production vulnerabilities" },
+          ],
+        },
+      }),
   },
   {
     text: "The result has more than one hundred automated tests, adversarial repair and transfer calibration, desktop and mobile browser coverage, accessible states, and a free public demo. ReasonPatch: repair the step, keep the thinking yours.",

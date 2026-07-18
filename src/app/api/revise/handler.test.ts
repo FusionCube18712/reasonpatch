@@ -50,6 +50,25 @@ describe("revise API handler", () => {
     expect(revise).not.toHaveBeenCalled();
   });
 
+  it("rejects a mode header that disagrees with validated input", async () => {
+    const revise = vi.fn();
+    const handler = createReviseHandler({ revise });
+
+    const response = await handler(
+      new Request("http://localhost/api/revise", {
+        method: "POST",
+        body: JSON.stringify(requestBody),
+        headers: {
+          "Content-Type": "application/json",
+          "X-ReasonPatch-Mode": "live",
+        },
+      }),
+    );
+
+    expect(response.status).toBe(400);
+    expect(revise).not.toHaveBeenCalled();
+  });
+
   it("returns the receipt through the standard success envelope", async () => {
     const receipt = {
       activityId: "correlation-causation" as const,

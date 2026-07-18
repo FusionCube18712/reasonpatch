@@ -15,6 +15,20 @@ describe("ReasonPatch page", () => {
     expect(screen.getByText("04 Transfer")).toBeVisible();
   });
 
+  it("gives judges above-the-fold shortcuts to the demo and implementation", () => {
+    render(<Page />);
+
+    expect(
+      screen.getByRole("link", { name: "Try the 90-second demo" }),
+    ).toHaveAttribute("href", "#reasoning-workspace");
+    expect(
+      screen.getByRole("link", { name: "View Sol/Luna source" }),
+    ).toHaveAttribute(
+      "href",
+      "https://github.com/FusionCube18712/reasonpatch/blob/main/src/features/repair/orchestrator.ts",
+    );
+  });
+
   it("states the privacy and grading boundary before learner input", () => {
     render(<Page />);
 

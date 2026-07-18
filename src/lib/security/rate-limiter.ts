@@ -16,6 +16,11 @@ type GuardOptions = Readonly<{
   keyFor?: (request: Request) => string | Promise<string>;
 }>;
 
+type ConditionalGuardOptions = GuardOptions &
+  Readonly<{
+    shouldLimit: (request: Request) => boolean | Promise<boolean>;
+  }>;
+
 const processSalt = process.env.REASONPATCH_RATE_LIMIT_SALT ?? randomUUID();
 
 export const createSlidingWindowLimiter = ({
@@ -105,3 +110,17 @@ export const withRateLimit = (
       },
     );
   };
+
+export const withRateLimitWhen = (
+  handler: (request: Request) => Promise<Response>,
+  { shouldLimit, ...guardOptions }: ConditionalGuardOptions,
+) => {
+  const limitedHandler = withRateLimit(handler, guardOptions);
+
+  return async function conditionallyRateLimitedHandler(
+    request: Request,
+  ): Promise<Response> {
+    if (!(await shouldLimit(request))) return handler(request);
+    return limitedHandler(request);
+  };
+};

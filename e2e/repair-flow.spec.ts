@@ -12,9 +12,11 @@ test("learner repairs the causal inference hinge and receives a receipt", async 
   ).toBeVisible();
   await page.getByRole("button", { name: "Find the hinge" }).click();
   await expect(page.getByText("Repair crew complete")).toBeVisible();
-  await expect(
-    page.getByRole("heading", { name: "One question before you revise" }),
-  ).toBeVisible();
+  const questionHeading = page.getByRole("heading", {
+    name: "One question before you revise",
+  });
+  await expect(questionHeading).toBeVisible();
+  await expect(questionHeading).toBeInViewport();
 
   await page
     .getByLabel("Revised explanation")
@@ -23,9 +25,9 @@ test("learner repairs the causal inference hinge and receives a receipt", async 
     );
   await page.getByRole("button", { name: "Create repair receipt" }).click();
 
-  await expect(
-    page.getByRole("heading", { name: "Repair receipt" }),
-  ).toBeVisible();
+  const receiptHeading = page.getByRole("heading", { name: "Repair receipt" });
+  await expect(receiptHeading).toBeVisible();
+  await expect(receiptHeading).toBeInViewport();
   await expect(page.getByText("Association is not causation")).toBeVisible();
   await expect(
     page.getByText("AI-generated challenge, not a grade"),
@@ -37,6 +39,9 @@ test("learner repairs the causal inference hinge and receives a receipt", async 
   await expect(
     page.getByRole("heading", { name: "Try the reasoning on a fresh case" }),
   ).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Try the reasoning on a fresh case" }),
+  ).toBeInViewport();
   await expect(
     page.getByRole("heading", { name: "Repair receipt" }),
   ).not.toBeVisible();
@@ -55,9 +60,9 @@ test("learner repairs the causal inference hinge and receives a receipt", async 
       "The recovery difference does not establish causation because patients chose whether to join. Random assignment or a controlled comparison would be stronger.",
     );
   await page.getByRole("button", { name: "Check transfer evidence" }).click();
-  await expect(
-    page.getByRole("heading", { name: "Transfer slip" }),
-  ).toBeVisible();
+  const transferHeading = page.getByRole("heading", { name: "Transfer slip" });
+  await expect(transferHeading).toBeVisible();
+  await expect(transferHeading).toBeInViewport();
   await expect(
     page.getByText(
       "Observed evidence in a new context — not proof of learning or mastery.",

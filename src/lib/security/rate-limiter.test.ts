@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import { createSlidingWindowLimiter, withRateLimit } from "./rate-limiter";
+import {
+  createSlidingWindowLimiter,
+  withRateLimit,
+  withRateLimitWhen,
+} from "./rate-limiter";
 
 describe("API rate limiting", () => {
   it.each([
@@ -69,6 +73,36 @@ describe("API rate limiting", () => {
         message: "Too many repair requests. Wait a moment, then try again.",
       },
     });
+  });
+
+  it("keeps inexpensive guided requests outside the paid live-mode budget", async () => {
+    const limiter = createSlidingWindowLimiter({
+      limit: 1,
+      windowMs: 60_000,
+      now: () => 10,
+    });
+    const guarded = withRateLimitWhen(
+      async () => Response.json({ success: true }),
+      {
+        limiter,
+        keyFor: () => "shared-school-network",
+        shouldLimit: async (request) =>
+          ((await request.clone().json()) as { mode?: string }).mode === "live",
+      },
+    );
+    const guided = new Request("http://localhost/api/analyze", {
+      method: "POST",
+      body: JSON.stringify({ mode: "demo" }),
+    });
+    const live = new Request("http://localhost/api/analyze", {
+      method: "POST",
+      body: JSON.stringify({ mode: "live" }),
+    });
+
+    expect((await guarded(guided.clone())).status).toBe(200);
+    expect((await guarded(guided.clone())).status).toBe(200);
+    expect((await guarded(live.clone())).status).toBe(200);
+    expect((await guarded(live.clone())).status).toBe(429);
   });
 
   it.each([

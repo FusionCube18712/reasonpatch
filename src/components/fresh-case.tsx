@@ -9,9 +9,11 @@ import {
   LockKey,
   WarningCircle,
 } from "@phosphor-icons/react";
+import { useEffect, useRef, type RefObject } from "react";
 
 import type { Receipt } from "@/features/repair/contracts";
 import type { PublicActivity } from "@/features/repair/public-activities";
+import { revealStage } from "@/lib/ui/reveal-stage";
 
 const primaryButtonClass =
   "inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-[#25231f] px-5 text-sm font-medium text-[#f8f4eb] transition duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:bg-[#a24f24] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#a24f24] focus-visible:ring-offset-2 focus-visible:ring-offset-[#f5f1e8] active:translate-y-px disabled:cursor-not-allowed disabled:opacity-45";
@@ -44,6 +46,17 @@ export function FreshCase({
   onDownloadBlinded,
   onDownloadAudit,
 }: FreshCaseProps) {
+  const headingRef = useRef<HTMLHeadingElement>(null);
+  const slipHeadingRef = useRef<HTMLHeadingElement>(null);
+
+  useEffect(() => {
+    revealStage(headingRef.current);
+  }, []);
+
+  useEffect(() => {
+    if (receipt) revealStage(slipHeadingRef.current);
+  }, [receipt]);
+
   return (
     <section
       aria-labelledby="transfer-title"
@@ -55,7 +68,9 @@ export function FreshCase({
             Step 04 · Isolated fresh case
           </p>
           <h2
+            ref={headingRef}
             id="transfer-title"
+            tabIndex={-1}
             className="mt-2 text-3xl font-semibold tracking-[-0.045em] sm:text-4xl"
           >
             Try the reasoning on a fresh case
@@ -141,6 +156,7 @@ export function FreshCase({
       {receipt ? (
         <TransferSlipView
           receipt={receipt}
+          headingRef={slipHeadingRef}
           onDownloadBlinded={onDownloadBlinded}
           onDownloadAudit={onDownloadAudit}
         />
@@ -151,10 +167,12 @@ export function FreshCase({
 
 function TransferSlipView({
   receipt,
+  headingRef,
   onDownloadBlinded,
   onDownloadAudit,
 }: Readonly<{
   receipt: Receipt;
+  headingRef: RefObject<HTMLHeadingElement | null>;
   onDownloadBlinded: () => void;
   onDownloadAudit: () => void;
 }>) {
@@ -167,7 +185,9 @@ function TransferSlipView({
         Candidate evidence detected · not a verdict
       </p>
       <h2
+        ref={headingRef}
         id="transfer-slip-title"
+        tabIndex={-1}
         className="mt-2 text-3xl font-semibold tracking-[-0.045em]"
       >
         Transfer slip

@@ -11,7 +11,7 @@ import {
   Sparkle,
   WarningCircle,
 } from "@phosphor-icons/react";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { FreshCase } from "@/components/fresh-case";
 import { RepairReceipt } from "@/components/repair-receipt";
@@ -28,6 +28,7 @@ import type {
   AnalysisResult,
   AnalyzeRequest,
 } from "@/features/repair/contracts";
+import { revealStage } from "@/lib/ui/reveal-stage";
 
 type ApiEnvelope<T> = Readonly<{
   success: boolean;
@@ -67,6 +68,11 @@ export function RepairStudio({
   const analysisRequestId = useRef(0);
   const receiptRequestId = useRef(0);
   const transferRequestId = useRef(0);
+  const analysisHeadingRef = useRef<HTMLHeadingElement>(null);
+
+  useEffect(() => {
+    if (analysis) revealStage(analysisHeadingRef.current);
+  }, [analysis]);
 
   const invalidateDownstream = () => {
     analysisRequestId.current += 1;
@@ -124,7 +130,10 @@ export function RepairStudio({
     try {
       const result = await fetch("/api/analyze", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "X-ReasonPatch-Mode": mode,
+        },
         body: JSON.stringify({
           activityId: activity.id,
           response,
@@ -173,7 +182,10 @@ export function RepairStudio({
     try {
       const result = await fetch("/api/revise", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "X-ReasonPatch-Mode": mode,
+        },
         body: JSON.stringify({
           activityId: activity.id,
           originalResponse: response,
@@ -209,7 +221,10 @@ export function RepairStudio({
     try {
       const result = await fetch("/api/revise", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "X-ReasonPatch-Mode": "demo",
+        },
         body: JSON.stringify({
           activityId: activity.id,
           originalResponse: activity.sampleResponse,
@@ -284,6 +299,7 @@ export function RepairStudio({
 
   return (
     <section
+      id="reasoning-workspace"
       className="px-4 sm:px-6 lg:px-10"
       aria-label="Reasoning repair workspace"
     >
@@ -564,7 +580,9 @@ export function RepairStudio({
                           </p>
                         </div>
                         <h2
+                          ref={analysisHeadingRef}
                           id="question-title"
+                          tabIndex={-1}
                           className="mt-5 text-2xl font-medium leading-tight tracking-[-0.035em]"
                         >
                           One question before you revise

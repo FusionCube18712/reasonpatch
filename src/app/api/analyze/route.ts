@@ -1,8 +1,15 @@
 import { createDemoAnalysis } from "@/features/repair/demo";
 import { createRepairOrchestrator } from "@/features/repair/orchestrator";
 import { createOpenAIModelGatewayFromEnvironment } from "@/lib/ai/openai-gateway";
-import { assertLiveModeEnabled } from "@/lib/ai/live-access";
-import { createSlidingWindowLimiter, withRateLimit } from "@/lib/security/rate-limiter";
+import {
+  assertLiveModeEnabled,
+  isLiveModeRequest,
+} from "@/lib/ai/live-access";
+import {
+  createSlidingWindowLimiter,
+  withRateLimit,
+  withRateLimitWhen,
+} from "@/lib/security/rate-limiter";
 
 import { createAnalyzeHandler } from "./handler";
 
@@ -17,11 +24,22 @@ const analyzeHandler = createAnalyzeHandler({
   },
 });
 
-const globallyLimitedAnalyze = withRateLimit(analyzeHandler, {
+const globallyLiveLimitedAnalyze = withRateLimitWhen(analyzeHandler, {
   limiter: createSlidingWindowLimiter({ limit: 40, windowMs: 60_000 }),
   keyFor: () => "global-analysis-budget",
+  shouldLimit: isLiveModeRequest,
 });
 
-export const POST = withRateLimit(globallyLimitedAnalyze, {
+const liveLimitedAnalyze = withRateLimitWhen(globallyLiveLimitedAnalyze, {
   limiter: createSlidingWindowLimiter({ limit: 12, windowMs: 60_000 }),
+  shouldLimit: isLiveModeRequest,
+});
+
+const globallyRequestLimitedAnalyze = withRateLimit(liveLimitedAnalyze, {
+  limiter: createSlidingWindowLimiter({ limit: 800, windowMs: 60_000 }),
+  keyFor: () => "global-request-budget",
+});
+
+export const POST = withRateLimit(globallyRequestLimitedAnalyze, {
+  limiter: createSlidingWindowLimiter({ limit: 180, windowMs: 60_000 }),
 });

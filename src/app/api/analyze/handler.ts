@@ -1,4 +1,5 @@
 import { AnalyzeRequestSchema, type AnalysisResult } from "@/features/repair/contracts";
+import { hasMatchingDeclaredMode } from "@/lib/ai/live-access";
 import { readBoundedJson } from "../request-boundary";
 
 type Analyze = (request: ReturnType<typeof AnalyzeRequestSchema.parse>) => Promise<AnalysisResult>;
@@ -17,7 +18,7 @@ export const createAnalyzeHandler = ({ analyze }: HandlerDependencies) =>
     if (!requestBody.ok) return requestBody.response;
 
     const parsed = AnalyzeRequestSchema.safeParse(requestBody.body);
-    if (!parsed.success) {
+    if (!parsed.success || !hasMatchingDeclaredMode(request, parsed.data.mode)) {
       return json(
         {
           success: false,

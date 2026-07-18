@@ -7,8 +7,10 @@ import {
   Printer,
   ShieldCheck,
 } from "@phosphor-icons/react";
+import { useEffect, useRef } from "react";
 
 import type { Receipt } from "@/features/repair/contracts";
+import { revealStage } from "@/lib/ui/reveal-stage";
 
 const primaryButtonClass =
   "inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-[#25231f] px-5 text-sm font-medium text-[#f8f4eb] transition duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:bg-[#a24f24] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#a24f24] focus-visible:ring-offset-2 focus-visible:ring-offset-[#f5f1e8] active:translate-y-px disabled:cursor-not-allowed disabled:opacity-45";
@@ -17,6 +19,12 @@ export function RepairReceipt({
   receipt,
   onBeginTransfer,
 }: Readonly<{ receipt: Receipt; onBeginTransfer: () => void }>) {
+  const headingRef = useRef<HTMLHeadingElement>(null);
+
+  useEffect(() => {
+    revealStage(headingRef.current);
+  }, [receipt]);
+
   return (
     <section
       aria-labelledby="receipt-title"
@@ -28,7 +36,9 @@ export function RepairReceipt({
             AI-generated challenge, not a grade
           </p>
           <h2
+            ref={headingRef}
             id="receipt-title"
+            tabIndex={-1}
             className="mt-2 text-3xl font-semibold tracking-[-0.045em]"
           >
             Repair receipt

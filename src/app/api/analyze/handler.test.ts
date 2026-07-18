@@ -44,6 +44,25 @@ describe("analyze API handler", () => {
     expect(analyze).not.toHaveBeenCalled();
   });
 
+  it("rejects a mode header that disagrees with validated input", async () => {
+    const analyze = vi.fn();
+    const handler = createAnalyzeHandler({ analyze });
+
+    const response = await handler(
+      new Request("http://localhost/api/analyze", {
+        method: "POST",
+        body: JSON.stringify({ ...validAnalyzeRequest, mode: "live" }),
+        headers: {
+          "Content-Type": "application/json",
+          "X-ReasonPatch-Mode": "demo",
+        },
+      }),
+    );
+
+    expect(response.status).toBe(400);
+    expect(analyze).not.toHaveBeenCalled();
+  });
+
   it("returns analysis through the success envelope", async () => {
     const data = {
       runId: "run_test",

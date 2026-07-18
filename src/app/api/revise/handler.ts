@@ -3,6 +3,7 @@ import {
   type Receipt,
   type ReviseRequest,
 } from "@/features/repair/contracts";
+import { hasMatchingDeclaredMode } from "@/lib/ai/live-access";
 import { readBoundedJson } from "../request-boundary";
 
 type Revise = (request: ReviseRequest) => Promise<Receipt>;
@@ -19,7 +20,7 @@ export const createReviseHandler = ({ revise }: Readonly<{ revise: Revise }>) =>
     if (!requestBody.ok) return requestBody.response;
 
     const parsed = ReviseRequestSchema.safeParse(requestBody.body);
-    if (!parsed.success) {
+    if (!parsed.success || !hasMatchingDeclaredMode(request, parsed.data.mode)) {
       return json(
         {
           success: false,
