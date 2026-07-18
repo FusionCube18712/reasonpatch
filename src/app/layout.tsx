@@ -7,7 +7,7 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "ReasonPatch — Repair the step",
   description:
-    "A reasoning-repair studio that helps learners revise the earliest unsupported inference without writing the answer for them.",
+    "A reasoning-repair studio that helps learners revise the earliest unsupported inference, then apply it to a fresh case without receiving the answer.",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
@@ -17,4 +17,3 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     </html>
   );
 }
-

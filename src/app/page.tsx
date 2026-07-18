@@ -1,6 +1,6 @@
 import { RepairStudio } from "@/components/repair-studio";
 
-const journey = ["01 Explain", "02 Repair", "03 Receipt"] as const;
+const journey = ["01 Explain", "02 Repair", "03 Receipt", "04 Transfer"] as const;
 
 export default function Page() {
   return (
@@ -34,7 +34,7 @@ export default function Page() {
               ReasonPatch finds the earliest unsupported inference, asks one small question,
               and records what changed. It never writes the learner&apos;s replacement answer.
             </p>
-            <ol aria-label="Learning journey" className="grid border-y border-[#25231f]/14 sm:grid-cols-3">
+            <ol aria-label="Learning journey" className="grid border-y border-[#25231f]/14 sm:grid-cols-4">
               {journey.map((step, index) => (
                 <li
                   key={step}
@@ -57,9 +57,19 @@ export default function Page() {
       />
 
       <footer className="px-4 pb-8 pt-14 sm:px-6 lg:px-10">
-        <div className="mx-auto flex max-w-[1400px] flex-col gap-2 border-t border-[#25231f]/12 pt-5 text-xs text-[#625e56] sm:flex-row sm:items-center sm:justify-between">
+        <div className="mx-auto flex max-w-[1400px] flex-col gap-3 border-t border-[#25231f]/12 pt-5 text-xs text-[#625e56] sm:flex-row sm:items-center sm:justify-between">
           <span>Built with Codex and GPT-5.6 Sol + Luna</span>
-          <span>AI-generated challenges are not grades or verdicts.</span>
+          <div className="flex flex-col gap-2 sm:items-end">
+            <a
+              href="https://github.com/FusionCube18712/reasonpatch/blob/main/docs/PILOT_PROTOCOL.md"
+              target="_blank"
+              rel="noreferrer"
+              className="underline decoration-[#a24f24]/40 underline-offset-4 transition hover:text-[#a24f24] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#a24f24]"
+            >
+              Evidence and educator pilot protocol
+            </a>
+            <span>AI-generated challenges are not grades or verdicts.</span>
+          </div>
         </div>
       </footer>
     </main>
