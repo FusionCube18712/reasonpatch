@@ -400,6 +400,9 @@ describe("RepairStudio", () => {
     ).not.toBeInTheDocument();
     expect(screen.queryByText("Visible rubric")).not.toBeInTheDocument();
     expect(
+      screen.queryByRole("button", { name: /Causation or coincidence/ }),
+    ).not.toBeInTheDocument();
+    expect(
       screen.getByText(
         /prior diagnosis, question, rubric, and receipt are hidden/i,
       ),
@@ -610,7 +613,7 @@ describe("RepairStudio", () => {
           data: null,
           error: {
             code: "UNAVAILABLE",
-            message: "Fresh-case scan is warming up.",
+            message: "The receipt could not be created yet. Your revision was not lost.",
           },
         },
         503,
@@ -639,7 +642,9 @@ describe("RepairStudio", () => {
     );
 
     const transferAlert = await screen.findByRole("alert");
-    expect(transferAlert).toHaveTextContent("Fresh-case scan is warming up.");
+    expect(transferAlert).toHaveTextContent(
+      "The fresh-case scan could not be completed yet. Your response was not lost.",
+    );
     expect(
       screen.queryByRole("heading", { name: "Repair receipt" }),
     ).not.toBeInTheDocument();
@@ -649,6 +654,62 @@ describe("RepairStudio", () => {
     expect(
       await screen.findByRole("heading", { name: "Transfer slip" }),
     ).toBeVisible();
+  });
+
+  it("removes stale receipt controls during new receipt and analysis requests", async () => {
+    const user = userEvent.setup();
+    const fetchMock = vi.spyOn(globalThis, "fetch");
+    fetchMock.mockResolvedValueOnce(jsonResponse(analysisPayload));
+    fetchMock.mockResolvedValueOnce(jsonResponse(receiptPayload));
+    let resolveReceiptRequest: (response: Response) => void = () => undefined;
+    const pendingReceiptRequest = new Promise<Response>((resolve) => {
+      resolveReceiptRequest = resolve;
+    });
+    fetchMock.mockReturnValueOnce(pendingReceiptRequest);
+    let resolveAnalysisRequest: (response: Response) => void = () => undefined;
+    const pendingAnalysisRequest = new Promise<Response>((resolve) => {
+      resolveAnalysisRequest = resolve;
+    });
+    fetchMock.mockReturnValueOnce(pendingAnalysisRequest);
+    render(<RepairStudio />);
+
+    await user.click(screen.getByRole("button", { name: "Find the hinge" }));
+    await user.type(
+      screen.getByLabelText("Revised explanation"),
+      "The difference does not establish causation because students self-selected; a controlled comparison would be stronger.",
+    );
+    await user.click(
+      screen.getByRole("button", { name: "Create repair receipt" }),
+    );
+    expect(
+      await screen.findByRole("heading", { name: "Repair receipt" }),
+    ).toBeVisible();
+
+    await user.click(
+      screen.getByRole("button", { name: "Create repair receipt" }),
+    );
+    expect(
+      screen.queryByRole("heading", { name: "Repair receipt" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "Begin isolated fresh case" }),
+    ).not.toBeInTheDocument();
+    resolveReceiptRequest(jsonResponse(receiptPayload));
+    expect(
+      await screen.findByRole("heading", { name: "Repair receipt" }),
+    ).toBeVisible();
+
+    await user.click(screen.getByRole("button", { name: "Find the hinge" }));
+    expect(
+      screen.queryByRole("heading", { name: "Repair receipt" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "Begin isolated fresh case" }),
+    ).not.toBeInTheDocument();
+    resolveAnalysisRequest(jsonResponse(analysisPayload));
+    expect(await screen.findByRole("status")).toHaveTextContent(
+      "Repair crew complete",
+    );
   });
 
   it("renders missing rubric evidence without a green check or fabricated quote", async () => {

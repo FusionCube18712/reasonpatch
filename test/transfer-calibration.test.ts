@@ -49,6 +49,13 @@ const cases: ReadonlyArray<TransferCase> = [
     expectedMet: [],
   },
   {
+    name: "causation / reversed negation bait",
+    activityId: "correlation-causation",
+    response:
+      "Self-selection is irrelevant. We need no random assignment. The difference proves causation.",
+    expectedMet: [],
+  },
+  {
     name: "base rate / complete fresh-case reasoning",
     activityId: "base-rate-neglect",
     response:
@@ -81,6 +88,13 @@ const cases: ReadonlyArray<TransferCase> = [
     activityId: "base-rate-neglect",
     response:
       "The base rate does not matter. False positives can be ignored. The positive result is definitely 98 percent.",
+    expectedMet: [],
+  },
+  {
+    name: "base rate / wrong value with negated phrase bait",
+    activityId: "base-rate-neglect",
+    response:
+      "The base rate is 98 percent. Do not compare true positives with false positives. Ignore probability given a positive result.",
     expectedMet: [],
   },
   {
@@ -120,7 +134,7 @@ const cases: ReadonlyArray<TransferCase> = [
   },
 ];
 
-describe("15-case fresh-transfer calibration", () => {
+describe("17-case fresh-transfer calibration", () => {
   it.each(cases)("$name", ({ activityId, response, expectedMet }) => {
     const activity = getPublicActivity(activityId);
     const slip = createDemoReceipt({
