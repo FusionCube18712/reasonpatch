@@ -24,6 +24,16 @@ describe("curated activities", () => {
     expect(getPublicActivity("correlation-causation").rubric).toHaveLength(3);
   });
 
+  it("gives every lab a distinct fresh case without a supplied answer", () => {
+    const freshCases = listPublicActivities().map(({ transferPrompt }) => transferPrompt);
+
+    expect(new Set(freshCases)).toHaveLength(3);
+    expect(freshCases.every((prompt) => prompt.length >= 80)).toBe(true);
+    expect(freshCases.every((prompt) => prompt.endsWith("Explain your reasoning."))).toBe(
+      true,
+    );
+  });
+
   it("rejects unknown activity identifiers", () => {
     expect(() => getActivity("invented-activity")).toThrow("Unknown activity");
   });
