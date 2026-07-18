@@ -125,7 +125,7 @@ const segments = [
     },
   },
   {
-    text: "Educators get two local artifacts: an anonymous, unscored rater packet, and a separate coordinator manifest with provenance and automated evidence. Both are draft instruments, not fabricated outcomes.",
+    text: "Educators get two local artifacts: a blinded, unscored rater packet using anonymous response IDs, and a separate audit manifest. Both contain submitted text and require coordinator de-identification before sharing.",
     action: async (page) =>
       page.getByRole("button", { name: "Download blinded rater packet" }).scrollIntoViewIfNeeded(),
   },

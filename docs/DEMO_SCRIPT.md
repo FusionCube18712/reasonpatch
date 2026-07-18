@@ -1,4 +1,4 @@
-# Demo script — final cut 2:26
+# Demo script — final cut 2:27
 
 The rules require a public YouTube video under three minutes with audio, a clear product demo, and visible Codex/GPT-5.6 usage.
 
@@ -35,7 +35,7 @@ Then click **Create repair receipt**.
 
 **Narration:** The learner performs the repair in their own words. The printable Repair Receipt compares submitted excerpts, maps only supported evidence, and records honest provenance. It is a challenge—not a grade, mastery label, authorship claim, or proof of learning.
 
-## 1:16–1:47 — Isolated fresh case and educator handoff
+## 1:16–1:48 — Isolated fresh case and educator handoff
 
 **Action:** Click **Begin isolated fresh case**. Show that the prior diagnosis, question, rubric, receipt, and lab labels disappear. Enter:
 
@@ -43,21 +43,21 @@ Then click **Create repair receipt**.
 
 Then click **Check transfer evidence**.
 
-**Narration:** One good edit is not transfer evidence. The isolated case creates a separate Transfer Slip using a transparent deterministic scan with no model call and no mastery claim. Educators can download two separate draft artifacts: an anonymous, unscored rater packet and a coordinator audit manifest with provenance and automated evidence.
+**Narration:** One good edit is not transfer evidence. The isolated case creates a separate Transfer Slip using a transparent deterministic scan with no model call and no mastery claim. Educators can download two separate draft artifacts: a blinded, unscored rater packet using anonymous response IDs and a coordinator audit manifest. Both contain submitted text and require coordinator de-identification before sharing.
 
-## 1:47–1:55 — Breadth without losing focus
+## 1:48–1:56 — Breadth without losing focus
 
 **Action:** Reopen the demo and select the sampling lab.
 
 **Narration:** The same loop covers correlation and causation, base-rate neglect, and sampling bias without becoming a generic chatbot.
 
-## 1:55–2:11 — GPT-5.6 source and Codex collaboration
+## 1:56–2:12 — GPT-5.6 source and Codex collaboration
 
 **On screen:** Public orchestrator source, followed by the README's Codex collaboration section.
 
 **Narration:** The source shows Sol planning and synthesis, concurrent Luna execution, strict structured outputs, evidence checks, and per-probe fallback. Codex collaboration is documented through test-first checkpoints and independent planning, architecture, code, security, and judge reviews.
 
-## 2:11–2:26 — Close
+## 2:12–2:27 — Close
 
 **On screen:** Return to the ReasonPatch hero.
 
@@ -67,11 +67,11 @@ End on: **ReasonPatch — repair the step, keep the thinking yours.**
 
 ## Verified media
 
-- Duration: `145.98 seconds` (`2:26` rounded).
+- Duration: `146.93 seconds` (`2:27` rounded).
 - Video: H.264, 1440 × 900, 25 fps.
-- Audio: AAC, synchronized within 0.02 seconds of video; mean volume `-16.2 dB`, peak `-1.2 dB`.
+- Audio: AAC, synchronized within 0.02 seconds of video; mean volume `-16.1 dB`, peak `-1.2 dB`.
 - Burned-in captions: 18 narration segments.
-- SHA-256: `c141dc519359b2e91011dcae93b65c75ad2cf139ded0ccbc1a2dd9045cc68a57`.
+- SHA-256: `4937e7cf6dc9871b310d1aa64eb9fe9ff5ad65f749a4832d3360184261c47e74`.
 
 ## Recording checklist
 

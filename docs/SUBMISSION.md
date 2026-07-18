@@ -12,7 +12,7 @@
 
 ## Short description
 
-AI tutors are good at producing answers, but answer-first help can hide the reasoning step an instructor needs to inspect. ReasonPatch takes the opposite approach: GPT-5.6 Sol locates the learner's reasoning hinge, three parallel GPT-5.6 Luna probes test it from distinct educational roles, and Sol asks one smallest-useful question without writing the answer. After the learner submits a revision, ReasonPatch produces a printable Repair Receipt showing verified before/after evidence. It then presents an immediate fresh-context case in an isolated interface and creates a Transfer Slip from only the evidence in that response. Educators can download two explicitly unvalidated local artifacts: an anonymous, unscored rater packet and a separate coordinator audit manifest.
+AI tutors are good at producing answers, but answer-first help can hide the reasoning step an instructor needs to inspect. ReasonPatch takes the opposite approach: GPT-5.6 Sol locates the learner's reasoning hinge, three parallel GPT-5.6 Luna probes test it from distinct educational roles, and Sol asks one smallest-useful question without writing the answer. After the learner submits a revision, ReasonPatch produces a printable Repair Receipt showing verified before/after evidence. It then presents an immediate fresh-context case in an isolated interface and creates a Transfer Slip from only the evidence in that response. Educators can download two explicitly unvalidated local artifacts: a blinded, unscored rater packet and a separate coordinator audit manifest.
 
 ## What makes it different
 
@@ -93,8 +93,8 @@ The proposed comparison with answer-first assistance would instead use an isolat
 - [x] Deploy a free public guided demo and verify it in an incognito window.
 - [x] Keep public live mode disabled unless protected by a signed access gate and distributed budget controls.
 - [x] Create a public source repository and verify README rendering.
-- [x] Regenerate the narrated, captioned demo with the fresh-case Transfer Slip; verified at 145.98 seconds.
-- [ ] Upload to YouTube and verify public/incognito playback.
+- [x] Regenerate the narrated, captioned demo with the fresh-case Transfer Slip; verified at 146.93 seconds.
+- [x] Upload to YouTube and verify public/incognito playback.
 - [x] Run `npm run check`, `npm run test:e2e`, and `npm audit --omit=dev`.
 - [ ] Optional high-impact gate: collect 3–5 independent educator reviews with the [fixed feasibility instrument](EDUCATOR_FEASIBILITY_REVIEW.md), then report every result without efficacy claims.
 - [x] Record the primary Codex build task session ID from Codex session metadata.
@@ -113,12 +113,14 @@ The proposed comparison with answer-first assistance would instead use an isolat
 > Track: Education · OpenAI Build Week 2026
 >
 > The guided public path is an explicitly labeled fixture replay. Transfer evidence is not a grade, mastery claim, or proof of learning.
+>
+> The educator export is a blinded, unscored rater packet using anonymous response IDs—not an anonymous data collection. Both that packet and the separate audit manifest contain submitted text and require coordinator de-identification before sharing.
 
-**Verified upload file:** `artifacts/demo-video/reasonpatch-build-week-demo.mp4` · `145.98s` · SHA-256 `c141dc519359b2e91011dcae93b65c75ad2cf139ded0ccbc1a2dd9045cc68a57`
+**Verified upload file:** `artifacts/demo-video/reasonpatch-build-week-demo.mp4` · `146.93s` · SHA-256 `4937e7cf6dc9871b310d1aa64eb9fe9ff5ad65f749a4832d3360184261c47e74`
 
 ## URLs and IDs to fill in
 
 - Public demo: `https://reasonpatch.vercel.app`
 - Public repository: `https://github.com/FusionCube18712/reasonpatch`
-- YouTube demo: `TODO`
+- YouTube demo: `https://youtu.be/Jt0oZ7lmKLk`
 - Codex `/feedback` session ID: `019f71f8-76e3-7462-b8a5-7d571dbe5466`
