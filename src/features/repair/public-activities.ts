@@ -43,7 +43,7 @@ const PUBLIC_ACTIVITIES: ReadonlyArray<PublicActivity> = [
     prompt:
       "A rare condition affects 1 in 1,000 people. A test detects it 99% of the time and has a 1% false-positive rate. Explain what a positive result means.",
     transferPrompt:
-      "One in 500 transactions is fraudulent. A detector catches 98% of fraudulent transactions and flags 2% of legitimate ones. A flagged transaction is declared 98% likely to be fraud. Evaluate that conclusion. Explain your reasoning.",
+      "A second rare condition affects 1 in 2,000 people. A screening test detects it 98% of the time and has a 2% false-positive rate. A positive result is declared 98% likely to indicate the condition. Evaluate that conclusion. Explain your reasoning.",
     sampleResponse:
       "The test is 99% accurate, so a person who tests positive has a 99% chance of having the condition.",
     rubric: [
@@ -62,7 +62,7 @@ const PUBLIC_ACTIVITIES: ReadonlyArray<PublicActivity> = [
     prompt:
       "A campus newspaper posts an online poll and reports that 82% of students want all lectures recorded. Evaluate the conclusion.",
     transferPrompt:
-      "A city library posts a QR-code poll inside its branches and reports that 76% of residents want longer weekend hours. Evaluate whether the poll supports a claim about all city residents. Explain your reasoning.",
+      "A university dining service posts a QR-code poll inside dining halls and reports that 76% of students want later hours. Evaluate whether the poll supports a claim about all students. Explain your reasoning.",
     sampleResponse:
       "Because hundreds of students answered, the poll proves most students want every lecture recorded.",
     rubric: [

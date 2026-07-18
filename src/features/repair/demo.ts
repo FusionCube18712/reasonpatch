@@ -302,28 +302,81 @@ const DEMO_FIXTURES: Readonly<Record<ActivityId, DemoFixture>> = {
   },
 };
 
-const DEMO_EVIDENCE_PATTERNS: Readonly<
-  Record<ActivityId, ReadonlyArray<RegExp>>
+type DemoEvidenceRule = Readonly<{
+  supports: RegExp;
+  contradicts?: RegExp;
+}>;
+
+const DEMO_EVIDENCE_RULES: Readonly<
+  Record<ActivityId, ReadonlyArray<DemoEvidenceRule>>
 > = {
   "correlation-causation": [
-    /(?:association|does not establish causation|cannot establish causation|cannot conclude causation)/iu,
-    /(?:self[- ]selection|confound\w*|motivat\w*|chose|prior scores?)/iu,
-    /(?:random\w*|control\w*|baseline|comparison|experiment\w*)/iu,
+    {
+      supports:
+        /\b(?:association|difference|gap)[^.!?\n]{0,100}\b(?:does not|cannot|is not enough to)\s+(?:establish|prove|show|imply|support|conclude)\s+causation\b/iu,
+      contradicts:
+        /\b(?:association|difference|gap)[^.!?\n]{0,80}\b(?:proves?|establishes?|shows?|implies?|supports?)\s+causation\b/iu,
+    },
+    {
+      supports:
+        /(?:\bself[- ]selection\b|\b(?:students|patients|participants|people)[^.!?\n]{0,60}\b(?:chose|choose|chosen|self[- ]selected)\b|\bmotivat\w*[^.!?\n]{0,60}\b(?:chose|choose|chosen)\b|\bconfound(?:er|ing)?\b[^.!?\n]{0,80}\b(?:could|may|might|affect|explain|bias))/iu,
+      contradicts:
+        /(?:\b(?:there is|there was|has|had)\s+no\s+(?:plausible\s+)?confound|\b(?:self[- ]selection|confound\w*)\b[^.!?\n]{0,40}\b(?:does not|cannot|is not)\s+(?:matter|exist|affect|explain))/iu,
+    },
+    {
+      supports:
+        /(?:\b(?:need|needs|needed|require|requires|required|would be stronger|should use|could use|before concluding)\b[^.!?\n]{0,100}\b(?:random\w*|control\w*|baseline|comparison|experiment\w*)\b|\b(?:random assignment|controlled comparison|baseline scores?)\b[^.!?\n]{0,60}\b(?:needed|required|stronger|would help)\b)/iu,
+      contradicts:
+        /(?:\b(?:random\w*|control\w*|baseline|comparison|experiment\w*)\b[^.!?\n]{0,50}\b(?:unnecessary|not needed|irrelevant|does not matter|cannot help)\b|\bno need\b[^.!?\n]{0,50}\b(?:random\w*|control\w*|baseline|comparison|experiment\w*)\b)/iu,
+    },
   ],
   "base-rate-neglect": [
-    /(?:base rate|prevalence|1 in 1,?000|rare condition)/iu,
-    /(?:true positives?|false positives?|100,?000)/iu,
-    /(?:given a positive|among (?:the )?positive|posterior|positive result)/iu,
+    {
+      supports:
+        /(?:\b(?:base rate|prevalence|rare (?:condition|disease))\b[^.!?\n]{0,100}\b(?:include|included|consider|matters|important|must|before interpreting)\b|\b(?:base rate|prevalence)\s+(?:is|of)\s+\d)/iu,
+      contradicts:
+        /(?:\b(?:base rate|prevalence)\b[^.!?\n]{0,50}\b(?:does not|doesn't|cannot)\s+(?:matter|need|affect)|\b(?:ignore|ignored)\b[^.!?\n]{0,50}\b(?:base rate|prevalence)\b)/iu,
+    },
+    {
+      supports:
+        /(?:\b(?:compare|count|expect|calculate)\b[^.!?\n]{0,120}\btrue positives?\b[^.!?\n]{0,100}\bfalse positives?\b|\btrue positives?\b[^.!?\n]{0,80}\b(?:with|and|versus|vs\.?)\b[^.!?\n]{0,80}\bfalse positives?\b)/iu,
+      contradicts:
+        /(?:\b(?:ignore|ignored|irrelevant)\b[^.!?\n]{0,50}\b(?:true|false) positives?\b|\b(?:true|false) positives?\b[^.!?\n]{0,50}\b(?:ignore|ignored|irrelevant|do not matter|don't matter)\b)/iu,
+    },
+    {
+      supports:
+        /(?:\b(?:among|given|after)\s+(?:the\s+)?positive(?:\s+results?)?\b|\bposterior\b|\bprobability\s+(?:after|given)\s+(?:a\s+)?positive\b)/iu,
+      contradicts:
+        /\bpositive result\b[^.!?\n]{0,60}\b(?:definitely|certainly|must be)\b[^.!?\n]{0,30}\b\d{1,3}\s*(?:%|percent)\b/iu,
+    },
   ],
   "sampling-bias": [
-    /(?:all students|campus population|target population)/iu,
-    /(?:voluntary|self[- ]select|chose|choose|notice)/iu,
-    /(?:random\w*|representative|stratif\w*)/iu,
+    {
+      supports:
+        /(?:\b(?:target population (?:is|includes|covers)|claim (?:is|was) about|conclusion (?:is|was) about)[^.!?\n]{0,80}\b(?:all students|campus population)\b|\bcampus population\s+includes\s+all students\b|\ball students\b[^.!?\n]{0,80}\b(?:rather than|not just|not only)\b)/iu,
+    },
+    {
+      supports:
+        /(?:\b(?:voluntary(?:-response)?|self[- ]select\w*)\b[^.!?\n]{0,100}\b(?:bias|not representative|overrepresent|underrepresent|choose|chose)\b|\b(?:students|visitors|people)[^.!?\n]{0,60}\b(?:chose|choose)\b[^.!?\n]{0,20}\b(?:answer|respond)\b)/iu,
+      contradicts:
+        /(?:\b(?:voluntary|self[- ]select\w*)\b[^.!?\n]{0,60}\b(?:cannot|can't|does not|doesn't|not)\s+(?:be\s+)?(?:biased|bias|matter)|\bno\s+(?:voluntary-response\s+)?bias\b)/iu,
+    },
+    {
+      supports:
+        /(?:\b(?:representative|random|stratified)\s+(?:random\s+)?sample\b[^.!?\n]{0,80}\b(?:would be stronger|needed|required|should|could improve)\b|\b(?:need|require|use|draw|select)\b[^.!?\n]{0,80}\b(?:representative|random|stratified)\s+(?:sample|sampling)\b)/iu,
+      contradicts:
+        /\b(?:representative|random|stratified)\s+(?:random\s+)?sample\b[^.!?\n]{0,50}\b(?:unnecessary|not needed|irrelevant|does not matter)\b/iu,
+    },
   ],
 };
 
 const boundedExcerpt = (value: string): string =>
   value.length <= 420 ? value : `${value.slice(0, 417)}…`;
+
+const isEvaluatorInstruction = (value: string): boolean =>
+  /(?:ignore|disregard).{0,80}(?:rubric|criteria|prior task)|(?:mark|return|output).{0,50}(?:all|every).{0,50}(?:complete|green|met|perfect)/isu.test(
+    value,
+  );
 
 export const createDemoAnalysis = (rawRequest: AnalyzeRequest): AnalysisResult => {
   const request = AnalyzeRequestSchema.parse(rawRequest);
@@ -368,10 +421,13 @@ export const createDemoReceipt = (rawRequest: ReviseRequest): Receipt => {
     throw new Error("Guided demo requires the curated sample response.");
   }
 
+  const evaluatorInstruction = isEvaluatorInstruction(request.revisedResponse);
   const evaluatedRubric = fixture.receipt.rubric.map((criterion, index) => {
-    const match = DEMO_EVIDENCE_PATTERNS[request.activityId][index]?.exec(
-      request.revisedResponse,
-    );
+    const rule = DEMO_EVIDENCE_RULES[request.activityId][index];
+    const contradicted = rule?.contradicts?.test(request.revisedResponse) ?? false;
+    const match = evaluatorInstruction || contradicted
+      ? null
+      : rule?.supports.exec(request.revisedResponse);
     return {
       ...criterion,
       after: match ? ("met" as const) : ("missing" as const),
