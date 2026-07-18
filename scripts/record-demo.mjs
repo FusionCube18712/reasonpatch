@@ -36,6 +36,9 @@ const gotoExpected = async (page, url, expectedText) => {
 const revision =
   "Participants averaged eight points higher, but students chose whether to participate, so the difference alone does not establish causation. We need comparable baseline scores and a randomized controlled comparison.";
 
+const transferResponse =
+  "The recovery difference does not establish causation because patients chose whether to join. Random assignment or a controlled comparison would be stronger.";
+
 const segments = [
   {
     text: "Most AI tutors race to the correct answer. That can erase the reasoning step an educator actually needs to see.",
@@ -104,6 +107,29 @@ const segments = [
     action: async () => undefined,
   },
   {
+    text: "One good edit is not evidence of transfer. ReasonPatch opens an isolated fresh case with the diagnosis, question, rubric, and receipt removed from view.",
+    action: async (page) => {
+      await page.getByRole("button", { name: "Begin isolated fresh case" }).click();
+      await page.getByRole("heading", { name: "Try the reasoning on a fresh case" }).waitFor();
+      const transferInput = page.getByLabel("Fresh-case explanation");
+      await transferInput.scrollIntoViewIfNeeded();
+      await transferInput.fill(transferResponse);
+    },
+  },
+  {
+    text: "A separate Transfer Slip records only supported excerpts from that new response. The public path uses a transparent rubric scan, makes no model call, and never labels the result as mastery.",
+    action: async (page) => {
+      await page.getByRole("button", { name: "Check transfer evidence" }).click();
+      await page.getByRole("heading", { name: "Transfer slip" }).waitFor();
+      await page.getByRole("heading", { name: "Transfer slip" }).scrollIntoViewIfNeeded();
+    },
+  },
+  {
+    text: "Educators get two local artifacts: an anonymous, unscored rater packet, and a separate coordinator manifest with provenance and automated evidence. Both are draft instruments, not fabricated outcomes.",
+    action: async (page) =>
+      page.getByRole("button", { name: "Download blinded rater packet" }).scrollIntoViewIfNeeded(),
+  },
+  {
     text: "The same focused repair loop covers correlation and causation, base-rate neglect, and sampling bias without becoming a generic chatbot.",
     action: async (page) => {
       const samplingLab = page.getByRole("button", { name: /Who answered the survey/ });
@@ -132,7 +158,7 @@ const segments = [
     },
   },
   {
-    text: "The result has ninety-one tests, desktop and mobile browser coverage, accessible states, and a free public demo. ReasonPatch: repair the step, keep the thinking yours.",
+    text: "The result has more than one hundred automated tests, adversarial repair and transfer calibration, desktop and mobile browser coverage, accessible states, and a free public demo. ReasonPatch: repair the step, keep the thinking yours.",
     action: async (page) => {
       await gotoExpected(page, "https://reasonpatch.vercel.app", "Repair the step.");
       await page.evaluate(() => window.scrollTo({ top: 0, behavior: "instant" }));
