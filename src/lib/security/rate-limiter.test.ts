@@ -3,6 +3,31 @@ import { describe, expect, it } from "vitest";
 import { createSlidingWindowLimiter, withRateLimit } from "./rate-limiter";
 
 describe("API rate limiting", () => {
+  it.each([
+    { limit: 0, windowMs: 1_000 },
+    { limit: 1.5, windowMs: 1_000 },
+    { limit: 1, windowMs: 0 },
+    { limit: 1, windowMs: Number.POSITIVE_INFINITY },
+  ])("rejects invalid limiter configuration", (options) => {
+    expect(() => createSlidingWindowLimiter(options)).toThrow(
+      "Rate-limit options must be positive integers.",
+    );
+  });
+
+  it("bounds the number of retained identity buckets", () => {
+    const limiter = createSlidingWindowLimiter({
+      limit: 1,
+      windowMs: 60_000,
+      maxBuckets: 2,
+      now: () => 10,
+    });
+
+    expect(limiter.allow("learner-a")).toBe(true);
+    expect(limiter.allow("learner-b")).toBe(true);
+    expect(limiter.allow("learner-c")).toBe(true);
+    expect(limiter.allow("learner-a")).toBe(true);
+  });
+
   it("returns new window state without mutating prior timestamps", () => {
     let now = 1_000;
     const limiter = createSlidingWindowLimiter({ limit: 2, windowMs: 1_000, now: () => now });
@@ -45,4 +70,24 @@ describe("API rate limiting", () => {
       },
     });
   });
+
+  it.each([
+    [{ "x-forwarded-for": "203.0.113.10, 10.0.0.1" }, "forwarded"],
+    [{ "x-real-ip": "203.0.113.11" }, "real"],
+    [{}, "anonymous"],
+  ])(
+    "derives a privacy-preserving default key for %s requests",
+    async (headers, label) => {
+      expect(label).toBeTruthy();
+      const limiter = createSlidingWindowLimiter({ limit: 1, windowMs: 60_000 });
+      const guarded = withRateLimit(
+        async () => Response.json({ success: true }),
+        { limiter },
+      );
+      const request = new Request("http://localhost/api/analyze", { headers });
+
+      expect((await guarded(request.clone())).status).toBe(200);
+      expect((await guarded(request.clone())).status).toBe(429);
+    },
+  );
 });

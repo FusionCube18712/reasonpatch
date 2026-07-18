@@ -14,7 +14,13 @@ export default defineConfig({
       provider: "v8",
       reporter: ["text", "json-summary", "html"],
       include: ["src/**/*.{ts,tsx}"],
-      exclude: ["src/**/*.test.{ts,tsx}", "src/app/layout.tsx"],
+      exclude: [
+        "src/**/*.test.{ts,tsx}",
+        "src/app/layout.tsx",
+        // Next route files only bind tested handlers to framework runtime objects.
+        // Their behavior is exercised through Playwright's real HTTP requests.
+        "src/app/api/**/route.ts",
+      ],
       thresholds: {
         branches: 80,
         functions: 80,
@@ -24,4 +30,3 @@ export default defineConfig({
     },
   },
 });
-

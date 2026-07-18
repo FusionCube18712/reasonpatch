@@ -21,6 +21,12 @@ const classify = (error: unknown) => {
   return "upstream" as const;
 };
 
+const outputBudgetFor = (task: string): number => {
+  if (task === "plan") return 1_000;
+  if (task.startsWith("probe:")) return 800;
+  return 1_300;
+};
+
 export const createOpenAIModelGateway = ({
   responses,
 }: GatewayDependencies): ModelGateway => ({
@@ -30,6 +36,7 @@ export const createOpenAIModelGateway = ({
         model: call.model,
         store: false,
         reasoning: { effort: call.model === "gpt-5.6-sol" ? "medium" : "low" },
+        max_output_tokens: outputBudgetFor(call.task),
         instructions: call.instructions,
         input: [{ role: "user", content: JSON.stringify(call.input) }],
         text: {
@@ -59,9 +66,8 @@ export const createOpenAIModelGatewayFromEnvironment = (): ModelGateway => {
 
   const client = new OpenAI({
     apiKey,
-    timeout: 25_000,
-    maxRetries: 1,
+    timeout: 12_000,
+    maxRetries: 0,
   });
   return createOpenAIModelGateway({ responses: client.responses });
 };
-

@@ -1,4 +1,5 @@
 import { AnalyzeRequestSchema, type AnalysisResult } from "@/features/repair/contracts";
+import { readBoundedJson } from "../request-boundary";
 
 type Analyze = (request: ReturnType<typeof AnalyzeRequestSchema.parse>) => Promise<AnalysisResult>;
 
@@ -12,21 +13,10 @@ const json = (body: unknown, status: number) =>
 
 export const createAnalyzeHandler = ({ analyze }: HandlerDependencies) =>
   async function handleAnalyze(request: Request): Promise<Response> {
-    let body: unknown;
-    try {
-      body = await request.json();
-    } catch {
-      return json(
-        {
-          success: false,
-          data: null,
-          error: { code: "INVALID_JSON", message: "Send a valid JSON request." },
-        },
-        400,
-      );
-    }
+    const requestBody = await readBoundedJson(request);
+    if (!requestBody.ok) return requestBody.response;
 
-    const parsed = AnalyzeRequestSchema.safeParse(body);
+    const parsed = AnalyzeRequestSchema.safeParse(requestBody.body);
     if (!parsed.success) {
       return json(
         {
@@ -58,4 +48,3 @@ export const createAnalyzeHandler = ({ analyze }: HandlerDependencies) =>
       );
     }
   };
-

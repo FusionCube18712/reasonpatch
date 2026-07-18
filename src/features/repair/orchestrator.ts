@@ -22,6 +22,7 @@ import {
   PROBE_INSTRUCTIONS,
   SYNTHESIS_INSTRUCTIONS,
 } from "./prompts";
+import { assertEvidenceOccursIn } from "./evidence";
 
 type OrchestratorDependencies = Readonly<{
   gateway: ModelGateway;
@@ -54,7 +55,19 @@ export const createRepairOrchestrator = ({
       instructions: PROBE_INSTRUCTIONS,
       input,
     });
-    return ProbeOutputSchema.parse(output);
+    const parsed = ProbeOutputSchema.parse(output);
+    if (parsed.role !== role) {
+      throw new ModelGatewayError(
+        `The ${role} executor returned a ${parsed.role} result.`,
+        "invalid_output",
+      );
+    }
+    assertEvidenceOccursIn(
+      String(input.learnerResponse ?? ""),
+      parsed.evidenceQuote,
+      `${role} evidence`,
+    );
+    return parsed;
   };
 
   const executeProbe = async (
@@ -124,6 +137,11 @@ export const createRepairOrchestrator = ({
       },
     });
     const plan = AnalysisPlanSchema.parse(rawPlan);
+    assertEvidenceOccursIn(
+      request.response,
+      plan.hingeQuote,
+      "Analysis hinge",
+    );
 
     const probeRuns = await Promise.all(
       plan.jobs.map((job) =>
@@ -157,6 +175,11 @@ export const createRepairOrchestrator = ({
       },
     });
     const diagnosis = SynthesisOutputSchema.parse(rawSynthesis);
+    assertEvidenceOccursIn(
+      request.response,
+      diagnosis.hingeQuote,
+      "Synthesis hinge",
+    );
     const traces = probeRuns.map(({ trace }) => trace);
 
     return {
@@ -175,4 +198,3 @@ export const createRepairOrchestrator = ({
 
   return { analyze } as const;
 };
-

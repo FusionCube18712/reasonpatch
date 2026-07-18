@@ -28,6 +28,7 @@ describe("OpenAI model gateway", () => {
         reasoning: { effort: "medium" },
         instructions: call.instructions,
         text: { format: expect.any(Object) },
+        max_output_tokens: 1_000,
       }),
     );
     expect(parse.mock.calls[0]?.[0].input).toEqual([
@@ -48,6 +49,31 @@ describe("OpenAI model gateway", () => {
 
     await expect(gateway.generate(call)).rejects.toEqual(
       expect.objectContaining({ kind: "quota" }),
+    );
+  });
+
+  it.each([
+    [{ name: "AbortError" }, "timeout"],
+    [{ status: 408 }, "timeout"],
+    [{ status: 502 }, "upstream"],
+  ] as const)("classifies model transport failures", async (failure, kind) => {
+    const gateway = createOpenAIModelGateway({
+      responses: { parse: vi.fn().mockRejectedValue(failure) },
+    });
+
+    await expect(gateway.generate(call)).rejects.toEqual(
+      expect.objectContaining({ kind }),
+    );
+  });
+
+  it("uses low reasoning effort for Luna executor calls", async () => {
+    const parse = vi.fn().mockResolvedValue({ output_parsed: validPlan });
+    const gateway = createOpenAIModelGateway({ responses: { parse } });
+
+    await gateway.generate({ ...call, model: "gpt-5.6-luna" });
+
+    expect(parse).toHaveBeenCalledWith(
+      expect.objectContaining({ reasoning: { effort: "low" } }),
     );
   });
 

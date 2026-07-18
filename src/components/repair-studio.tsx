@@ -12,9 +12,12 @@ import {
   Sparkle,
   WarningCircle,
 } from "@phosphor-icons/react";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 
-import { getActivity, listActivities } from "@/features/repair/activities";
+import {
+  getPublicActivity,
+  listPublicActivities,
+} from "@/features/repair/public-activities";
 import type {
   AnalysisResult,
   AnalyzeRequest,
@@ -30,14 +33,16 @@ type ApiEnvelope<T> = Readonly<{
 type RunMode = AnalyzeRequest["mode"];
 type LoadingTask = "analysis" | "receipt" | null;
 
-const activities = listActivities().map(({ public: activity }) => activity);
+const activities = listPublicActivities();
 
 const buttonClass =
   "inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-[#25231f] px-5 text-sm font-medium text-[#f8f4eb] transition duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:bg-[#a24f24] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#a24f24] focus-visible:ring-offset-2 focus-visible:ring-offset-[#f5f1e8] active:translate-y-px disabled:cursor-not-allowed disabled:opacity-45";
 
-export function RepairStudio() {
+export function RepairStudio({
+  liveModeAvailable = false,
+}: Readonly<{ liveModeAvailable?: boolean }>) {
   const [activityId, setActivityId] = useState("correlation-causation");
-  const activity = useMemo(() => getActivity(activityId).public, [activityId]);
+  const activity = useMemo(() => getPublicActivity(activityId), [activityId]);
   const [response, setResponse] = useState(activity.sampleResponse);
   const [analysis, setAnalysis] = useState<AnalysisResult | null>(null);
   const [revision, setRevision] = useState("");
@@ -47,18 +52,48 @@ export function RepairStudio() {
   const [forceFallback, setForceFallback] = useState(false);
   const [mode, setMode] = useState<RunMode>("demo");
   const [errorAction, setErrorAction] = useState<"analysis" | "receipt">("analysis");
+  const [liveConsent, setLiveConsent] = useState(false);
+  const analysisRequestId = useRef(0);
+  const receiptRequestId = useRef(0);
 
-  const selectActivity = (nextId: string) => {
-    const next = getActivity(nextId).public;
-    setActivityId(next.id);
-    setResponse(next.sampleResponse);
+  const invalidateDownstream = () => {
+    analysisRequestId.current += 1;
+    receiptRequestId.current += 1;
     setAnalysis(null);
     setRevision("");
     setReceipt(null);
     setError(null);
   };
 
+  const selectActivity = (nextId: string) => {
+    const next = getPublicActivity(nextId);
+    setActivityId(next.id);
+    setResponse(next.sampleResponse);
+    setLiveConsent(false);
+    invalidateDownstream();
+  };
+
+  const selectMode = (nextMode: RunMode) => {
+    setMode(nextMode);
+    setForceFallback(false);
+    setLiveConsent(false);
+    if (nextMode === "demo") setResponse(activity.sampleResponse);
+    invalidateDownstream();
+  };
+
+  const updateResponse = (nextResponse: string) => {
+    setResponse(nextResponse);
+    invalidateDownstream();
+  };
+
+  const updateFallback = (enabled: boolean) => {
+    setForceFallback(enabled);
+    invalidateDownstream();
+  };
+
   const analyze = async () => {
+    const requestId = analysisRequestId.current + 1;
+    analysisRequestId.current = requestId;
     setError(null);
     setErrorAction("analysis");
     setLoadingTask("analysis");
@@ -70,25 +105,30 @@ export function RepairStudio() {
           activityId: activity.id,
           response,
           mode,
-          forceLunaFallback: forceFallback,
+          forceLunaFallback: mode === "demo" ? forceFallback : false,
         }),
       });
       const envelope = (await result.json()) as ApiEnvelope<AnalysisResult>;
       if (!result.ok || !envelope.success || !envelope.data) {
         throw new Error(envelope.error?.message ?? "Analysis is temporarily unavailable.");
       }
+      if (requestId !== analysisRequestId.current) return;
       setAnalysis(envelope.data);
       setRevision("");
       setReceipt(null);
     } catch (caught) {
+      if (requestId !== analysisRequestId.current) return;
       setAnalysis(null);
+      setReceipt(null);
       setError(caught instanceof Error ? caught.message : "Analysis is temporarily unavailable.");
     } finally {
-      setLoadingTask(null);
+      if (requestId === analysisRequestId.current) setLoadingTask(null);
     }
   };
 
   const createReceipt = async () => {
+    const requestId = receiptRequestId.current + 1;
+    receiptRequestId.current = requestId;
     setError(null);
     setErrorAction("receipt");
     setLoadingTask("receipt");
@@ -107,11 +147,13 @@ export function RepairStudio() {
       if (!result.ok || !envelope.success || !envelope.data) {
         throw new Error(envelope.error?.message ?? "The receipt could not be created yet.");
       }
+      if (requestId !== receiptRequestId.current) return;
       setReceipt(envelope.data);
     } catch (caught) {
+      if (requestId !== receiptRequestId.current) return;
       setError(caught instanceof Error ? caught.message : "The receipt could not be created yet.");
     } finally {
-      setLoadingTask(null);
+      if (requestId === receiptRequestId.current) setLoadingTask(null);
     }
   };
 
@@ -125,6 +167,7 @@ export function RepairStudio() {
                 key={item.id}
                 type="button"
                 onClick={() => selectActivity(item.id)}
+                disabled={loadingTask !== null}
                 aria-pressed={item.id === activity.id}
                 className={`shrink-0 rounded-full border px-4 py-2 text-left text-xs transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#a24f24] ${
                   item.id === activity.id
@@ -138,11 +181,12 @@ export function RepairStudio() {
             ))}
           </div>
           <div className="flex items-center gap-1 border-t border-[#25231f]/12 px-4 py-3 lg:border-l lg:border-t-0">
-            {(["demo", "live"] as const).map((item) => (
+            {(["demo", ...(liveModeAvailable ? (["live"] as const) : [])] as const).map((item) => (
               <button
                 key={item}
                 type="button"
-                onClick={() => setMode(item)}
+                onClick={() => selectMode(item)}
+                disabled={loadingTask !== null}
                 aria-pressed={mode === item}
                 className={`rounded-full px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.12em] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#a24f24] ${
                   mode === item ? "bg-[#e8dfd2] text-[#25231f]" : "text-[#625e56]"
@@ -204,13 +248,18 @@ export function RepairStudio() {
                 Your explanation
               </label>
               <p id="response-help" className="mt-1 text-xs leading-5 text-[#625e56]">
-                Use 2–5 sentences. The sample is intentionally flawed.
+                {mode === "demo"
+                  ? "Guided demo replays this curated, intentionally flawed sample."
+                  : "Use 2–5 sentences. Remove names and sensitive details."}
               </p>
               <textarea
                 id="learner-response"
                 aria-describedby="response-help"
                 value={response}
-                onChange={(event) => setResponse(event.target.value)}
+                onChange={(event) => updateResponse(event.target.value)}
+                readOnly={mode === "demo"}
+                disabled={loadingTask !== null}
+                maxLength={3_000}
                 className="mt-3 min-h-36 w-full resize-y rounded-2xl border border-[#25231f]/16 bg-white/65 p-4 text-[15px] leading-7 text-[#393631] outline-none transition placeholder:text-[#6f685f] focus:border-[#a24f24] focus:ring-2 focus:ring-[#a24f24]/15"
               />
               <div className="mt-2 flex justify-between gap-4 text-[11px] text-[#625e56]">
@@ -220,16 +269,39 @@ export function RepairStudio() {
             </div>
 
             <div className="no-print mt-7 flex flex-col gap-4 border-t border-[#25231f]/10 pt-6 sm:flex-row sm:items-center sm:justify-between">
-              <label className="inline-flex cursor-pointer items-center gap-3 text-xs text-[#625e56]">
-                <input
-                  type="checkbox"
-                  checked={forceFallback}
-                  onChange={(event) => setForceFallback(event.target.checked)}
-                  className="size-4 accent-[#a24f24]"
-                />
-                Demonstrate Sol fallback
-              </label>
-              <button type="button" onClick={analyze} disabled={loadingTask !== null} className={buttonClass}>
+              {mode === "demo" ? (
+                <label className="inline-flex cursor-pointer items-center gap-3 text-xs text-[#625e56]">
+                  <input
+                    type="checkbox"
+                    checked={forceFallback}
+                    onChange={(event) => updateFallback(event.target.checked)}
+                    disabled={loadingTask !== null}
+                    className="size-4 accent-[#a24f24]"
+                  />
+                  Demonstrate Sol fallback
+                </label>
+              ) : (
+                <label className="inline-flex cursor-pointer items-start gap-3 text-xs leading-5 text-[#625e56]">
+                  <input
+                    type="checkbox"
+                    checked={liveConsent}
+                    onChange={(event) => setLiveConsent(event.target.checked)}
+                    disabled={loadingTask !== null}
+                    className="mt-0.5 size-4 shrink-0 accent-[#a24f24]"
+                  />
+                  I removed names and sensitive details. Live text is sent to OpenAI with storage disabled.
+                </label>
+              )}
+              <button
+                type="button"
+                onClick={analyze}
+                disabled={
+                  loadingTask !== null ||
+                  response.trim().length < 24 ||
+                  (mode === "live" && !liveConsent)
+                }
+                className={buttonClass}
+              >
                 {loadingTask === "analysis" ? "Locating the hinge…" : "Find the hinge"}
                 {loadingTask !== "analysis" ? <ArrowRight size={16} aria-hidden="true" /> : null}
               </button>
@@ -307,7 +379,14 @@ export function RepairStudio() {
                     id="revision"
                     aria-describedby="revision-help"
                     value={revision}
-                    onChange={(event) => setRevision(event.target.value)}
+                    onChange={(event) => {
+                      receiptRequestId.current += 1;
+                      setRevision(event.target.value);
+                      setReceipt(null);
+                      setError(null);
+                    }}
+                    disabled={loadingTask !== null}
+                    maxLength={3_000}
                     placeholder="Revise the hinge in your own words…"
                     className="mt-3 min-h-36 w-full resize-y rounded-2xl border border-[#25231f]/16 bg-white/65 p-4 text-[15px] leading-7 outline-none transition focus:border-[#a24f24] focus:ring-2 focus:ring-[#a24f24]/15"
                   />
@@ -315,7 +394,11 @@ export function RepairStudio() {
                     <button
                       type="button"
                       onClick={createReceipt}
-                      disabled={loadingTask !== null || revision.trim().length < 36}
+                      disabled={
+                        loadingTask !== null ||
+                        revision.trim().length < 36 ||
+                        (mode === "live" && !liveConsent)
+                      }
                       className={buttonClass}
                     >
                       {loadingTask === "receipt" ? "Comparing the revision…" : "Create repair receipt"}
@@ -355,21 +438,37 @@ function AnalysisSkeleton() {
 }
 
 function TraceView({ analysis }: Readonly<{ analysis: AnalysisResult }>) {
+  const isFixture = analysis.trace.plannerModel === "demo-fixture";
   return (
-    <div aria-label="Repair crew trace" className="mt-5 grid gap-px overflow-hidden rounded-2xl border border-[#25231f]/10 bg-[#25231f]/10 sm:grid-cols-3">
-      {analysis.trace.probes.map((probe) => (
-        <div key={probe.role} className="bg-[#fbf8f1] p-4">
-          <div className="flex items-center justify-between gap-2">
-            <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-[#625e56]">{probe.role}</span>
-            <span className={`size-1.5 rounded-full ${probe.status === "fallback" ? "bg-[#a24f24]" : "bg-[#477453]"}`} />
+    <div className="mt-5">
+      <p className="mb-2 font-mono text-[9px] uppercase tracking-[0.12em] text-[#625e56]">
+        {isFixture
+          ? "Guided fixture replay · no model calls"
+          : "Live orchestration trace"}
+      </p>
+      <div aria-label="Repair crew trace" className="grid gap-px overflow-hidden rounded-2xl border border-[#25231f]/10 bg-[#25231f]/10 sm:grid-cols-3">
+        {analysis.trace.probes.map((probe) => (
+          <div key={probe.role} className="bg-[#fbf8f1] p-4">
+            <div className="flex items-center justify-between gap-2">
+              <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-[#625e56]">{probe.role}</span>
+              <span className={`size-1.5 rounded-full ${probe.status === "fallback" ? "bg-[#a24f24]" : "bg-[#477453]"}`} />
+            </div>
+            <p className="mt-2 text-xs font-medium">
+              {isFixture
+                ? probe.status === "fallback"
+                  ? "Recorded Sol fallback"
+                  : "Recorded Luna path"
+                : probe.status === "fallback"
+                  ? "Sol takeover"
+                  : "Luna complete"}
+            </p>
+            <p className="mt-1 font-mono text-[9px] text-[#625e56]">
+              {isFixture ? "fixture provenance" : `${probe.latencyMs} ms · ${probe.model}`}
+            </p>
           </div>
-          <p className="mt-2 text-xs font-medium">
-            {probe.status === "fallback" ? "Sol takeover" : "Luna complete"}
-          </p>
-          <p className="mt-1 font-mono text-[9px] text-[#625e56]">{probe.latencyMs} ms · {probe.model}</p>
-        </div>
-      ))}
-      {analysis.trace.degraded ? <p className="sr-only">Fallback disclosed</p> : null}
+        ))}
+        {analysis.trace.degraded ? <p className="sr-only">Fallback disclosed</p> : null}
+      </div>
     </div>
   );
 }
@@ -394,6 +493,9 @@ function ReceiptView({ receipt }: Readonly<{ receipt: Receipt }>) {
       </div>
 
       <p className="mt-6 max-w-[65ch] text-sm leading-6 text-[#514d46]">{receipt.summary}</p>
+      <p className="mt-2 font-mono text-[9px] uppercase tracking-[0.12em] text-[#625e56]">
+        Provenance · {receipt.provenance.mode} · {receipt.provenance.model}
+      </p>
 
       <div className="mt-7 divide-y divide-[#25231f]/10 border-y border-[#25231f]/10">
         {receipt.changes.map((change) => (
@@ -414,10 +516,27 @@ function ReceiptView({ receipt }: Readonly<{ receipt: Receipt }>) {
             <li key={criterion.id} className="grid gap-2 py-4 sm:grid-cols-[1fr_auto] sm:items-center">
               <div>
                 <p className="text-sm">{criterion.label}</p>
-                <p className="mt-1 text-xs leading-5 text-[#625e56]">“{criterion.evidence}”</p>
+                {criterion.evidence ? (
+                  <p className="mt-1 text-xs leading-5 text-[#625e56]">“{criterion.evidence}”</p>
+                ) : (
+                  <p className="mt-1 text-xs leading-5 text-[#625e56]">No direct evidence yet.</p>
+                )}
               </div>
-              <span className="inline-flex w-fit items-center gap-1.5 rounded-full bg-[#e5eee7] px-3 py-1 text-[10px] font-medium uppercase tracking-[0.1em] text-[#386044]">
-                <Check size={12} weight="bold" aria-hidden="true" />
+              <span
+                aria-label={`Rubric state: ${criterion.after}`}
+                className={`inline-flex w-fit items-center gap-1.5 rounded-full px-3 py-1 text-[10px] font-medium uppercase tracking-[0.1em] ${
+                  criterion.after === "met"
+                    ? "bg-[#e5eee7] text-[#386044]"
+                    : criterion.after === "emerging"
+                      ? "bg-[#f7e9df] text-[#763a1e]"
+                      : "bg-[#f0ebe2] text-[#625e56]"
+                }`}
+              >
+                {criterion.after === "met" ? (
+                  <Check size={12} weight="bold" aria-hidden="true" />
+                ) : (
+                  <Circle size={12} weight="bold" aria-hidden="true" />
+                )}
                 {criterion.after}
               </span>
             </li>

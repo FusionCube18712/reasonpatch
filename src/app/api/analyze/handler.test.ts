@@ -4,6 +4,25 @@ import { createAnalyzeHandler } from "./handler";
 import { validAnalyzeRequest, validSynthesis } from "../../../../test/fixtures";
 
 describe("analyze API handler", () => {
+  it("returns a safe error for malformed JSON", async () => {
+    const analyze = vi.fn();
+    const handler = createAnalyzeHandler({ analyze });
+
+    const response = await handler(
+      new Request("http://localhost/api/analyze", {
+        method: "POST",
+        body: "{not-json",
+        headers: { "Content-Type": "application/json" },
+      }),
+    );
+
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toMatchObject({
+      error: { code: "INVALID_JSON" },
+    });
+    expect(analyze).not.toHaveBeenCalled();
+  });
+
   it("returns a consistent 400 envelope for invalid learner input", async () => {
     const analyze = vi.fn();
     const handler = createAnalyzeHandler({ analyze });
@@ -12,6 +31,7 @@ describe("analyze API handler", () => {
       new Request("http://localhost/api/analyze", {
         method: "POST",
         body: JSON.stringify({ activityId: "unknown" }),
+        headers: { "Content-Type": "application/json" },
       }),
     );
 
@@ -39,6 +59,7 @@ describe("analyze API handler", () => {
       new Request("http://localhost/api/analyze", {
         method: "POST",
         body: JSON.stringify(validAnalyzeRequest),
+        headers: { "Content-Type": "application/json" },
       }),
     );
 
@@ -59,6 +80,7 @@ describe("analyze API handler", () => {
       new Request("http://localhost/api/analyze", {
         method: "POST",
         body: JSON.stringify(validAnalyzeRequest),
+        headers: { "Content-Type": "application/json" },
       }),
     );
 
@@ -66,4 +88,3 @@ describe("analyze API handler", () => {
     expect(JSON.stringify(await response.json())).not.toContain("secret");
   });
 });
-

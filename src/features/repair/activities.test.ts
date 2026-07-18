@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { getActivity, listActivities } from "./activities";
+import { getPublicActivity, listPublicActivities } from "./public-activities";
 
 describe("curated activities", () => {
   it("offers three focused introductory-statistics misconceptions", () => {
@@ -17,10 +18,13 @@ describe("curated activities", () => {
     expect(activity.public.rubric).toHaveLength(3);
     expect(activity.private.instructorIntent).toContain("causation");
     expect(JSON.stringify(activity.public)).not.toContain("instructorIntent");
+    expect(JSON.stringify(listPublicActivities())).not.toMatch(
+      /instructorIntent|answerBoundary|expectedMisconception/,
+    );
+    expect(getPublicActivity("correlation-causation").rubric).toHaveLength(3);
   });
 
   it("rejects unknown activity identifiers", () => {
     expect(() => getActivity("invented-activity")).toThrow("Unknown activity");
   });
 });
-

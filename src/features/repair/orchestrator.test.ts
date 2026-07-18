@@ -94,6 +94,7 @@ describe("repair orchestrator", () => {
 
     await orchestrator.analyze({
       ...validAnalyzeRequest,
+      mode: "demo",
       forceLunaFallback: true,
     });
 
@@ -103,5 +104,48 @@ describe("repair orchestrator", () => {
       calls.every(({ model }) => model === "gpt-5.6-sol"),
     );
   });
-});
 
+  it("reruns a Luna probe on Sol when the executor returns the wrong role", async () => {
+    const calls: ModelCall[] = [];
+    const gateway: ModelGateway = {
+      async generate(call) {
+        calls.push(call);
+        if (call.task === "plan") return validPlan;
+        if (call.task === "synthesize") return validSynthesis;
+        const role = call.task.replace("probe:", "") as
+          | "counterexample"
+          | "assumption"
+          | "rubric";
+        if (call.model === "gpt-5.6-luna" && role === "assumption") {
+          return probeFor("rubric");
+        }
+        return probeFor(role);
+      },
+    };
+    const orchestrator = createRepairOrchestrator({ gateway });
+
+    const result = await orchestrator.analyze(validAnalyzeRequest);
+
+    expect(calls).toContainEqual(
+      expect.objectContaining({ model: "gpt-5.6-sol", task: "probe:assumption" }),
+    );
+    expect(result.trace.probes).toContainEqual(
+      expect.objectContaining({ role: "assumption", fallbackReason: "invalid_output" }),
+    );
+  });
+
+  it("rejects a fabricated hinge quote that is absent from learner text", async () => {
+    const gateway: ModelGateway = {
+      async generate(call) {
+        if (call.task === "plan") {
+          return { ...validPlan, hingeQuote: "A fabricated learner quotation" };
+        }
+        return validSynthesis;
+      },
+    };
+
+    await expect(
+      createRepairOrchestrator({ gateway }).analyze(validAnalyzeRequest),
+    ).rejects.toEqual(expect.objectContaining({ kind: "invalid_output" }));
+  });
+});

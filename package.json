@@ -13,6 +13,7 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
+    "test:e2e:production": "npm run build && playwright test --config=playwright.production.config.ts e2e/repair-flow.spec.ts --project=chromium",
     "check": "npm run lint && npm run typecheck && npm run test:coverage && npm run build"
   },
   "keywords": [
@@ -50,5 +51,8 @@
     "tailwindcss": "^4.3.3",
     "typescript": "^6.0.3",
     "vitest": "^4.1.10"
+  },
+  "overrides": {
+    "postcss": "$postcss"
   }
 }

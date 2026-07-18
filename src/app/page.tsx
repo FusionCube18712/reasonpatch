@@ -45,14 +45,16 @@ export default function Page() {
               ))}
             </ol>
             <p className="max-w-[66ch] text-xs leading-5 text-[#625e56]">
-              No accounts. No student identifiers. Learner text is used only for the requested
-              analysis, and the resulting challenge never becomes a grade.
+              No accounts or local text storage. Avoid names and sensitive details. When live
+              mode is explicitly enabled, submitted text is sent to OpenAI with storage disabled.
             </p>
           </div>
         </div>
       </section>
 
-      <RepairStudio />
+      <RepairStudio
+        liveModeAvailable={process.env.NEXT_PUBLIC_REASONPATCH_LIVE_MODE === "true"}
+      />
 
       <footer className="px-4 pb-8 pt-14 sm:px-6 lg:px-10">
         <div className="mx-auto flex max-w-[1400px] flex-col gap-2 border-t border-[#25231f]/12 pt-5 text-xs text-[#625e56] sm:flex-row sm:items-center sm:justify-between">

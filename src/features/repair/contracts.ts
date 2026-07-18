@@ -13,7 +13,16 @@ export const AnalyzeRequestSchema = z
     mode: z.enum(["demo", "live"]),
     forceLunaFallback: z.boolean(),
   })
-  .strict();
+  .strict()
+  .superRefine((value, context) => {
+    if (value.mode === "live" && value.forceLunaFallback) {
+      context.addIssue({
+        code: "custom",
+        path: ["forceLunaFallback"],
+        message: "Manual Sol fallback is available only in guided demo mode.",
+      });
+    }
+  });
 
 export const ProbeRoleSchema = z.enum([
   "counterexample",
@@ -80,7 +89,17 @@ export const SynthesisOutputSchema = z
     rubric: z.array(RubricAssessmentSchema).length(3),
     limitation: z.string().min(8).max(240),
   })
-  .strict();
+  .strict()
+  .superRefine((value, context) => {
+    if (!value.socraticQuestion.trim().endsWith("?") ||
+        (value.socraticQuestion.match(/\?/gu)?.length ?? 0) !== 1) {
+      context.addIssue({
+        code: "custom",
+        path: ["socraticQuestion"],
+        message: "Synthesis must ask exactly one Socratic question.",
+      });
+    }
+  });
 
 export const ReviseRequestSchema = z
   .object({
@@ -114,9 +133,25 @@ const ReceiptRubricSchema = z
     label: z.string().min(3).max(180),
     before: RubricStateSchema,
     after: RubricStateSchema,
-    evidence: z.string().min(3).max(420),
+    evidence: z.string().min(3).max(420).nullable(),
   })
-  .strict();
+  .strict()
+  .superRefine((value, context) => {
+    if (value.after === "missing" && value.evidence !== null) {
+      context.addIssue({
+        code: "custom",
+        path: ["evidence"],
+        message: "Missing criteria must not claim learner evidence.",
+      });
+    }
+    if (value.after !== "missing" && value.evidence === null) {
+      context.addIssue({
+        code: "custom",
+        path: ["evidence"],
+        message: "Supported criteria require learner evidence.",
+      });
+    }
+  });
 
 export const ReceiptSchema = z
   .object({
@@ -128,15 +163,15 @@ export const ReceiptSchema = z
     remainingCaveat: z.string().max(320).nullable(),
     provenance: z
       .object({
-        model: z.literal("gpt-5.6-sol"),
+        model: z.enum(["gpt-5.6-sol", "demo-fixture"]),
         mode: z.enum(["demo", "live"]),
       })
       .strict(),
   })
   .strict()
   .superRefine((value, context) => {
-    const claims = `${value.summary} ${value.repairedHinge}`.toLowerCase();
-    if (/\b(master(?:y|ed)?|authorship|proof of learning)\b/u.test(claims)) {
+    const claims = JSON.stringify(value).toLowerCase();
+    if (/\b(master(?:y|ed)?|author(?:ship|ed|[- ]written)|proof of learning)\b/u.test(claims)) {
       context.addIssue({
         code: "custom",
         path: ["summary"],
@@ -146,6 +181,7 @@ export const ReceiptSchema = z
   });
 
 export type AnalyzeRequest = z.infer<typeof AnalyzeRequestSchema>;
+export type ActivityId = z.infer<typeof ActivityIdSchema>;
 export type AnalysisPlan = z.infer<typeof AnalysisPlanSchema>;
 export type ProbeRole = z.infer<typeof ProbeRoleSchema>;
 export type ProbeOutput = z.infer<typeof ProbeOutputSchema>;
@@ -178,4 +214,3 @@ export type AnalysisResult = Readonly<{
     probes: ReadonlyArray<ProbeTrace>;
   }>;
 }>;
-

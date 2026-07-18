@@ -12,6 +12,25 @@ const requestBody = {
 };
 
 describe("revise API handler", () => {
+  it("returns a safe error for malformed JSON", async () => {
+    const revise = vi.fn();
+    const handler = createReviseHandler({ revise });
+
+    const response = await handler(
+      new Request("http://localhost/api/revise", {
+        method: "POST",
+        body: "{not-json",
+        headers: { "Content-Type": "application/json" },
+      }),
+    );
+
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toMatchObject({
+      error: { code: "INVALID_JSON" },
+    });
+    expect(revise).not.toHaveBeenCalled();
+  });
+
   it("rejects a non-revision before invoking the model", async () => {
     const revise = vi.fn();
     const handler = createReviseHandler({ revise });
@@ -23,6 +42,7 @@ describe("revise API handler", () => {
           ...requestBody,
           revisedResponse: requestBody.originalResponse,
         }),
+        headers: { "Content-Type": "application/json" },
       }),
     );
 
@@ -60,6 +80,7 @@ describe("revise API handler", () => {
       new Request("http://localhost/api/revise", {
         method: "POST",
         body: JSON.stringify(requestBody),
+        headers: { "Content-Type": "application/json" },
       }),
     );
 
@@ -70,5 +91,23 @@ describe("revise API handler", () => {
       error: null,
     });
   });
-});
 
+  it("does not leak receipt model failures", async () => {
+    const handler = createReviseHandler({
+      revise: vi.fn().mockRejectedValue(new Error("private upstream response")),
+    });
+
+    const response = await handler(
+      new Request("http://localhost/api/revise", {
+        method: "POST",
+        body: JSON.stringify(requestBody),
+        headers: { "Content-Type": "application/json" },
+      }),
+    );
+
+    expect(response.status).toBe(503);
+    const payload = JSON.stringify(await response.json());
+    expect(payload).toContain("UNAVAILABLE");
+    expect(payload).not.toContain("private upstream");
+  });
+});

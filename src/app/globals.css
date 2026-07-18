@@ -47,7 +47,6 @@ input {
 
 @keyframes stage-enter {
   from {
-    opacity: 0;
     transform: translateY(10px);
   }
   to {
@@ -80,20 +79,25 @@ input {
 }
 
 @media print {
-  .no-print,
-  header,
-  footer {
-    display: none !important;
+  body * {
+    visibility: hidden !important;
   }
 
-  body,
-  main {
-    background: white !important;
+  .print-receipt,
+  .print-receipt * {
+    visibility: visible !important;
   }
 
   .print-receipt {
+    position: absolute !important;
+    inset: 0 auto auto 0 !important;
+    width: 100% !important;
     display: block !important;
+    background: white !important;
     border: 1px solid #999 !important;
   }
-}
 
+  .no-print {
+    display: none !important;
+  }
+}

@@ -14,6 +14,12 @@ describe("repair contracts", () => {
     expect(AnalyzeRequestSchema.parse(validAnalyzeRequest)).toEqual(validAnalyzeRequest);
   });
 
+  it("forbids client-forced Sol execution in live mode", () => {
+    expect(() =>
+      AnalyzeRequestSchema.parse({ ...validAnalyzeRequest, forceLunaFallback: true }),
+    ).toThrow();
+  });
+
   it("rejects extra request fields and oversized learner text", () => {
     expect(() =>
       AnalyzeRequestSchema.parse({ ...validAnalyzeRequest, injected: true }),
@@ -69,13 +75,73 @@ describe("repair contracts", () => {
       activityId: "correlation-causation",
       repairedHinge: "association-as-causation",
       summary: "The learner mastered causal inference.",
-      changes: [],
-      rubric: [],
+      changes: [
+        {
+          label: "Causal claim",
+          before: "Tutoring caused the increase.",
+          after: "The difference alone does not establish causation.",
+        },
+      ],
+      rubric: [
+        {
+          id: "association-causation",
+          label: "Distinguishes association from causation",
+          before: "missing",
+          after: "met",
+          evidence: "does not establish causation",
+        },
+      ],
       remainingCaveat: null,
       provenance: { model: "gpt-5.6-sol", mode: "live" },
     };
 
     expect(() => ReceiptSchema.parse(unsafeReceipt)).toThrow();
+    expect(() =>
+      ReceiptSchema.parse({
+        ...unsafeReceipt,
+        summary: "The revision now qualifies the causal claim.",
+        repairedHinge: "Association is not causation",
+        changes: [
+          {
+            ...unsafeReceipt.changes[0],
+            label: "Learner-authored revision",
+          },
+        ],
+      }),
+    ).toThrow();
+  });
+
+  it("requires quoted evidence only for supported rubric states", () => {
+    const baseReceipt = {
+      activityId: "correlation-causation",
+      repairedHinge: "Association is not causation",
+      summary: "The submitted revision does not yet address this criterion.",
+      changes: [
+        {
+          label: "Submitted revision",
+          before: "Tutoring caused the increase.",
+          after: "The explanation remains incomplete.",
+        },
+      ],
+      rubric: [
+        {
+          id: "association-causation",
+          label: "Distinguishes association from causation",
+          before: "missing" as const,
+          after: "missing" as const,
+          evidence: null,
+        },
+      ],
+      remainingCaveat: "Direct evidence is still needed.",
+      provenance: { model: "demo-fixture" as const, mode: "demo" as const },
+    };
+
+    expect(ReceiptSchema.parse(baseReceipt)).toEqual(baseReceipt);
+    expect(() =>
+      ReceiptSchema.parse({
+        ...baseReceipt,
+        rubric: [{ ...baseReceipt.rubric[0], after: "met", evidence: null }],
+      }),
+    ).toThrow();
   });
 });
-

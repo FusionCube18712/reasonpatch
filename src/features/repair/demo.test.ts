@@ -5,6 +5,21 @@ import { getActivity } from "./activities";
 import { validAnalyzeRequest } from "../../../test/fixtures";
 
 describe("judge-safe demo fixtures", () => {
+  it("rejects live requests instead of misrepresenting fixtures as model output", () => {
+    expect(() =>
+      createDemoAnalysis({ ...validAnalyzeRequest, mode: "live" }),
+    ).toThrow("Demo fixtures require demo mode.");
+    expect(() =>
+      createDemoReceipt({
+        activityId: "correlation-causation",
+        originalResponse: validAnalyzeRequest.response,
+        revisedResponse:
+          "This is a materially revised explanation that distinguishes the observed association from a causal conclusion.",
+        mode: "live",
+      }),
+    ).toThrow("Demo fixtures require demo mode.");
+  });
+
   it("replays the same validated result shape without an API key", () => {
     const result = createDemoAnalysis({
       ...validAnalyzeRequest,
@@ -15,6 +30,17 @@ describe("judge-safe demo fixtures", () => {
     expect(result.trace.plannerModel).toBe("demo-fixture");
     expect(result.trace.probes).toHaveLength(3);
     expect(result.diagnosis.socraticQuestion).toContain("motivated students");
+  });
+
+  it("rejects edited analysis text rather than attaching a canned quote", () => {
+    expect(() =>
+      createDemoAnalysis({
+        ...validAnalyzeRequest,
+        response:
+          "This entirely different response is long enough to pass the request schema but does not contain the fixture hinge.",
+        mode: "demo",
+      }),
+    ).toThrow("Guided demo requires the curated sample response.");
   });
 
   it("shows a truthful Sol takeover trace in the fallback scenario", () => {
@@ -44,9 +70,30 @@ describe("judge-safe demo fixtures", () => {
       mode: "demo",
     });
 
-    expect(receipt.changes).toHaveLength(2);
+    expect(receipt.changes).toHaveLength(1);
     expect(receipt.rubric.every(({ after }) => after === "met")).toBe(true);
+    expect(receipt.provenance).toEqual({ model: "demo-fixture", mode: "demo" });
     expect(JSON.stringify(receipt).toLowerCase()).not.toContain("master");
+  });
+
+  it("does not mark unsupported demo rubric evidence as met", () => {
+    const revisedResponse =
+      "I changed my response, but this sentence still offers no relevant statistical reasoning or supporting evidence.";
+    const receipt = createDemoReceipt({
+      activityId: "correlation-causation",
+      originalResponse: validAnalyzeRequest.response,
+      revisedResponse,
+      mode: "demo",
+    });
+
+    expect(receipt.rubric.some(({ after }) => after !== "met")).toBe(true);
+    expect(receipt.changes[0]?.after).toBe(revisedResponse);
+    expect(receipt.changes[0]?.label).toBe("Submitted revision");
+    expect(
+      receipt.rubric
+        .filter(({ after }) => after === "missing")
+        .every(({ evidence }) => evidence === null),
+    ).toBe(true);
   });
 
   it.each([

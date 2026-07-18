@@ -17,7 +17,8 @@ describe("ReasonPatch page", () => {
   it("states the privacy and grading boundary before learner input", () => {
     render(<Page />);
 
-    expect(screen.getByText(/No accounts\. No student identifiers\./)).toBeVisible();
-    expect(screen.getByText(/never becomes a grade/i)).toBeVisible();
+    expect(screen.getByText(/No accounts or local text storage/)).toBeVisible();
+    expect(screen.getByText(/storage disabled/)).toBeVisible();
+    expect(screen.getByText(/not grades or verdicts/i)).toBeVisible();
   });
 });

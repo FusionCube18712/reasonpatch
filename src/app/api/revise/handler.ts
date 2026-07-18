@@ -3,6 +3,7 @@ import {
   type Receipt,
   type ReviseRequest,
 } from "@/features/repair/contracts";
+import { readBoundedJson } from "../request-boundary";
 
 type Revise = (request: ReviseRequest) => Promise<Receipt>;
 
@@ -14,21 +15,10 @@ const json = (body: unknown, status: number) =>
 
 export const createReviseHandler = ({ revise }: Readonly<{ revise: Revise }>) =>
   async function handleRevise(request: Request): Promise<Response> {
-    let body: unknown;
-    try {
-      body = await request.json();
-    } catch {
-      return json(
-        {
-          success: false,
-          data: null,
-          error: { code: "INVALID_JSON", message: "Send a valid JSON request." },
-        },
-        400,
-      );
-    }
+    const requestBody = await readBoundedJson(request);
+    if (!requestBody.ok) return requestBody.response;
 
-    const parsed = ReviseRequestSchema.safeParse(body);
+    const parsed = ReviseRequestSchema.safeParse(requestBody.body);
     if (!parsed.success) {
       return json(
         {
@@ -60,4 +50,3 @@ export const createReviseHandler = ({ revise }: Readonly<{ revise: Revise }>) =>
       );
     }
   };
-
