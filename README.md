@@ -4,7 +4,7 @@
 
 **[Try the public guided demo](https://reasonpatch.vercel.app)** · **[View the source](https://github.com/FusionCube18712/reasonpatch)**
 
-ReasonPatch is an Education-track reasoning repair studio for introductory statistics. It finds the earliest unsupported inference in a learner's explanation, asks one Socratic question, and turns the learner's own revision into an evidence-bound Repair Receipt.
+ReasonPatch is an Education-track reasoning repair studio for introductory statistics. It finds the earliest unsupported inference in a learner's explanation, asks one Socratic question, turns the submitted revision into an evidence-bound Repair Receipt, and then checks the same reasoning on a fresh case.
 
 It is deliberately not a chatbot, answer generator, grade, or mastery detector.
 
@@ -12,7 +12,7 @@ It is deliberately not a chatbot, answer generator, grade, or mastery detector.
 
 ## Why this matters
 
-Most AI learning tools optimize for producing a correct answer. That can erase the exact reasoning step an instructor needs to see. ReasonPatch withholds the replacement answer and makes the learner perform the repair. The resulting receipt records observable changes against a visible rubric without claiming that learning, authorship, or mastery has been proven.
+Most AI learning tools optimize for producing a correct answer. That can erase the exact reasoning step an instructor needs to see. ReasonPatch withholds the replacement answer and requires a submitted repair instead of supplying one. The resulting receipt records observable changes against a visible rubric. A second, isomorphic case checks whether the same reasoning appears in a new context—without pretending that one transfer slip proves learning, authorship, or mastery.
 
 The working prototype includes three focused introductory-statistics labs:
 
@@ -20,11 +20,12 @@ The working prototype includes three focused introductory-statistics labs:
 - base-rate neglect;
 - sampling bias.
 
-## The 45-second product tour
+## The product tour
 
 1. **Explain** — Start from an intentionally flawed explanation and a visible rubric.
 2. **Repair** — GPT-5.6 Sol locates the reasoning hinge. Three role-separated GPT-5.6 Luna probes inspect counterexamples, hidden assumptions, and rubric evidence in parallel. Sol asks one smallest-useful Socratic question.
-3. **Receipt** — The learner revises in their own words. Sol compares before and after evidence, while ReasonPatch verifies that every quoted hinge and rubric excerpt actually occurs in learner text.
+3. **Receipt** — The learner submits a revision. Sol compares before and after evidence, while ReasonPatch verifies that every quoted hinge and rubric excerpt actually occurs in the submitted text.
+4. **Transfer** — The learner applies the repaired reasoning to an immediate fresh-context case isolated as a separate response step. A Transfer Slip records only supported evidence, and an optional local coordinator manifest preserves both submissions and their audit trail without inventing a learning score.
 
 Guided mode is a deterministic, clearly labeled fixture replay so the public demo remains free and reliable. Live GPT mode is server-disabled by default and intended for a protected evaluator or local environment.
 
@@ -39,10 +40,12 @@ flowchart LR
     C1 --> D["Sol: one Socratic question"]
     C2 --> D
     C3 --> D
-    D --> E["Learner-authored revision"]
+    D --> E["Learner-submitted revision"]
     E --> F["Sol: receipt draft"]
     F --> G["Server evidence + provenance checks"]
     G --> H["Repair Receipt"]
+    H --> I["Fresh case + Transfer Slip"]
+    I --> J["Local coordinator audit manifest"]
     C1 -. "quota / timeout / invalid output" .-> S["Per-probe Sol fallback"]
     C2 -. "quota / timeout / invalid output" .-> S
     C3 -. "quota / timeout / invalid output" .-> S
@@ -59,6 +62,7 @@ Key implementation choices:
 - per-task output budgets, 12-second request timeout, and no SDK retries;
 - truthful fallback and fixture provenance in the UI;
 - server-only instructor intent, verified absent from production client chunks.
+- an immediate fresh-context check and local, explicitly unvalidated coordinator audit manifest.
 
 See [the architecture notes](docs/ARCHITECTURE.md) for boundaries and failure modes.
 
@@ -92,14 +96,22 @@ npm run test:e2e    # Chromium + Pixel 7 flows, visual QA, keyboard, axe
 
 Current verified baseline:
 
-- 91 tests across unit, integration, and a 12-case calibration suite;
-- 95%+ statements and lines, 86%+ branches, 98%+ functions;
+- 107 tests across unit, integration, and 24 repair/transfer calibration cases;
+- 94%+ statements, 82%+ branches, 99%+ functions, and 96%+ lines;
 - 16 Playwright checks across desktop/mobile projects;
 - no serious WCAG A/AA violations in tested initial and receipt states;
 - zero production dependency audit vulnerabilities;
 - no instructor-only strings in the generated client bundle.
 
-The 12-case suite is a deterministic functional calibration of receipt evidence across complete, partial, irrelevant, and prompt-injection revisions. It is not a learning-outcomes study. See [evaluation notes](docs/EVALUATION.md).
+The calibration suite is a deterministic functional check of repair and fresh-case evidence across complete, partial, irrelevant, and prompt-injection-like responses. It is not a learning-outcomes study. See [evaluation notes](docs/EVALUATION.md) and the [draft educator pilot protocol](docs/PILOT_PROTOCOL.md).
+
+## Impact case, stated carefully
+
+ReasonPatch is informed by established work on prompted self-explanation, attempt-before-instruction, and information-rich formative feedback. It also targets conceptual statistics errors documented across introductory courses. Those adjacent findings motivate the product; they do not validate it.
+
+The product therefore refuses to call one good revision “learning.” Its demo creates a second observable artifact through an immediate fresh-context step isolated as a separate response. That demo step is not a delayed or blinded transfer measure.
+
+The local export is a coordinator audit manifest, not a blinded rater packet. It contains raw submitted text, prompt and time-point labels, provenance, and automated evidence states; a coordinator must de-identify it before any approved sharing. A real comparison with answer-first help would use a separate rater packet stripped of product, condition, time-point, model, and automated-score cues, plus an isolated delayed case delivered from a held-out server-side prompt pool. The proposed study, measures, citations, and caveats are documented in the [educator pilot protocol](docs/PILOT_PROTOCOL.md).
 
 ## Reproduce the narrated demo
 
@@ -148,13 +160,17 @@ The Git history preserves dated RED/GREEN checkpoints. Before submission, the en
 - [Devpost/submission copy and checklist](docs/SUBMISSION.md)
 - [Architecture and threat boundaries](docs/ARCHITECTURE.md)
 - [Evaluation protocol](docs/EVALUATION.md)
+- [Educator pilot protocol and research rationale](docs/PILOT_PROTOCOL.md)
 
 ## Honest limitations
 
 - Guided calibration is intentionally narrow and uses interpretable keyword evidence rules; it is not a general reasoning benchmark.
 - Live quality depends on model output and is fail-closed when evidence cannot be verified.
 - The included limiter is bounded and useful for a single demo instance, not a substitute for a distributed production limiter.
-- No claim is made that ReasonPatch improves learning outcomes until an educator-reviewed study is run.
+- The Transfer Slip is immediate text evidence in a fresh context, not a validated measure of retention or learning.
+- The demo's small fresh-case prompt pool is shipped in the public client bundle, so those prompts are neither secret nor held out; a pilot would need access-controlled server delivery from a larger preregistered pool.
+- The local coordinator manifest contains raw submitted text and must be de-identified before approved sharing; it is not suitable for direct use by blinded raters.
+- No claim is made that ReasonPatch improves learning outcomes until an educator-reviewed comparison is run.
 
 ## License
 

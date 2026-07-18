@@ -8,11 +8,11 @@
 
 **Tagline:** Repair the step. Keep the thinking yours.
 
-**One sentence:** ReasonPatch finds the earliest unsupported inference in a statistics explanation, asks one Socratic question, and creates an evidence-bound receipt from the learner's own revision.
+**One sentence:** ReasonPatch finds the earliest unsupported inference in a statistics explanation, asks one Socratic question, creates an evidence-bound receipt, and checks the same reasoning on a fresh case without supplying the answer.
 
 ## Short description
 
-AI tutors are good at producing answers, but answer-first help can hide the reasoning step an instructor needs to inspect. ReasonPatch takes the opposite approach: GPT-5.6 Sol locates the learner's reasoning hinge, three parallel GPT-5.6 Luna probes test it from distinct educational roles, and Sol asks one smallest-useful question without writing the answer. After the learner revises, ReasonPatch produces a printable Repair Receipt showing before/after changes and rubric evidence that is verified against the learner's actual text.
+AI tutors are good at producing answers, but answer-first help can hide the reasoning step an instructor needs to inspect. ReasonPatch takes the opposite approach: GPT-5.6 Sol locates the learner's reasoning hinge, three parallel GPT-5.6 Luna probes test it from distinct educational roles, and Sol asks one smallest-useful question without writing the answer. After the learner submits a revision, ReasonPatch produces a printable Repair Receipt showing verified before/after evidence. It then presents an immediate fresh-context case isolated as a separate response step and creates a Transfer Slip from only the evidence in the submitted response. Educators can download a local, explicitly unvalidated coordinator audit manifest containing both submissions and their evidence trail.
 
 ## What makes it different
 
@@ -22,6 +22,8 @@ AI tutors are good at producing answers, but answer-first help can hide the reas
 - **Auditable evidence.** Quotes must occur in learner text; role and provenance are server-verified.
 - **Truthful reliability.** Guided mode says it is a fixture replay; live Luna failures disclose per-probe Sol fallback.
 - **No inflated educational claim.** Receipts are challenges, not grades, mastery labels, or proof of learning.
+- **One edit is not called learning.** A fresh-case check asks whether the reasoning appears in a new context, then labels the result as observed text evidence—not a verdict.
+- **A concrete evaluation handoff.** The coordinator manifest and public pilot protocol define the next study without fabricating users or outcomes; blinded ratings require a separate de-identified rater packet.
 
 ## How it was built
 
@@ -35,32 +37,37 @@ Codex was the end-to-end engineering environment: product planning, official doc
 - three focused intro-statistics labs;
 - transparent Sol/Luna trace and fallback behavior;
 - evidence-bound printable receipt;
-- 12-case calibration against complete, partial, irrelevant, and injection-like revisions;
-- 91 automated tests, strong coverage, desktop/mobile browser checks, and a clean production audit.
+- fresh-case Transfer Slip plus downloadable coordinator audit manifest and a protocol for separate blinded review;
+- 24-case calibration covering 72 repair and transfer rubric decisions;
+- 107 automated tests, strong coverage, desktop/mobile browser checks, and a clean production audit.
 
 ## Challenges and lessons
 
-The hardest product decision was refusing the easy “AI tutor” shape. The strongest artifact was not another answer, but a receipt that makes revision evidence inspectable. Independent review also caught important integrity problems: early fixtures overstated evidence and client code accidentally bundled instructor intent. Both were redesigned and regression-tested.
+The hardest product decision was refusing the easy “AI tutor” shape. The strongest artifact was not another answer, but a receipt that makes revision evidence inspectable. Then a judge-style review exposed a deeper integrity gap: one successful edit is not evidence that reasoning transfers. The product now asks for an immediate fresh-context explanation isolated as a separate response, while reserving delayed transfer and blinded scoring for the proposed pilot. Independent review also caught early fixtures that overstated evidence and client code that accidentally bundled instructor intent; both were redesigned and regression-tested.
 
 ## Potential impact
 
-ReasonPatch could help instructors preserve student agency while making formative reasoning changes easier to review. The immediate wedge is introductory statistics, where a small set of recurring inference mistakes appears across large courses. The prototype does not claim measured learning gains; the next step is an educator-rated pilot comparing revision quality and delayed transfer against answer-first tutoring.
+ReasonPatch could help instructors preserve student agency while making formative reasoning changes easier to review. The immediate wedge is introductory statistics, where conceptual errors can persist after instruction: a [1,470-student, 33-institution assessment](https://iase-pub.org/ojs/SERJ/article/view/483) documented continuing problems with causal interpretation, sampling, and conditional probability. The interaction is informed by meta-analyses of [prompted self-explanation](https://doi.org/10.1007/s10648-018-9434-x) and [problem-solving before instruction](https://doi.org/10.3102/00346543211019105), plus [field guidance](https://www.amstat.org/asa/files/pdfs/gaise/gaisecollege_full.pdf) emphasizing statistical reasoning and active learning. These adjacent findings motivate the design; they do not validate this product.
+
+ReasonPatch makes that boundary visible. It does not call one revision learning. The demo's immediate fresh-context case creates a second observable artifact, but it is not a delayed or blinded learning measure. The downloadable coordinator manifest contains raw submitted text, prompt and time-point labels, provenance, and automated evidence states; it must be de-identified before approved sharing and must not be given directly to blinded raters.
+
+The proposed comparison with answer-first assistance would instead use an isolated delayed case from a held-out server-side prompt pool and a separate rater packet stripped of product, condition, time-point, model, and automated-score cues. The public demo's small prompt pool is client-bundled and therefore not held out. The study has not yet been run; the protocol is [public and falsifiable](PILOT_PROTOCOL.md).
 
 ## Judging-criteria map
 
 | Criterion | Evidence |
 |---|---|
 | Technological implementation | Sol/Luna orchestration, concurrent probes, per-role fallback, Structured Outputs, evidence/provenance verification, safe boundaries, tests |
-| Design | focused three-step workflow, visible rubric, answer withholding, responsive/a11y-tested interface, printable signature artifact |
-| Potential impact | recurring high-enrollment statistics misconceptions, instructor-reviewable artifact, honest pilot plan |
-| Quality of idea | reasoning repair rather than answer generation; earliest-hinge targeting; evidence-bound receipt |
+| Design | focused four-step workflow, visible rubric, answer withholding, responsive/a11y-tested interface, printable signature artifact |
+| Potential impact | documented statistics misconceptions, fresh-case evidence, coordinator audit manifest, and a public protocol for separate blinded evaluation |
+| Quality of idea | reasoning repair rather than answer generation; earliest-hinge targeting; evidence-bound Receipt + Transfer Slip |
 
 ## Final submission checklist
 
 - [x] Deploy a free public guided demo and verify it in an incognito window.
 - [x] Keep public live mode disabled unless protected by a signed access gate and distributed budget controls.
 - [x] Create a public source repository and verify README rendering.
-- [x] Record the narrated, captioned demo using `npm run demo:video`; final cut is 1:52.
+- [ ] Regenerate the narrated, captioned demo with the fresh-case Transfer Slip; keep it under three minutes.
 - [ ] Upload to YouTube and verify public/incognito playback.
 - [x] Run `npm run check`, `npm run test:e2e`, and `npm audit --omit=dev`.
 - [ ] Run `/feedback` in Codex and paste the session ID below.
