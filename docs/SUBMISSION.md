@@ -67,7 +67,7 @@ The proposed comparison with answer-first assistance would instead use an isolat
 - [x] Deploy a free public guided demo and verify it in an incognito window.
 - [x] Keep public live mode disabled unless protected by a signed access gate and distributed budget controls.
 - [x] Create a public source repository and verify README rendering.
-- [ ] Regenerate the narrated, captioned demo with the fresh-case Transfer Slip; keep it under three minutes.
+- [x] Regenerate the narrated, captioned demo with the fresh-case Transfer Slip; verified at 145.98 seconds.
 - [ ] Upload to YouTube and verify public/incognito playback.
 - [x] Run `npm run check`, `npm run test:e2e`, and `npm audit --omit=dev`.
 - [ ] Run `/feedback` in Codex and paste the session ID below.
