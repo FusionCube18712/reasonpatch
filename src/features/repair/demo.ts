@@ -333,7 +333,7 @@ const DEMO_EVIDENCE_RULES: Readonly<
   "base-rate-neglect": [
     {
       supports:
-        /(?:\b(?:base rate|prevalence|rare (?:condition|disease))\b[^.!?\n]{0,100}\b(?:include|included|consider|matters|important|must|before interpreting)\b|\b(?:base rate|prevalence)\s+(?:is|of)\s+\d)/iu,
+        /(?:\b(?:base rate|prevalence|rare (?:condition|disease))\b[^.!?\n]{0,100}\b(?:include|included|consider|matters|important|must|before interpreting)\b|\b(?:base rate|prevalence)\s+(?:is|of)\s+(?:\d|rare\b|low\b))/iu,
       contradicts:
         /(?:\b(?:base rate|prevalence)\b[^.!?\n]{0,50}\b(?:does not|doesn't|cannot)\s+(?:matter|need|affect)|\b(?:ignore|ignored)\b[^.!?\n]{0,50}\b(?:base rate|prevalence)\b)/iu,
     },
