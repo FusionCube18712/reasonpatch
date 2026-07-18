@@ -42,6 +42,9 @@ test("learner repairs the causal inference hinge and receives a receipt", async 
   ).not.toBeVisible();
   await expect(page.getByText("Visible rubric")).not.toBeVisible();
   await expect(
+    page.getByRole("button", { name: /Causation or coincidence/ }),
+  ).not.toBeVisible();
+  await expect(
     page.getByText(
       /prior diagnosis, question, rubric, and receipt are hidden/i,
     ),

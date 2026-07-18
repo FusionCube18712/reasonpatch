@@ -116,6 +116,8 @@ export function RepairStudio({
     setTransferResponse("");
     setTransferReceipt(null);
     setTransferError(null);
+    setAnalysis(null);
+    setReceipt(null);
     setError(null);
     setErrorAction("analysis");
     setLoadingTask("analysis");
@@ -164,6 +166,7 @@ export function RepairStudio({
     setTransferResponse("");
     setTransferReceipt(null);
     setTransferError(null);
+    setReceipt(null);
     setError(null);
     setErrorAction("receipt");
     setLoadingTask("receipt");
@@ -217,8 +220,10 @@ export function RepairStudio({
       const envelope = (await result.json()) as ApiEnvelope<Receipt>;
       if (!result.ok || !envelope.success || !envelope.data) {
         throw new Error(
-          envelope.error?.message ??
-            "The transfer slip could not be created yet.",
+          envelope.error?.code === "UNAVAILABLE"
+            ? "The fresh-case scan could not be completed yet. Your response was not lost."
+            : (envelope.error?.message ??
+                "The fresh-case scan could not be completed yet."),
         );
       }
       if (requestId !== transferRequestId.current) return;
@@ -236,6 +241,7 @@ export function RepairStudio({
   };
 
   const beginTransfer = () => {
+    if (loadingTask !== null || receipt === null) return;
     transferRequestId.current += 1;
     setTransferResponse("");
     setTransferReceipt(null);
@@ -282,50 +288,54 @@ export function RepairStudio({
       aria-label="Reasoning repair workspace"
     >
       <div className="mx-auto max-w-[1400px] overflow-hidden rounded-[2rem] border border-[#25231f]/14 bg-[#fbf8f1] shadow-[0_28px_80px_-50px_rgba(71,52,34,0.4)] lg:rounded-[2.5rem]">
-        <div className="no-print grid border-b border-[#25231f]/12 lg:grid-cols-[1fr_auto]">
-          <div className="flex gap-2 overflow-x-auto px-4 py-4 sm:px-6">
-            {activities.map((item, index) => (
-              <button
-                key={item.id}
-                type="button"
-                onClick={() => selectActivity(item.id)}
-                disabled={loadingTask !== null}
-                aria-pressed={item.id === activity.id}
-                className={`shrink-0 rounded-full border px-4 py-2 text-left text-xs transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#a24f24] ${
-                  item.id === activity.id
-                    ? "border-[#25231f] bg-[#25231f] text-[#f8f4eb]"
-                    : "border-[#25231f]/14 bg-transparent text-[#625e56] hover:border-[#25231f]/40"
-                }`}
-              >
-                <span className="mr-2 font-mono text-[10px]">0{index + 1}</span>
-                {item.title}
-              </button>
-            ))}
+        {!transferStarted ? (
+          <div className="no-print grid border-b border-[#25231f]/12 lg:grid-cols-[1fr_auto]">
+            <div className="flex gap-2 overflow-x-auto px-4 py-4 sm:px-6">
+              {activities.map((item, index) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => selectActivity(item.id)}
+                  disabled={loadingTask !== null}
+                  aria-pressed={item.id === activity.id}
+                  className={`shrink-0 rounded-full border px-4 py-2 text-left text-xs transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#a24f24] ${
+                    item.id === activity.id
+                      ? "border-[#25231f] bg-[#25231f] text-[#f8f4eb]"
+                      : "border-[#25231f]/14 bg-transparent text-[#625e56] hover:border-[#25231f]/40"
+                  }`}
+                >
+                  <span className="mr-2 font-mono text-[10px]">
+                    0{index + 1}
+                  </span>
+                  {item.title}
+                </button>
+              ))}
+            </div>
+            <div className="flex items-center gap-1 border-t border-[#25231f]/12 px-4 py-3 lg:border-l lg:border-t-0">
+              {(
+                [
+                  "demo",
+                  ...(liveModeAvailable ? (["live"] as const) : []),
+                ] as const
+              ).map((item) => (
+                <button
+                  key={item}
+                  type="button"
+                  onClick={() => selectMode(item)}
+                  disabled={loadingTask !== null}
+                  aria-pressed={mode === item}
+                  className={`rounded-full px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.12em] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#a24f24] ${
+                    mode === item
+                      ? "bg-[#e8dfd2] text-[#25231f]"
+                      : "text-[#625e56]"
+                  }`}
+                >
+                  {item === "demo" ? "Guided demo" : "Live GPT-5.6"}
+                </button>
+              ))}
+            </div>
           </div>
-          <div className="flex items-center gap-1 border-t border-[#25231f]/12 px-4 py-3 lg:border-l lg:border-t-0">
-            {(
-              [
-                "demo",
-                ...(liveModeAvailable ? (["live"] as const) : []),
-              ] as const
-            ).map((item) => (
-              <button
-                key={item}
-                type="button"
-                onClick={() => selectMode(item)}
-                disabled={loadingTask !== null}
-                aria-pressed={mode === item}
-                className={`rounded-full px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.12em] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#a24f24] ${
-                  mode === item
-                    ? "bg-[#e8dfd2] text-[#25231f]"
-                    : "text-[#625e56]"
-                }`}
-              >
-                {item === "demo" ? "Guided demo" : "Live GPT-5.6"}
-              </button>
-            ))}
-          </div>
-        </div>
+        ) : null}
 
         <div
           className={

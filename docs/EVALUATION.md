@@ -26,9 +26,9 @@ The suite is deterministic and independently rerunnable with `npm test`. It exis
 
 ## Fresh-transfer calibration set
 
-`test/transfer-calibration.test.ts` contains 15 additional cases: complete, partial, irrelevant, evaluator-instruction, and explicit contradiction or negation responses. The suite asserts the exact criterion IDs marked as met—not only a count—and verifies every positive excerpt against the submitted fresh-case text.
+`test/transfer-calibration.test.ts` contains 17 additional cases: complete, partial, irrelevant, evaluator-instruction, and explicit contradiction or negation responses—including reversed negation and wrong-value bait. The suite asserts the exact criterion IDs marked as met—not only a count—and verifies every positive excerpt against the submitted fresh-case text.
 
-Together, the two calibration sets cover 27 responses and 81 visible rubric decisions. This demonstrates deterministic evaluator integrity on the curated domains; it does not demonstrate that learners retain or transfer knowledge.
+Together, the two calibration sets cover 29 responses and 87 visible rubric decisions. This demonstrates deterministic evaluator integrity on the curated domains; it does not demonstrate that learners retain or transfer knowledge.
 
 ## Broader automated evidence
 

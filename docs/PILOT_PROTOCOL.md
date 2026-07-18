@@ -79,4 +79,4 @@ The guided demo uses a small fresh-case prompt pool that is shipped in the publi
 
 ## Current automated evidence
 
-The deterministic suite currently covers 12 repair cases and 15 fresh-transfer cases across complete, partial, irrelevant, evaluator-instruction, contradiction, and negation responses. It checks exact rubric states and verifies that every positive excerpt occurs in submitted text. This is functional calibration—not a learner study.
+The deterministic suite currently covers 12 repair cases and 17 fresh-transfer cases across complete, partial, irrelevant, evaluator-instruction, contradiction, reversed-negation, and wrong-value responses. It checks exact rubric states and verifies that every positive excerpt occurs in submitted text. This is functional calibration—not a learner study.

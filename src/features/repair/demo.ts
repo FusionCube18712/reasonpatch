@@ -27,7 +27,8 @@ const correlationProbes: ReadonlyArray<ProbeOutput> = [
       "The tutoring program caused the improvement because participants scored eight points higher.",
     coachingMove: "Test the claim against a self-selection explanation.",
     confidence: 0.89,
-    limitation: "The prompt does not provide baseline motivation or prior scores.",
+    limitation:
+      "The prompt does not provide baseline motivation or prior scores.",
   },
   {
     role: "assumption",
@@ -35,7 +36,8 @@ const correlationProbes: ReadonlyArray<ProbeOutput> = [
       "The causal claim assumes participants and non-participants were comparable before tutoring.",
     evidenceQuote:
       "The tutoring program caused the improvement because participants scored eight points higher.",
-    coachingMove: "Ask what would need to be true about the groups before tutoring.",
+    coachingMove:
+      "Ask what would need to be true about the groups before tutoring.",
     confidence: 0.91,
     limitation: "Unreported study details could change the diagnosis.",
   },
@@ -44,7 +46,8 @@ const correlationProbes: ReadonlyArray<ProbeOutput> = [
     finding:
       "The response states a causal conclusion but provides no confounder or stronger comparison evidence.",
     evidenceQuote: "Therefore every school should use it.",
-    coachingMove: "Connect the claim to each visible rubric criterion before revising.",
+    coachingMove:
+      "Connect the claim to each visible rubric criterion before revising.",
     confidence: 0.87,
     limitation: "Rubric mapping is an AI-generated challenge, not a grade.",
   },
@@ -77,19 +80,24 @@ const baseRateProbes: ReadonlyArray<ProbeOutput> = [
       "The test is 99% accurate, so a person who tests positive has a 99% chance of having the condition.",
     coachingMove: "Compare true and false positives in a concrete population.",
     confidence: 0.94,
-    limitation: "The phrase '99% accurate' combines two different test properties in ordinary speech.",
+    limitation:
+      "The phrase '99% accurate' combines two different test properties in ordinary speech.",
   },
   {
     role: "assumption",
-    finding: "The response assumes test accuracy equals the probability of illness after a positive.",
+    finding:
+      "The response assumes test accuracy equals the probability of illness after a positive.",
     evidenceQuote: "has a 99% chance of having the condition",
-    coachingMove: "Ask where the population prevalence appears in the calculation.",
+    coachingMove:
+      "Ask where the population prevalence appears in the calculation.",
     confidence: 0.93,
-    limitation: "The learner may know the base rate but have omitted it from the explanation.",
+    limitation:
+      "The learner may know the base rate but have omitted it from the explanation.",
   },
   {
     role: "rubric",
-    finding: "The explanation uses neither the base rate nor a true-positive/false-positive comparison.",
+    finding:
+      "The explanation uses neither the base rate nor a true-positive/false-positive comparison.",
     evidenceQuote: "The test is 99% accurate",
     coachingMove: "Map a concrete count to each visible rubric item.",
     confidence: 0.9,
@@ -121,21 +129,25 @@ const samplingProbes: ReadonlyArray<ProbeOutput> = [
     finding:
       "A large voluntary poll can still overrepresent students with strong views about lecture recordings.",
     evidenceQuote: "Because hundreds of students answered",
-    coachingMove: "Imagine who was most likely to notice and answer the newspaper poll.",
+    coachingMove:
+      "Imagine who was most likely to notice and answer the newspaper poll.",
     confidence: 0.92,
     limitation: "The poll's recruitment details beyond the prompt are unknown.",
   },
   {
     role: "assumption",
-    finding: "The conclusion assumes a large sample is automatically representative of all students.",
+    finding:
+      "The conclusion assumes a large sample is automatically representative of all students.",
     evidenceQuote: "the poll proves most students",
-    coachingMove: "Separate sample size from the way participants entered the sample.",
+    coachingMove:
+      "Separate sample size from the way participants entered the sample.",
     confidence: 0.94,
     limitation: "The learner may have omitted an intended qualification.",
   },
   {
     role: "rubric",
-    finding: "The response does not define the target population or discuss voluntary-response bias.",
+    finding:
+      "The response does not define the target population or discuss voluntary-response bias.",
     evidenceQuote: "most students want every lecture recorded",
     coachingMove: "Connect the recruitment method to each visible rubric item.",
     confidence: 0.89,
@@ -154,7 +166,11 @@ const samplingDiagnosis: SynthesisOutput = {
   whyThisQuestion:
     "It tests whether the people who volunteered could differ systematically from the campus population.",
   rubric: [
-    { id: "association-causation", state: "emerging", evidence: "most students" },
+    {
+      id: "association-causation",
+      state: "emerging",
+      evidence: "most students",
+    },
     { id: "confounder", state: "missing", evidence: null },
     { id: "additional-evidence", state: "missing", evidence: null },
   ],
@@ -174,7 +190,8 @@ const correlationReceipt: DemoFixture["receipt"] = {
     {
       label: "Evidence standard",
       before: null,
-      after: "Comparable baselines, random assignment, or a well-controlled comparison are needed.",
+      after:
+        "Comparable baselines, random assignment, or a well-controlled comparison are needed.",
     },
   ],
   rubric: [
@@ -197,7 +214,8 @@ const correlationReceipt: DemoFixture["receipt"] = {
       label: "States what additional evidence is needed",
       before: "missing",
       after: "met",
-      evidence: "comparable baseline scores and random assignment or a controlled comparison",
+      evidence:
+        "comparable baseline scores and random assignment or a controlled comparison",
     },
   ],
   remainingCaveat:
@@ -221,12 +239,14 @@ const DEMO_FIXTURES: Readonly<Record<ActivityId, DemoFixture>> = {
         {
           label: "Probability direction",
           before: "A positive means a 99% chance of the condition.",
-          after: "Test sensitivity alone does not determine the probability after a positive.",
+          after:
+            "Test sensitivity alone does not determine the probability after a positive.",
         },
         {
           label: "Missing denominator",
           before: null,
-          after: "True positives must be compared with false positives in the tested population.",
+          after:
+            "True positives must be compared with false positives in the tested population.",
         },
       ],
       rubric: [
@@ -252,7 +272,8 @@ const DEMO_FIXTURES: Readonly<Record<ActivityId, DemoFixture>> = {
           evidence: "probability after a positive",
         },
       ],
-      remainingCaveat: "The revision sets up the comparison; it does not show the final arithmetic.",
+      remainingCaveat:
+        "The revision sets up the comparison; it does not show the final arithmetic.",
     },
   },
   "sampling-bias": {
@@ -266,12 +287,14 @@ const DEMO_FIXTURES: Readonly<Record<ActivityId, DemoFixture>> = {
         {
           label: "Sample claim",
           before: "Hundreds of answers prove what most students want.",
-          after: "A large voluntary sample can still misrepresent the campus population.",
+          after:
+            "A large voluntary sample can still misrepresent the campus population.",
         },
         {
           label: "Selection method",
           before: null,
-          after: "A representative random sample would support a stronger campus-wide estimate.",
+          after:
+            "A representative random sample would support a stronger campus-wide estimate.",
         },
       ],
       rubric: [
@@ -297,7 +320,8 @@ const DEMO_FIXTURES: Readonly<Record<ActivityId, DemoFixture>> = {
           evidence: "a representative random sample",
         },
       ],
-      remainingCaveat: "The revision improves the inference but does not estimate actual campus opinion.",
+      remainingCaveat:
+        "The revision improves the inference but does not estimate actual campus opinion.",
     },
   },
 };
@@ -319,35 +343,35 @@ const DEMO_EVIDENCE_RULES: Readonly<
     },
     {
       supports:
-        /(?:\bself[- ]selection\b|\b(?:students|patients|participants|people)[^.!?\n]{0,60}\b(?:chose|choose|chosen|self[- ]selected)\b|\bmotivat\w*[^.!?\n]{0,60}\b(?:chose|choose|chosen)\b|\bconfound(?:er|ing)?\b[^.!?\n]{0,80}\b(?:could|may|might|affect|explain|bias))/iu,
+        /(?:\bself[- ]selection\b[^.!?\n]{0,80}\b(?:could|may|might|can|bias(?:es)?|affect|explain|limit|undermine)|\b(?:students|patients|participants|people)[^.!?\n]{0,60}\b(?:chose|choose|chosen|self[- ]selected)\b|\bmotivat\w*[^.!?\n]{0,60}\b(?:could|may|might|can|affect|explain|differ|chose|choose|chosen)\b|\bconfound(?:er|ing)?\b[^.!?\n]{0,80}\b(?:could|may|might|can|affect|explain|bias))/iu,
       contradicts:
-        /(?:\b(?:there is|there was|has|had)\s+no\s+(?:plausible\s+)?confound|\b(?:self[- ]selection|confound\w*)\b[^.!?\n]{0,40}\b(?:does not|cannot|is not)\s+(?:matter|exist|affect|explain))/iu,
+        /(?:\b(?:there is|there was|has|had)\s+no\s+(?:plausible\s+)?confound|\b(?:self[- ]selection|confound\w*)\b[^.!?\n]{0,50}\b(?:is|was)?\s*(?:irrelevant|not relevant)|\b(?:self[- ]selection|confound\w*)\b[^.!?\n]{0,50}\b(?:does not|cannot|is not)\s+(?:matter|exist|affect|explain))/iu,
     },
     {
       supports:
         /(?:\b(?:need|needs|needed|require|requires|required|would be stronger|should use|could use|before concluding)\b[^.!?\n]{0,100}\b(?:random\w*|control\w*|baseline|comparison|experiment\w*)\b|\b(?:random assignment|controlled comparison|baseline scores?)\b[^.!?\n]{0,60}\b(?:needed|required|stronger|would help)\b)/iu,
       contradicts:
-        /(?:\b(?:random\w*|control\w*|baseline|comparison|experiment\w*)\b[^.!?\n]{0,50}\b(?:unnecessary|not needed|irrelevant|does not matter|cannot help)\b|\bno need\b[^.!?\n]{0,50}\b(?:random\w*|control\w*|baseline|comparison|experiment\w*)\b)/iu,
+        /(?:\b(?:random\w*|control\w*|baseline|comparison|experiment\w*)\b[^.!?\n]{0,50}\b(?:unnecessary|not needed|irrelevant|does not matter|cannot help)\b|\b(?:no need|need no|do not need|don't need|never need)\b[^.!?\n]{0,60}\b(?:random\w*|control\w*|baseline|comparison|experiment\w*)\b)/iu,
     },
   ],
   "base-rate-neglect": [
     {
       supports:
-        /(?:\b(?:base rate|prevalence|rare (?:condition|disease))\b[^.!?\n]{0,100}\b(?:include|included|consider|matters|important|must|before interpreting)\b|\b(?:base rate|prevalence)\s+(?:is|of)\s+(?:\d|rare\b|low\b))/iu,
+        /(?:\b(?:base rate|prevalence|rare (?:condition|disease))\b[^.!?\n]{0,100}\b(?:include|included|consider|matters|important|must|before interpreting)\b|\b(?:base rate|prevalence)\s+(?:is|of)\s+(?:1\s+in\s+(?:1,?000|2,?000)\b|0?\.(?:05|1)\s*(?:%|percent)\b|rare\b|low\b))/iu,
       contradicts:
-        /(?:\b(?:base rate|prevalence)\b[^.!?\n]{0,50}\b(?:does not|doesn't|cannot)\s+(?:matter|need|affect)|\b(?:ignore|ignored)\b[^.!?\n]{0,50}\b(?:base rate|prevalence)\b)/iu,
+        /(?:\b(?:base rate|prevalence)\b[^.!?\n]{0,50}\b(?:does not|doesn't|cannot)\s+(?:matter|need|affect)|\b(?:ignore|ignored)\b[^.!?\n]{0,50}\b(?:base rate|prevalence)\b|\b(?:base rate|prevalence)\s+(?:is|of)\s+(?:[2-9]\d(?:\.\d+)?|1\d(?:\.\d+)?)\s*(?:%|percent)\b)/iu,
     },
     {
       supports:
         /(?:\b(?:compare|count|expect|calculate)\b[^.!?\n]{0,120}\btrue positives?\b[^.!?\n]{0,100}\bfalse positives?\b|\btrue positives?\b[^.!?\n]{0,80}\b(?:with|and|versus|vs\.?)\b[^.!?\n]{0,80}\bfalse positives?\b)/iu,
       contradicts:
-        /(?:\b(?:ignore|ignored|irrelevant)\b[^.!?\n]{0,50}\b(?:true|false) positives?\b|\b(?:true|false) positives?\b[^.!?\n]{0,50}\b(?:ignore|ignored|irrelevant|do not matter|don't matter)\b)/iu,
+        /(?:\b(?:ignore|ignored|irrelevant)\b[^.!?\n]{0,50}\b(?:true|false) positives?\b|\b(?:true|false) positives?\b[^.!?\n]{0,50}\b(?:ignore|ignored|irrelevant|do not matter|don't matter)\b|\b(?:do not|don't|never|need not)\s+(?:compare|count|expect|calculate)\b[^.!?\n]{0,100}\b(?:true|false) positives?\b)/iu,
     },
     {
       supports:
         /(?:\b(?:among|given|after)\s+(?:the\s+)?positive(?:\s+results?)?\b|\bposterior\b|\bprobability\s+(?:after|given)\s+(?:a\s+)?positive\b)/iu,
       contradicts:
-        /\bpositive result\b[^.!?\n]{0,60}\b(?:definitely|certainly|must be)\b[^.!?\n]{0,30}\b\d{1,3}\s*(?:%|percent)\b/iu,
+        /(?:\bpositive result\b[^.!?\n]{0,60}\b(?:definitely|certainly|must be)\b[^.!?\n]{0,30}\b\d{1,3}\s*(?:%|percent)\b|\b(?:ignore|do not use|don't use|need not use)\b[^.!?\n]{0,60}\b(?:probability|chance)\b[^.!?\n]{0,60}\b(?:given|among|after)\b[^.!?\n]{0,30}\bpositive\b)/iu,
     },
   ],
   "sampling-bias": [
@@ -365,7 +389,7 @@ const DEMO_EVIDENCE_RULES: Readonly<
       supports:
         /(?:\b(?:representative|random|stratified)\s+(?:random\s+)?sample\b[^.!?\n]{0,80}\b(?:would be stronger|needed|required|should|could improve)\b|\b(?:need|require|use|draw|select)\b[^.!?\n]{0,80}\b(?:representative|random|stratified)\s+(?:sample|sampling)\b)/iu,
       contradicts:
-        /\b(?:representative|random|stratified)\s+(?:random\s+)?sample\b[^.!?\n]{0,50}\b(?:unnecessary|not needed|irrelevant|does not matter)\b/iu,
+        /(?:\b(?:representative|random|stratified)\s+(?:random\s+)?sample\b[^.!?\n]{0,50}\b(?:unnecessary|not needed|irrelevant|does not matter)\b|\b(?:need no|do not need|don't need|never need)\b[^.!?\n]{0,60}\b(?:representative|random|stratified)\s+(?:sample|sampling)\b)/iu,
     },
   ],
 };
@@ -378,9 +402,12 @@ const isEvaluatorInstruction = (value: string): boolean =>
     value,
   );
 
-export const createDemoAnalysis = (rawRequest: AnalyzeRequest): AnalysisResult => {
+export const createDemoAnalysis = (
+  rawRequest: AnalyzeRequest,
+): AnalysisResult => {
   const request = AnalyzeRequestSchema.parse(rawRequest);
-  if (request.mode !== "demo") throw new Error("Demo fixtures require demo mode.");
+  if (request.mode !== "demo")
+    throw new Error("Demo fixtures require demo mode.");
 
   const activity = getActivity(request.activityId);
   if (request.response !== activity.public.sampleResponse) {
@@ -414,7 +441,8 @@ export const createDemoAnalysis = (rawRequest: AnalyzeRequest): AnalysisResult =
 
 export const createDemoReceipt = (rawRequest: ReviseRequest): Receipt => {
   const request = ReviseRequestSchema.parse(rawRequest);
-  if (request.mode !== "demo") throw new Error("Demo fixtures require demo mode.");
+  if (request.mode !== "demo")
+    throw new Error("Demo fixtures require demo mode.");
   const fixture = DEMO_FIXTURES[request.activityId];
   const activity = getActivity(request.activityId);
   if (request.originalResponse !== activity.public.sampleResponse) {
@@ -424,17 +452,21 @@ export const createDemoReceipt = (rawRequest: ReviseRequest): Receipt => {
   const evaluatorInstruction = isEvaluatorInstruction(request.revisedResponse);
   const evaluatedRubric = fixture.receipt.rubric.map((criterion, index) => {
     const rule = DEMO_EVIDENCE_RULES[request.activityId][index];
-    const contradicted = rule?.contradicts?.test(request.revisedResponse) ?? false;
-    const match = evaluatorInstruction || contradicted
-      ? null
-      : rule?.supports.exec(request.revisedResponse);
+    const contradicted =
+      rule?.contradicts?.test(request.revisedResponse) ?? false;
+    const match =
+      evaluatorInstruction || contradicted
+        ? null
+        : rule?.supports.exec(request.revisedResponse);
     return {
       ...criterion,
       after: match ? ("met" as const) : ("missing" as const),
       evidence: match?.[0] ?? null,
     };
   });
-  const metCount = evaluatedRubric.filter(({ after }) => after === "met").length;
+  const metCount = evaluatedRubric.filter(
+    ({ after }) => after === "met",
+  ).length;
 
   return ReceiptSchema.parse({
     activityId: request.activityId,

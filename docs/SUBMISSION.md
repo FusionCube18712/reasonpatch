@@ -38,8 +38,8 @@ Codex was the end-to-end engineering environment: product planning, official doc
 - transparent Sol/Luna trace and fallback behavior;
 - evidence-bound printable receipt;
 - fresh-case Transfer Slip plus separate blinded-review and coordinator-audit artifacts;
-- 27-case calibration covering 81 repair and transfer rubric decisions;
-- 113 automated tests, strong coverage, desktop/mobile browser checks, and a clean production audit.
+- 29-case calibration covering 87 repair and transfer rubric decisions;
+- 116 automated tests, strong coverage, desktop/mobile browser checks, and a clean production audit.
 
 ## Challenges and lessons
 

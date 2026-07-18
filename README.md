@@ -96,8 +96,8 @@ npm run test:e2e    # Chromium + Pixel 7 flows, visual QA, keyboard, axe
 
 Current verified baseline:
 
-- 113 tests across unit, integration, and 27 repair/transfer calibration cases;
-- 96%+ statements, 85%+ branches, 99%+ functions, and 97%+ lines;
+- 116 tests across unit, integration, and 29 repair/transfer calibration cases;
+- 95%+ statements, 84%+ branches, 99%+ functions, and 97%+ lines;
 - 16 Playwright checks across desktop/mobile projects;
 - no serious WCAG A/AA violations in tested initial, receipt, and transfer states;
 - zero production dependency audit vulnerabilities;
@@ -126,7 +126,7 @@ The recorder drives the deployed product, burns in captions, narrates the Sol/Lu
 
 ## Safety and privacy boundary
 
-- No accounts, database, file uploads, browser persistence, or model tools.
+- No accounts, database, file uploads, automatic browser persistence, or model tools. Raw-text educator files persist only when a user explicitly downloads them.
 - Learner text is placed in user content, never interpolated into system instructions.
 - Live requests use `store: false`; the app does not persist learner text.
 - Cross-site, non-JSON, and over-16 KB API requests are rejected.

@@ -613,7 +613,8 @@ describe("RepairStudio", () => {
           data: null,
           error: {
             code: "UNAVAILABLE",
-            message: "The receipt could not be created yet. Your revision was not lost.",
+            message:
+              "The receipt could not be created yet. Your revision was not lost.",
           },
         },
         503,

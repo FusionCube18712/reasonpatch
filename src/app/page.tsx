@@ -1,6 +1,11 @@
 import { RepairStudio } from "@/components/repair-studio";
 
-const journey = ["01 Explain", "02 Repair", "03 Receipt", "04 Transfer"] as const;
+const journey = [
+  "01 Explain",
+  "02 Repair",
+  "03 Receipt",
+  "04 Transfer",
+] as const;
 
 export default function Page() {
   return (
@@ -8,10 +13,15 @@ export default function Page() {
       <header className="border-b border-[#25231f]/12 px-4 sm:px-6 lg:px-10">
         <div className="mx-auto flex max-w-[1400px] items-center justify-between py-4">
           <div className="flex items-center gap-3">
-            <span aria-hidden="true" className="grid size-8 place-items-center rounded-full bg-[#25231f] text-sm font-semibold text-[#f5f1e8]">
+            <span
+              aria-hidden="true"
+              className="grid size-8 place-items-center rounded-full bg-[#25231f] text-sm font-semibold text-[#f5f1e8]"
+            >
               R
             </span>
-            <span className="text-sm font-semibold tracking-[-0.02em]">ReasonPatch</span>
+            <span className="text-sm font-semibold tracking-[-0.02em]">
+              ReasonPatch
+            </span>
           </div>
           <span className="hidden font-mono text-[10px] uppercase tracking-[0.18em] text-[#6b675f] sm:block">
             Education · Build Week 2026
@@ -31,10 +41,14 @@ export default function Page() {
           </div>
           <div className="flex flex-col justify-end gap-8 lg:pl-[8vw]">
             <p className="max-w-[62ch] text-base leading-7 text-[#625e56] sm:text-lg">
-              ReasonPatch finds the earliest unsupported inference, asks one small question,
-              and records what changed. It never writes the learner&apos;s replacement answer.
+              ReasonPatch finds the earliest unsupported inference, asks one
+              small question, and records what changed. It never writes the
+              learner&apos;s replacement answer.
             </p>
-            <ol aria-label="Learning journey" className="grid border-y border-[#25231f]/14 sm:grid-cols-4">
+            <ol
+              aria-label="Learning journey"
+              className="grid border-y border-[#25231f]/14 sm:grid-cols-4"
+            >
               {journey.map((step, index) => (
                 <li
                   key={step}
@@ -45,15 +59,19 @@ export default function Page() {
               ))}
             </ol>
             <p className="max-w-[66ch] text-xs leading-5 text-[#625e56]">
-              No accounts or local text storage. Avoid names and sensitive details. When live
-              mode is explicitly enabled, submitted text is sent to OpenAI with storage disabled.
+              No accounts or automatic browser storage. Educator files are saved
+              only when you choose to download them. Avoid names and sensitive
+              details. When live mode is explicitly enabled, submitted text is
+              sent to OpenAI with storage disabled.
             </p>
           </div>
         </div>
       </section>
 
       <RepairStudio
-        liveModeAvailable={process.env.NEXT_PUBLIC_REASONPATCH_LIVE_MODE === "true"}
+        liveModeAvailable={
+          process.env.NEXT_PUBLIC_REASONPATCH_LIVE_MODE === "true"
+        }
       />
 
       <footer className="px-4 pb-8 pt-14 sm:px-6 lg:px-10">

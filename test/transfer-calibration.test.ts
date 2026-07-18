@@ -148,7 +148,8 @@ describe("17-case fresh-transfer calibration", () => {
     expect(metCriteria.map(({ id }) => id)).toEqual(expectedMet);
     expect(
       metCriteria.every(
-        ({ evidence }) => evidence !== null && evidenceOccursIn(response, evidence),
+        ({ evidence }) =>
+          evidence !== null && evidenceOccursIn(response, evidence),
       ),
     ).toBe(true);
   });
