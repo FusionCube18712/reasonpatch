@@ -8,6 +8,8 @@ ReasonPatch is an Education-track reasoning repair studio for introductory stati
 
 It is deliberately not a chatbot, answer generator, grade, or mastery detector.
 
+![ReasonPatch Explain, Repair, and evidence-bound Receipt journey](docs/assets/reasonpatch-receipt.png)
+
 ## Why this matters
 
 Most AI learning tools optimize for producing a correct answer. That can erase the exact reasoning step an instructor needs to see. ReasonPatch withholds the replacement answer and makes the learner perform the repair. The resulting receipt records observable changes against a visible rubric without claiming that learning, authorship, or mastery has been proven.
