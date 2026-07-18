@@ -36,7 +36,7 @@ Codex was the end-to-end engineering environment: product planning, official doc
 - transparent Sol/Luna trace and fallback behavior;
 - evidence-bound printable receipt;
 - 12-case calibration against complete, partial, irrelevant, and injection-like revisions;
-- 80-plus automated tests, strong coverage, desktop/mobile browser checks, and clean production audit.
+- 91 automated tests, strong coverage, desktop/mobile browser checks, and a clean production audit.
 
 ## Challenges and lessons
 
@@ -57,12 +57,12 @@ ReasonPatch could help instructors preserve student agency while making formativ
 
 ## Final submission checklist
 
-- [ ] Deploy a free public guided demo and verify it in an incognito window.
-- [ ] Keep public live mode disabled unless protected by a signed access gate and distributed budget controls.
-- [ ] Create a public source repository and verify README rendering.
-- [ ] Record the audio demo using `docs/DEMO_SCRIPT.md`; keep it under three minutes.
+- [x] Deploy a free public guided demo and verify it in an incognito window.
+- [x] Keep public live mode disabled unless protected by a signed access gate and distributed budget controls.
+- [x] Create a public source repository and verify README rendering.
+- [x] Record the narrated, captioned demo using `npm run demo:video`; final cut is 1:52.
 - [ ] Upload to YouTube and verify public/incognito playback.
-- [ ] Run `npm run check`, `npm run test:e2e`, and `npm audit --omit=dev` from a clean install.
+- [x] Run `npm run check`, `npm run test:e2e`, and `npm audit --omit=dev`.
 - [ ] Run `/feedback` in Codex and paste the session ID below.
 - [ ] Submit before **July 21, 2026 at 5:00 PM Pacific Time**.
 

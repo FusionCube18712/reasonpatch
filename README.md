@@ -101,6 +101,17 @@ Current verified baseline:
 
 The 12-case suite is a deterministic functional calibration of receipt evidence across complete, partial, irrelevant, and prompt-injection revisions. It is not a learning-outcomes study. See [evaluation notes](docs/EVALUATION.md).
 
+## Reproduce the narrated demo
+
+On macOS with `ffmpeg` and `ffprobe` installed:
+
+```bash
+npx playwright install chromium
+npm run demo:video
+```
+
+The recorder drives the deployed product, burns in captions, narrates the Sol/Luna and Codex implementation, verifies the final cut is under three minutes, and writes the upload-ready MP4 to `artifacts/demo-video/`. Generated media is intentionally excluded from Git.
+
 ## Safety and privacy boundary
 
 - No accounts, database, file uploads, browser persistence, or model tools.
