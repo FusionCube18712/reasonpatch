@@ -313,6 +313,44 @@ describe("RepairStudio", () => {
     expect(screen.getByText("AI-generated challenge, not a grade")).toBeVisible();
   });
 
+  it("checks repaired reasoning on a fresh case without claiming learning", async () => {
+    const user = userEvent.setup();
+    const fetchMock = vi.spyOn(globalThis, "fetch");
+    fetchMock.mockResolvedValueOnce(jsonResponse(analysisPayload));
+    fetchMock.mockResolvedValueOnce(jsonResponse(receiptPayload));
+    fetchMock.mockResolvedValueOnce(jsonResponse(receiptPayload));
+    render(<RepairStudio />);
+
+    expect(
+      screen.queryByRole("heading", { name: "Try the reasoning on a fresh case" }),
+    ).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Find the hinge" }));
+    await user.type(
+      screen.getByLabelText("Revised explanation"),
+      "The difference does not establish causation because students self-selected; a controlled comparison would be stronger.",
+    );
+    await user.click(screen.getByRole("button", { name: "Create repair receipt" }));
+
+    expect(
+      await screen.findByRole("heading", { name: "Try the reasoning on a fresh case" }),
+    ).toBeVisible();
+    const transferResponse =
+      "The recovery difference does not establish causation because patients chose to join; random assignment would be stronger.";
+    await user.type(screen.getByLabelText("Fresh-case explanation"), transferResponse);
+    await user.click(screen.getByRole("button", { name: "Check transfer evidence" }));
+
+    expect(await screen.findByRole("heading", { name: "Transfer slip" })).toBeVisible();
+    expect(
+      screen.getByText("Observed evidence in a new context — not proof of learning or mastery."),
+    ).toBeVisible();
+    expect(JSON.parse(String(fetchMock.mock.calls[2]?.[1]?.body))).toMatchObject({
+      activityId: "correlation-causation",
+      revisedResponse: transferResponse,
+      mode: "demo",
+    });
+  });
+
   it("retries a failed receipt without losing the learner revision", async () => {
     const user = userEvent.setup();
     const fetchMock = vi.spyOn(globalThis, "fetch");
