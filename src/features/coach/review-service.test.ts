@@ -299,6 +299,32 @@ describe("custom live revision review", () => {
     },
   );
 
+  it.each([
+    "The revision is fully correct.",
+    "The learner clearly understands the concept now.",
+  ])("rejects the categorical review verdict %s", async (summary) => {
+    const gateway: ModelGateway = {
+      generate: vi.fn().mockResolvedValue({ ...modelReview, summary }),
+    };
+
+    await expect(
+      reviewCustomRevision({ gateway, request: customRequest }),
+    ).rejects.toThrow();
+  });
+
+  it.each([
+    "This does not establish that the answer is correct.",
+    "The evidence does not prove that the learner understands the topic.",
+  ])("allows the negated review caveat %s", async (summary) => {
+    const gateway: ModelGateway = {
+      generate: vi.fn().mockResolvedValue({ ...modelReview, summary }),
+    };
+
+    await expect(
+      reviewCustomRevision({ gateway, request: customRequest }),
+    ).resolves.toEqual(expect.objectContaining({ summary }));
+  });
+
   it("keeps learner content in model input rather than system instructions", async () => {
     const calls: ModelCall[] = [];
     const gateway: ModelGateway = {

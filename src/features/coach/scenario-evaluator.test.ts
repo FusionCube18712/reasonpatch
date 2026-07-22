@@ -113,6 +113,21 @@ describe("guided scenario evaluator", () => {
       "The observational association does not establish causation. Students who choose flashcards are not more motivated. A randomized study is not required.",
       ["alternative-explanation", "stronger-evidence"],
     ],
+    [
+      "logic-negation-introduction",
+      "p ∧ q is not an assumption. No contradiction can be derived. ¬I 2-4 is invalid.",
+      ["scoped-assumption", "explicit-contradiction", "negation-introduction"],
+    ],
+    [
+      "algebra-square-branches",
+      "By the zero-product property, neither x = 3 nor x = -3 is a solution; both are wrong.",
+      ["positive-solution", "negative-solution", "branch-justification"],
+    ],
+    [
+      "causal-observational-claim",
+      "This observational association does not establish causation. Motivation is irrelevant. A randomized study would be useless.",
+      ["alternative-explanation", "stronger-evidence"],
+    ],
   ])(
     "rejects negated or syntactically invalid revision evidence for %s",
     (scenarioId, revision, missingIds) => {
@@ -188,6 +203,26 @@ describe("guided scenario evaluator", () => {
       "This does not show firefighters cause damage. Fire severity does not drive either firefighters or damage. Control for severity is unnecessary.",
       ["fresh-common-cause", "fresh-evidence"],
     ],
+    [
+      "logic-negation-introduction",
+      "Do not assume r ∧ s. Extract r and combine it with ¬r to derive a contradiction. Never discharge by negation introduction.",
+      ["fresh-assumption", "fresh-discharge"],
+    ],
+    [
+      "algebra-square-branches",
+      "For y² = 16, neither y = 4 nor y = -4 is a solution; both square branches are invalid.",
+      ["fresh-positive", "fresh-negative", "fresh-branches"],
+    ],
+    [
+      "python-empty-aggregate",
+      "Check whether values are empty before max and min, but do not raise anything or use an explicit policy.",
+      ["fresh-policy"],
+    ],
+    [
+      "causal-observational-claim",
+      "This does not show firefighters cause damage. Severity fails to drive both firefighters and damage. Controlling for severity would add nothing.",
+      ["fresh-common-cause", "fresh-evidence"],
+    ],
   ])(
     "rejects negated fresh-case evidence for %s",
     (scenarioId, response, missingIds) => {
@@ -201,6 +236,16 @@ describe("guided scenario evaluator", () => {
       }
     },
   );
+
+  it("accepts a complete algebra justification by direct substitution", () => {
+    const result = evaluateScenarioRevision(
+      "algebra-square-branches",
+      "x = 3 because 3² = 9, and x = -3 because (-3)² = 9.",
+    );
+
+    expect(result.status).toBe("evidence-observed");
+    expect(result.criteria.every(({ state }) => state === "met")).toBe(true);
+  });
 
   it("fails closed for an unknown scenario instead of applying a generic checker", () => {
     expect(() => evaluateScenarioRevision("unknown", "keyword-rich text")).toThrow(

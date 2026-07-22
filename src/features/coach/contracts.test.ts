@@ -203,4 +203,31 @@ describe("coach diagnosis contract", () => {
       CoachDiagnosisSchema.parse({ ...validDiagnosis, explanation: claim }),
     ).toThrow();
   });
+
+  it.each([
+    "The revision is fully correct.",
+    "The learner clearly understands the concept now.",
+  ])("rejects additional categorical verdict phrasing: %s", (claim) => {
+    expect(() =>
+      CoachDiagnosisSchema.parse({ ...validDiagnosis, explanation: claim }),
+    ).toThrow();
+  });
+
+  it("allows negated caveats and verbatim learner claims without treating them as verdicts", () => {
+    const diagnosis = {
+      ...validDiagnosis,
+      hingeQuote: "The answer is correct.",
+      explanation:
+        "This does not establish that the answer is correct or that the learner understands the topic.",
+      criteria: [
+        {
+          ...validDiagnosis.criteria[0],
+          evidence: "The answer is correct.",
+        },
+        validDiagnosis.criteria[1],
+      ],
+    };
+
+    expect(CoachDiagnosisSchema.parse(diagnosis)).toEqual(diagnosis);
+  });
 });
