@@ -18,5 +18,5 @@ export const hasMatchingDeclaredMode = (
   validatedMode: "demo" | "live",
 ): boolean => {
   const declaredMode = request.headers.get(modeHeader);
-  return declaredMode === null || declaredMode === validatedMode;
+  return declaredMode === validatedMode;
 };

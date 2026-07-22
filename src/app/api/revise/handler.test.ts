@@ -20,7 +20,10 @@ describe("revise API handler", () => {
       new Request("http://localhost/api/revise", {
         method: "POST",
         body: "{not-json",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "X-ReasonPatch-Mode": requestBody.mode,
+        },
       }),
     );
 
@@ -42,7 +45,10 @@ describe("revise API handler", () => {
           ...requestBody,
           revisedResponse: requestBody.originalResponse,
         }),
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "X-ReasonPatch-Mode": requestBody.mode,
+        },
       }),
     );
 
@@ -99,7 +105,10 @@ describe("revise API handler", () => {
       new Request("http://localhost/api/revise", {
         method: "POST",
         body: JSON.stringify(requestBody),
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "X-ReasonPatch-Mode": requestBody.mode,
+        },
       }),
     );
 
@@ -120,7 +129,10 @@ describe("revise API handler", () => {
       new Request("http://localhost/api/revise", {
         method: "POST",
         body: JSON.stringify(requestBody),
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "X-ReasonPatch-Mode": requestBody.mode,
+        },
       }),
     );
 

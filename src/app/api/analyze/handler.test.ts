@@ -12,7 +12,10 @@ describe("analyze API handler", () => {
       new Request("http://localhost/api/analyze", {
         method: "POST",
         body: "{not-json",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "X-ReasonPatch-Mode": validAnalyzeRequest.mode,
+        },
       }),
     );
 
@@ -31,7 +34,10 @@ describe("analyze API handler", () => {
       new Request("http://localhost/api/analyze", {
         method: "POST",
         body: JSON.stringify({ activityId: "unknown" }),
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "X-ReasonPatch-Mode": validAnalyzeRequest.mode,
+        },
       }),
     );
 
@@ -78,7 +84,10 @@ describe("analyze API handler", () => {
       new Request("http://localhost/api/analyze", {
         method: "POST",
         body: JSON.stringify(validAnalyzeRequest),
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "X-ReasonPatch-Mode": validAnalyzeRequest.mode,
+        },
       }),
     );
 
@@ -99,7 +108,10 @@ describe("analyze API handler", () => {
       new Request("http://localhost/api/analyze", {
         method: "POST",
         body: JSON.stringify(validAnalyzeRequest),
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "X-ReasonPatch-Mode": validAnalyzeRequest.mode,
+        },
       }),
     );
 
