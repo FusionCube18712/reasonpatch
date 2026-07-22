@@ -196,6 +196,23 @@ describe("custom live revision review", () => {
     ).rejects.toThrow();
   });
 
+  it("rejects duplicate model criteria instead of silently canonicalizing them", async () => {
+    const gateway: ModelGateway = {
+      generate: vi.fn().mockResolvedValue({
+        ...modelReview,
+        criteria: [
+          modelReview.criteria[0],
+          modelReview.criteria[0],
+          modelReview.criteria[1],
+        ],
+      }),
+    };
+
+    await expect(
+      reviewCustomRevision({ gateway, request: customRequest }),
+    ).rejects.toThrow();
+  });
+
   it.each(["mastered", "graded", "authorship", "proof of learning"])(
     "rejects the unsafe model claim %s",
     async (claim) => {
