@@ -51,6 +51,8 @@ const revisionRules: Readonly<Record<ScenarioId, RuleSet>> = {
         id: "scoped-assumption",
         label: "Opens the conjunction as a scoped assumption",
         supports: /(?:\|\s*)?p\s*∧\s*q[^\n]{0,40}\bassumption\b/iu,
+        contradicts:
+          /(?:p\s*∧\s*q[^.!?\n]{0,50}\b(?:is\s+not|isn't|not\s+an?)\s+assumption\b|\b(?:do\s+not|don't|never)\s+(?:assume|suppose)[^.!?\n]{0,40}p\s*∧\s*q)/iu,
       },
       {
         id: "explicit-contradiction",
@@ -63,6 +65,8 @@ const revisionRules: Readonly<Record<ScenarioId, RuleSet>> = {
         id: "negation-introduction",
         label: "Discharges the full subproof with negation introduction",
         supports: /(?:¬i\s*2\s*[-–]\s*4|negation introduction[^\n]{0,60}(?:2\s*[-–]\s*4|subproof))/iu,
+        contradicts:
+          /(?:¬i\s*2\s*[-–]\s*4[^.!?\n]{0,35}\b(?:invalid|wrong|unsupported)\b|\b(?:do\s+not|don't|never|should\s+not|shouldn't)\b[^.!?\n]{0,60}\b(?:discharg|negation\s+introduction|¬i)\b)/iu,
       },
     ],
   },
@@ -73,22 +77,22 @@ const revisionRules: Readonly<Record<ScenarioId, RuleSet>> = {
         label: "Includes the positive solution",
         supports: /\bx\s*=\s*3\b/iu,
         contradicts:
-          /\bx\s*=\s*3\b[^.!?\n]{0,45}\b(?:is\s+not|isn't|invalid|extraneous|not\s+a\s+solution)\b/iu,
+          /(?:\bneither\b[^.!?\n]{0,60}\bx\s*=\s*3\b|\bx\s*=\s*3\b[^.!?\n]{0,45}\b(?:is\s+not|isn't|invalid|extraneous|not\s+a\s+solution)\b)/iu,
       },
       {
         id: "negative-solution",
         label: "Includes the negative solution",
         supports: /\bx\s*=\s*[-−]\s*3\b/iu,
         contradicts:
-          /(?:negative branch|x\s*=\s*[-−]\s*3)[^.!?\n]{0,40}\b(?:invalid|not (?:valid|a solution)|extraneous)\b/iu,
+          /(?:\bneither\b[^.!?\n]{0,80}\bx\s*=\s*[-−]\s*3\b|(?:negative branch|x\s*=\s*[-−]\s*3)[^.!?\n]{0,40}\b(?:invalid|not (?:valid|a solution)|extraneous)\b)/iu,
       },
       {
         id: "branch-justification",
         label: "Justifies both square branches",
         supports:
-          /(?:zero[- ]product|\(x\s*[-−]\s*3\)\s*\(x\s*\+\s*3\)|±\s*(?:√|sqrt)|both[^.!?\n]{0,80}(?:square\s+to\s+9|solutions?))/iu,
+          /(?:zero[- ]product|\(x\s*[-−]\s*3\)\s*\(x\s*\+\s*3\)|±\s*(?:√|sqrt)|both[^.!?\n]{0,80}(?:square\s+to\s+9|solutions?)|3\s*(?:²|\^\s*2)\s*=\s*9[^.!?\n]{0,100}\(?\s*[-−]\s*3\s*\)?\s*(?:²|\^\s*2)\s*=\s*9)/iu,
         contradicts:
-          /\bboth\b[^.!?\n]{0,60}\b(?:branches?|solutions?)\b[^.!?\n]{0,30}\b(?:invalid|extraneous|wrong)\b/iu,
+          /(?:\bboth\b[^.!?\n]{0,80}\b(?:invalid|extraneous|wrong)\b|\bzero[- ]product\b[^.!?\n]{0,50}\b(?:invalid|wrong|does\s+not\s+apply)\b)/iu,
       },
     ],
   },
@@ -128,17 +132,17 @@ const revisionRules: Readonly<Record<ScenarioId, RuleSet>> = {
         id: "alternative-explanation",
         label: "Names a plausible alternative explanation",
         supports:
-          /(?:study longer|motivat\w*|prior achievement|self[- ]select\w*|students? who choose)/iu,
+          /(?:(?:study longer|motivat\w*|prior achievement|self[- ]select\w*|students?\s+(?:who\s+choose|choosing))[^.!?\n]{0,90}\b(?:may|might|could|plausible|alternative|differ|also)\b|\b(?:may|might|could)\b[^.!?\n]{0,90}(?:study longer|motivat\w*|prior achievement|self[- ]select\w*))/iu,
         contradicts:
-          /(?:motivat\w*[^.!?\n]{0,60}\b(?:is\s+not|isn't|cannot\s+be|not\s+a)\b[^.!?\n]{0,45}\b(?:plausible|alternative|explanation)|students?\s+who\s+choose[^.!?\n]{0,80}\b(?:are\s+not|aren't|do\s+not|don't)\b[^.!?\n]{0,45}\b(?:motivat\w*|study|differ))/iu,
+          /(?:motivat\w*[^.!?\n]{0,60}\b(?:is\s+not|isn't|cannot\s+be|cannot\s+plausibly\s+explain|not\s+a|irrelevant)\b[^.!?\n]{0,45}(?:plausible|alternative|explanation)?|students?\s+(?:who\s+choose|choosing)[^.!?\n]{0,80}\b(?:are\s+not|aren't|do\s+not|don't)\b[^.!?\n]{0,45}\b(?:motivat\w*|study|differ)|\b(?:irrelevant|cannot\s+plausibly\s+explain)\b[^.!?\n]{0,35}\bmotivat\w*)/iu,
       },
       {
         id: "stronger-evidence",
         label: "Requests stronger causal evidence",
         supports:
-          /(?:randomi[sz]ed|controlled (?:study|comparison|experiment)|control for|adjust for)/iu,
+          /(?:(?:randomi[sz]ed|controlled (?:study|comparison|experiment)|control for|adjust for)[^.!?\n]{0,100}\b(?:better|stronger|would|could|needed|required|support)|\b(?:need|request|stronger)\b[^.!?\n]{0,100}(?:randomi[sz]ed|controlled|control for|adjust for))/iu,
         contradicts:
-          /(?:\b(?:no|not)\s+(?:randomi[sz]ed|controlled)[^.!?\n]{0,40}\b(?:needed|required|necessary)\b|\b(?:randomi[sz]ed|controlled)[^.!?\n]{0,50}\b(?:is|are)\s+not\s+(?:needed|required|necessary)\b)/iu,
+          /(?:\b(?:no|not)\s+(?:randomi[sz]ed|controlled)[^.!?\n]{0,40}\b(?:needed|required|necessary)\b|\b(?:randomi[sz]ed|controlled)[^.!?\n]{0,70}\b(?:is|are)\s+not\s+(?:needed|required|necessary)\b|\b(?:randomi[sz]ed|controlled)[^.!?\n]{0,60}\b(?:useless|unhelpful|irrelevant)\b)/iu,
       },
     ],
   },
@@ -155,6 +159,8 @@ const transferRules: Readonly<Record<ScenarioId, RuleSet>> = {
         id: "fresh-assumption",
         label: "Opens the fresh conjunction assumption",
         supports: /(?:assum|suppos)[^.!?\n]{0,60}r\s*∧\s*s/iu,
+        contradicts:
+          /\b(?:do\s+not|don't|never|avoid)\b[^.!?\n]{0,45}\b(?:assum|suppos)[^.!?\n]{0,45}r\s*∧\s*s/iu,
       },
       {
         id: "fresh-contradiction",
@@ -168,6 +174,8 @@ const transferRules: Readonly<Record<ScenarioId, RuleSet>> = {
         id: "fresh-discharge",
         label: "Discharges the fresh assumption",
         supports: /discharg[^.!?\n]{0,80}(?:negation introduction|¬i)/iu,
+        contradicts:
+          /\b(?:do\s+not|don't|never|avoid|should\s+not|shouldn't)\b[^.!?\n]{0,60}\bdischarg[^.!?\n]{0,60}(?:negation introduction|¬i)/iu,
       },
     ],
   },
@@ -182,21 +190,21 @@ const transferRules: Readonly<Record<ScenarioId, RuleSet>> = {
         label: "Names the positive fresh-case solution",
         supports: /\by\s*=\s*4\b/iu,
         contradicts:
-          /\by\s*=\s*4\b[^.!?\n]{0,45}\b(?:is\s+not|isn't|invalid|extraneous|not\s+a\s+solution)\b/iu,
+          /(?:\bneither\b[^.!?\n]{0,60}\by\s*=\s*4\b|\by\s*=\s*4\b[^.!?\n]{0,45}\b(?:is\s+not|isn't|invalid|extraneous|not\s+a\s+solution)\b)/iu,
       },
       {
         id: "fresh-negative",
         label: "Names the negative fresh-case solution",
         supports: /\by\s*=\s*[-−]\s*4\b/iu,
         contradicts:
-          /\by\s*=\s*[-−]\s*4\b[^.!?\n]{0,45}\b(?:is\s+not|isn't|invalid|extraneous|not\s+a\s+solution)\b/iu,
+          /(?:\bneither\b[^.!?\n]{0,80}\by\s*=\s*[-−]\s*4\b|\by\s*=\s*[-−]\s*4\b[^.!?\n]{0,45}\b(?:is\s+not|isn't|invalid|extraneous|not\s+a\s+solution)\b)/iu,
       },
       {
         id: "fresh-branches",
         label: "Explains why both fresh-case branches matter",
         supports: /(?:both[^.!?\n]{0,60}square|±\s*√?\s*16|factor|zero[- ]product)/iu,
         contradicts:
-          /\bboth\b[^.!?\n]{0,60}\b(?:branches?|solutions?)\b[^.!?\n]{0,30}\b(?:invalid|extraneous|wrong)\b/iu,
+          /\bboth\b[^.!?\n]{0,80}\b(?:invalid|extraneous|wrong)\b/iu,
       },
     ],
   },
@@ -224,7 +232,7 @@ const transferRules: Readonly<Record<ScenarioId, RuleSet>> = {
         label: "Names an explicit fresh-case policy",
         supports: /(?:raise|exception|sentinel|documented policy|explicit policy)/iu,
         contradicts:
-          /\b(?:exception|sentinel|documented\s+policy|explicit\s+policy)\b[^.!?\n]{0,50}\b(?:unnecessary|not\s+(?:needed|required|necessary))\b/iu,
+          /(?:\b(?:exception|sentinel|documented\s+policy|explicit\s+policy)\b[^.!?\n]{0,60}\b(?:unnecessary|not\s+(?:needed|required|necessary))\b|\b(?:do\s+not|don't|never|avoid)\b[^.!?\n]{0,45}\b(?:raise|return|use)[^.!?\n]{0,45}\b(?:exception|sentinel|policy|anything)\b)/iu,
       },
     ],
   },
@@ -246,14 +254,14 @@ const transferRules: Readonly<Record<ScenarioId, RuleSet>> = {
         supports:
           /(?:severity|larger fires?|fire size)[^.!?\n]{0,100}(?:both|drives?|causes?)[^.!?\n]{0,100}(?:firefighters?|damage)/iu,
         contradicts:
-          /(?:severity|larger fires?|fire size)[^.!?\n]{0,60}\b(?:does\s+not|doesn't|cannot|can't|is\s+not|isn't)\b[^.!?\n]{0,80}\b(?:drive|cause|affect|explain)\b/iu,
+          /(?:severity|larger fires?|fire size)[^.!?\n]{0,60}\b(?:does\s+not|doesn't|cannot|can't|is\s+not|isn't|fails?\s+to)\b[^.!?\n]{0,80}\b(?:drive|cause|affect|explain)\b/iu,
       },
       {
         id: "fresh-evidence",
         label: "Requests a severity-aware comparison",
         supports: /(?:control(?:ling)? for|account(?:ing)? for|adjust(?:ing)? for)[^.!?\n]{0,60}severity/iu,
         contradicts:
-          /(?:control(?:ling)? for|account(?:ing)? for|adjust(?:ing)? for)[^.!?\n]{0,60}severity[^.!?\n]{0,50}\b(?:unnecessary|not\s+(?:needed|required|necessary))\b/iu,
+          /(?:control(?:ling)? for|account(?:ing)? for|adjust(?:ing)? for)[^.!?\n]{0,60}severity[^.!?\n]{0,70}\b(?:unnecessary|useless|not\s+(?:needed|required|necessary)|add\s+nothing)\b/iu,
       },
     ],
   },

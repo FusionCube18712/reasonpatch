@@ -128,6 +128,11 @@ describe("guided scenario evaluator", () => {
       "This observational association does not establish causation. Motivation is irrelevant. A randomized study would be useless.",
       ["alternative-explanation", "stronger-evidence"],
     ],
+    [
+      "causal-observational-claim",
+      "This observational association does not establish causation. Motivation cannot plausibly explain the pattern. A randomized study is unnecessary.",
+      ["alternative-explanation", "stronger-evidence"],
+    ],
   ])(
     "rejects negated or syntactically invalid revision evidence for %s",
     (scenarioId, revision, missingIds) => {

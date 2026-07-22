@@ -323,7 +323,8 @@ describe("OfficeHoursStudio", () => {
     expect(screen.getByLabelText("Problem or assignment")).toHaveValue(
       scenario.assignment,
     );
-    expect(screen.getByLabelText("Your current attempt")).toHaveValue(
+    expect(screen.getByLabelText("Problem or assignment")).toHaveFocus();
+    expect(screen.getByLabelText("Guided starting attempt")).toHaveValue(
       scenario.attempt,
     );
     await openConstraints(user);
@@ -680,6 +681,7 @@ describe("OfficeHoursStudio", () => {
       screen.getByRole("button", { name: "Start another problem" }),
     );
     expect(screen.getByLabelText("Problem or assignment")).toHaveValue("");
+    expect(screen.getByLabelText("Problem or assignment")).toHaveFocus();
     expect(screen.getByLabelText("Your current attempt")).toHaveValue("");
   });
 

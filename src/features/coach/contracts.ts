@@ -190,7 +190,18 @@ export const CoachDiagnosisSchema = z
       });
     }
 
-    if (containsProhibitedEvidenceVerdict(value)) {
+    const claimText = [
+      ...value.strengths,
+      value.issueTitle,
+      value.issueLocation,
+      value.explanation,
+      value.socraticQuestion,
+      value.whyThisQuestion,
+      ...value.hints.map(({ text }) => text),
+      ...value.criteria.map(({ label }) => label),
+      value.limitation,
+    ].join("\n");
+    if (containsProhibitedEvidenceVerdict(claimText)) {
       context.addIssue({
         code: "custom",
         path: ["limitation"],

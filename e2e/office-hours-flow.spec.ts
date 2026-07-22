@@ -80,7 +80,7 @@ const loadGuidedExample = async (page: Page, journey: GuidedJourney) => {
     "readonly",
     "",
   );
-  await expect(page.getByLabel("Your current attempt")).toHaveAttribute(
+  await expect(page.getByLabel("Guided starting attempt")).toHaveAttribute(
     "readonly",
     "",
   );
@@ -242,6 +242,12 @@ test("domain selection and the writing workspace are keyboard operable", async (
   page,
 }) => {
   await page.goto("/");
+  await page.keyboard.press("Tab");
+
+  const guidedAction = page.getByRole("button", {
+    name: "Try the formal logic example",
+  });
+  await expect(guidedAction).toBeFocused();
   await page.keyboard.press("Tab");
 
   const logicRadio = page.getByRole("radio", { name: /Formal logic/i });

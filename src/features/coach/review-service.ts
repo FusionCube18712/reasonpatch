@@ -70,7 +70,13 @@ const ModelReviewSchema = z
         message: "Review status must match the visible criterion states.",
       });
     }
-    if (containsProhibitedEvidenceVerdict(value)) {
+    const claimText = [
+      value.summary,
+      ...value.changes.map(({ label }) => label),
+      ...value.criteria.map(({ label }) => label),
+      value.remainingCaveat ?? "",
+    ].join("\n");
+    if (containsProhibitedEvidenceVerdict(claimText)) {
       context.addIssue({
         code: "custom",
         path: ["summary"],

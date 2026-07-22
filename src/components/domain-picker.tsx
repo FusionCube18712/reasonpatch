@@ -50,7 +50,7 @@ export function DomainPicker({
               } ${
                 selected
                   ? "border-[#3557c4] bg-[#e9edfa] text-[#20201d]"
-                  : "border-[#b8afa3] bg-[#fbf8f1] text-[#69645d] hover:border-[#3557c4]"
+                  : "border-[#817a72] bg-[#fbf8f1] text-[#69645d] hover:border-[#3557c4]"
               }`}
             >
               <input

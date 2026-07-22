@@ -40,7 +40,7 @@ const primaryButton =
   "inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-[#3557c4] px-5 text-sm font-semibold text-white transition hover:bg-[#2947a8] focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-[#3557c4] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-[#666159] disabled:text-white disabled:hover:bg-[#666159]";
 
 const fieldClass =
-  "mt-2 w-full rounded-[14px] border border-[#a89f93] bg-white px-4 py-3 text-[15px] leading-6 text-[#20201d] outline-none transition placeholder:text-[#756f67] focus:border-[#3557c4] focus:ring-3 focus:ring-[#3557c4]/20 disabled:cursor-not-allowed disabled:bg-[#eeeae2]";
+  "mt-2 w-full rounded-[14px] border border-[#817a72] bg-white px-4 py-3 text-[15px] leading-6 text-[#20201d] outline-none transition placeholder:text-[#756f67] focus:border-[#3557c4] focus:ring-3 focus:ring-[#3557c4]/20 disabled:cursor-not-allowed disabled:bg-[#eeeae2]";
 
 const scenarioForDomain = (domain: DomainId) =>
   listScenarios().find((scenario) => scenario.domain === domain) ??
@@ -60,6 +60,8 @@ export function OfficeHoursStudio({
   const [error, setError] = useState<string | null>(null);
   const [trace, setTrace] = useState<unknown>(null);
   const requestVersion = useRef(0);
+  const focusComposer = useRef(false);
+  const assignmentField = useRef<HTMLTextAreaElement>(null);
   const diagnosisHeading = useRef<HTMLHeadingElement>(null);
   const selectedExample = useMemo(
     () => scenarioForDomain(state.domain),
@@ -88,6 +90,13 @@ export function OfficeHoursStudio({
     if (state.diagnosis) diagnosisHeading.current?.focus();
   }, [state.diagnosis]);
 
+  useEffect(() => {
+    if (focusComposer.current && state.status === "composing") {
+      focusComposer.current = false;
+      assignmentField.current?.focus();
+    }
+  }, [state.status, state.scenarioId]);
+
   const changeDraft = (
     field: "assignment" | "constraints" | "attempt",
     value: string,
@@ -115,6 +124,7 @@ export function OfficeHoursStudio({
 
   const loadExample = () => {
     requestVersion.current += 1;
+    focusComposer.current = true;
     setLiveConsent(false);
     setError(null);
     setTrace(null);
@@ -317,6 +327,7 @@ export function OfficeHoursStudio({
 
   const resetSession = () => {
     requestVersion.current += 1;
+    focusComposer.current = true;
     setLiveConsent(false);
     setConstraintsOpen(false);
     setTransferChecking(false);
@@ -475,6 +486,7 @@ export function OfficeHoursStudio({
                   Include the goal, prompt, or claim you were asked to address.
                 </p>
                 <textarea
+                  ref={assignmentField}
                   id="coach-assignment"
                   value={state.assignment}
                   readOnly={isGuided}
@@ -488,11 +500,11 @@ export function OfficeHoursStudio({
               </div>
 
               <div className="mt-5">
-                <label
+                  <label
                   htmlFor="coach-attempt"
                   className="text-sm font-semibold text-[#20201d]"
                 >
-                  Your current attempt
+                  {isGuided ? "Guided starting attempt" : "Your current attempt"}
                 </label>
                 <p className="mt-1 text-xs leading-5 text-[#69645d]">
                   Show where your reasoning is now—even if it is unfinished.
@@ -508,7 +520,7 @@ export function OfficeHoursStudio({
                 />
               </div>
 
-              <div className="mt-5 overflow-hidden rounded-[14px] border border-[#d8d1c6] bg-white">
+              <div className="mt-5 overflow-hidden rounded-[14px] border border-[#817a72] bg-white">
                 <button
                   type="button"
                   disabled={isLoading}
@@ -576,7 +588,7 @@ export function OfficeHoursStudio({
                   {isLoading ? "Finding the first break…" : "Find the first break"}
                 </button>
                 <span className="text-xs leading-5 text-[#69645d]">
-                  ReasonPatch will not write or autocomplete a replacement.
+                  The coach is instructed to avoid writing or autocompleting a replacement.
                 </span>
               </div>
             </form>

@@ -17,7 +17,7 @@ This v2 branch is local-only. It has not been pushed or deployed, and it does no
 
 1. **Attempt** — Choose a domain and bring the problem, constraints, and current work.
 2. **Question** — Review preserved strengths, the exact hinge, one Socratic question, and optional graduated hints.
-3. **Revision** — Edit an exact copy of the learner's own attempt and check it against visible criteria.
+3. **Revision** — Edit an exact copy of the active attempt—learner-submitted in live mode or fixture-provided in guided mode—and check it against visible criteria.
 4. **Apply** — For guided scenarios only, answer a fresh case through an isolated endpoint that receives only the scenario ID and new response.
 
 Guided examples are immutable, credential-free fixtures with narrow deterministic checks. Their provenance explicitly says `simulated: true` and `modelCalls: 0`; they do not pretend to be live model runs.
