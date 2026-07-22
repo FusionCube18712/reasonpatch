@@ -1,5 +1,3 @@
-import { createHash, randomUUID } from "node:crypto";
-
 export type RateLimiter = Readonly<{
   allow(key: string): boolean;
 }>;
@@ -20,8 +18,6 @@ type ConditionalGuardOptions = GuardOptions &
   Readonly<{
     shouldLimit: (request: Request) => boolean | Promise<boolean>;
   }>;
-
-const processSalt = process.env.REASONPATCH_RATE_LIMIT_SALT ?? randomUUID();
 
 export const createSlidingWindowLimiter = ({
   limit,
@@ -78,11 +74,9 @@ export const createSlidingWindowLimiter = ({
   };
 };
 
-const defaultKeyFor = (request: Request): string => {
-  const forwarded = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
-  const source = forwarded || request.headers.get("x-real-ip") || "anonymous";
-  return createHash("sha256").update(`${processSalt}:${source.slice(0, 96)}`).digest("hex");
-};
+// Network identity is deployment-specific. Caller-controlled forwarding headers
+// are deliberately ignored unless a trusted hosting adapter supplies `keyFor`.
+const defaultKeyFor = (): string => "anonymous";
 
 export const withRateLimit = (
   handler: (request: Request) => Promise<Response>,
