@@ -276,9 +276,11 @@ test("live-mode-disabled boundary never sends custom learner text", async ({
   await page
     .getByLabel("Your current attempt")
     .fill("I think the argument is valid because the conclusion sounds true.");
-  await page
-    .getByRole("checkbox", { name: /send this text to OpenAI for processing/i })
-    .check();
+  await expect(
+    page.getByRole("checkbox", {
+      name: /send this text to OpenAI for processing/i,
+    }),
+  ).toHaveCount(0);
 
   await expect(
     page.getByRole("button", { name: "Find the first break" }),
