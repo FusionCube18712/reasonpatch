@@ -148,7 +148,11 @@ export const reviewCustomRevision = async ({
     }
     return { ...criterion };
   });
-  if (new Set(parsed.criteria.map(({ id }) => id)).size !== criteria.length) {
+  const returnedCriterionIds = parsed.criteria.map(({ id }) => id);
+  if (
+    parsed.criteria.length !== expectedCriteria.length ||
+    new Set(returnedCriterionIds).size !== parsed.criteria.length
+  ) {
     throw new ModelGatewayError(
       "The review returned duplicate or unexpected criteria.",
       "invalid_output",
