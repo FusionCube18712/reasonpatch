@@ -244,6 +244,11 @@ const reviewGuidedDraft = async () => {
   await user.type(revision, guidedRevision);
   await user.click(screen.getByRole("button", { name: "Check my revision" }));
   await screen.findByText(guidedReview.summary);
+  expect(
+    screen.getByRole("heading", {
+      name: "Your revision, checked against visible criteria",
+    }),
+  ).toHaveFocus();
 
   return { user, fetchMock, scenario, revision };
 };
@@ -481,6 +486,9 @@ describe("OfficeHoursStudio", () => {
     );
     expect(screen.getByText(/Every edit remains yours/iu)).toBeVisible();
     expect(
+      screen.getByRole("heading", { name: "Revise the consequential step" }),
+    ).toHaveFocus();
+    expect(
       screen.queryByRole("button", { name: "Revise this attempt" }),
     ).not.toBeInTheDocument();
     const revisionPanel = screen.getByRole("region", {
@@ -573,6 +581,11 @@ describe("OfficeHoursStudio", () => {
     const transfer = screen.getByRole("region", {
       name: "Fresh transfer case",
     });
+    expect(
+      within(transfer).getByRole("heading", {
+        name: "Apply the same idea somewhere new",
+      }),
+    ).toHaveFocus();
     expect(within(transfer).getByText(scenario.transferPrompt)).toBeVisible();
     expect(
       screen.queryByText(diagnosis.socraticQuestion),

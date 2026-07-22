@@ -1,5 +1,7 @@
 # Build Week submission kit
 
+> **Archived v1 submission artifact — do not deploy or resubmit from this file.** The local-only v2 is intentionally separate from the frozen public submission. Its current product contract, local run steps, and limitations are in the repository [README](../README.md).
+
 ## Core fields
 
 **Project:** ReasonPatch

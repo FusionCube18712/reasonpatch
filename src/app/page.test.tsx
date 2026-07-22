@@ -42,4 +42,12 @@ describe("ReasonPatch page", () => {
       screen.getByText(/Formative evidence, not a grade or proof of learning/iu),
     ).toBeVisible();
   });
+
+  it("exposes top-level banner, main, and content-info landmarks", () => {
+    render(<Page />);
+
+    expect(screen.getByRole("banner")).toBeVisible();
+    expect(screen.getByRole("main")).toBeVisible();
+    expect(screen.getByRole("contentinfo")).toBeVisible();
+  });
 });

@@ -1,5 +1,7 @@
 # ReasonPatch architecture
 
+> **Archived v1 public-build artifact.** This document describes the frozen submitted build, not the local-only v2. The current four-domain office-hours architecture and security boundaries are documented in the repository [README](../README.md). Do not use the endpoint names or limits below for v2.
+
 ## Product invariant
 
 ReasonPatch may challenge a learner's reasoning and describe observable revision evidence. It must not supply the replacement response, present a grade, or claim mastery, authorship, or proof of learning.

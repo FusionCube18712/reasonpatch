@@ -2,7 +2,7 @@ import { OfficeHoursStudio } from "@/components/office-hours-studio";
 
 export default function Page() {
   return (
-    <main className="min-h-[100dvh] bg-[#f3f0e8] text-[#20201d]">
+    <div className="min-h-[100dvh] bg-[#f3f0e8] text-[#20201d]">
       <header className="border-b border-[#d8d1c6] px-4 sm:px-6 lg:px-8">
         <div className="mx-auto flex min-h-16 max-w-[1320px] items-center justify-between gap-4">
           <div className="flex items-center gap-3">
@@ -22,11 +22,13 @@ export default function Page() {
         </div>
       </header>
 
-      <OfficeHoursStudio
-        liveModeAvailable={
-          process.env.NEXT_PUBLIC_REASONPATCH_LIVE_MODE === "true"
-        }
-      />
+      <main>
+        <OfficeHoursStudio
+          liveModeAvailable={
+            process.env.NEXT_PUBLIC_REASONPATCH_LIVE_MODE === "true"
+          }
+        />
+      </main>
 
       <footer className="px-4 pb-8 sm:px-6 lg:px-8">
         <div className="mx-auto flex max-w-[1320px] flex-col gap-3 border-t border-[#d8d1c6] pt-5 text-xs leading-5 text-[#69645d] sm:flex-row sm:items-center sm:justify-between">
@@ -37,6 +39,6 @@ export default function Page() {
           <span>Formative evidence, not a grade or proof of learning.</span>
         </div>
       </footer>
-    </main>
+    </div>
   );
 }
