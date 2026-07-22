@@ -30,14 +30,17 @@ const SCENARIOS: ReadonlyArray<PublicScenario> = [
     transferPrompt:
       "From ¬r, explain how to prove ¬(r ∧ s). Describe what must happen inside the temporary assumption before it can be discharged.",
     criteria: [
-      { id: "scoped-assumption", label: "Keeps the assumption in scope" },
+      {
+        id: "scoped-assumption",
+        label: "Opens the conjunction as a scoped assumption",
+      },
       {
         id: "explicit-contradiction",
         label: "Derives an explicit contradiction",
       },
       {
         id: "negation-introduction",
-        label: "Cites the complete subproof for negation introduction",
+        label: "Discharges the full subproof with negation introduction",
       },
     ],
   },
@@ -56,7 +59,10 @@ const SCENARIOS: ReadonlyArray<PublicScenario> = [
     criteria: [
       { id: "positive-solution", label: "Includes the positive solution" },
       { id: "negative-solution", label: "Includes the negative solution" },
-      { id: "branch-justification", label: "Justifies both branches" },
+      {
+        id: "branch-justification",
+        label: "Justifies both square branches",
+      },
     ],
   },
   {
@@ -80,7 +86,7 @@ const SCENARIOS: ReadonlyArray<PublicScenario> = [
       { id: "explicit-policy", label: "Uses an explicit empty-input policy" },
       {
         id: "non-empty-behavior",
-        label: "Preserves the non-empty calculation",
+        label: "Preserves the non-empty average calculation",
       },
     ],
   },
@@ -98,7 +104,10 @@ const SCENARIOS: ReadonlyArray<PublicScenario> = [
     transferPrompt:
       "Neighborhoods with more firefighters often have more fire damage. Why does that not show that firefighters cause the damage?",
     criteria: [
-      { id: "calibrated-claim", label: "Calibrates the causal claim" },
+      {
+        id: "calibrated-claim",
+        label: "Uses a calibrated causal claim",
+      },
       {
         id: "alternative-explanation",
         label: "Names a plausible alternative explanation",
