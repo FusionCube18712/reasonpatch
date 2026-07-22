@@ -156,4 +156,45 @@ describe("coach session reducer", () => {
     expect(next.transferResponse).toBe("");
     expect(next.transfer).toBeNull();
   });
+
+  it("preserves learner writing when diagnosis fails", () => {
+    const composing = reduceCoachSession(createInitialSession(), {
+      type: "draft.changed",
+      field: "attempt",
+      value: "My unfinished reasoning",
+    });
+    const diagnosing = reduceCoachSession(composing, {
+      type: "diagnosis.started",
+    });
+
+    const next = reduceCoachSession(diagnosing, { type: "diagnosis.failed" });
+
+    expect(next.status).toBe("composing");
+    expect(next.attempt).toBe("My unfinished reasoning");
+  });
+
+  it("returns to the editable revision when review fails", () => {
+    const revising = reduceCoachSession(diagnosedState(), {
+      type: "revision.started",
+    });
+    const reviewing = reduceCoachSession(revising, { type: "review.started" });
+
+    const next = reduceCoachSession(reviewing, { type: "review.failed" });
+
+    expect(next.status).toBe("revising");
+    expect(next.revision).toBe(revising.revision);
+  });
+
+  it("preserves the isolated response when transfer checking fails", () => {
+    const transferring = {
+      ...diagnosedState(),
+      status: "transferring" as const,
+      transferResponse: "My fresh-case response",
+    };
+
+    const next = reduceCoachSession(transferring, { type: "transfer.failed" });
+
+    expect(next.status).toBe("transferring");
+    expect(next.transferResponse).toBe("My fresh-case response");
+  });
 });
