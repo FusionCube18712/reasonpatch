@@ -9,6 +9,7 @@ import {
 } from "./review-contracts";
 import { evaluateScenarioRevision } from "./scenario-evaluator";
 import { getScenario } from "./scenarios";
+import { containsProhibitedEvidenceVerdict } from "../evidence-claims";
 
 const ReviewStatusSchema = z.enum(["evidence-observed", "needs-work"]);
 const CriterionStateSchema = z.enum(["met", "emerging", "missing"]);
@@ -46,8 +47,6 @@ const ReviewChangeSchema = z
   })
   .strict();
 
-const UnsafeClaims = /\b(?:master(?:y|ed)?|grade(?:d)?|authorship|proof of learning)\b/iu;
-
 const ModelReviewSchema = z
   .object({
     status: ReviewStatusSchema,
@@ -71,11 +70,12 @@ const ModelReviewSchema = z
         message: "Review status must match the visible criterion states.",
       });
     }
-    if (UnsafeClaims.test(JSON.stringify(value))) {
+    if (containsProhibitedEvidenceVerdict(value)) {
       context.addIssue({
         code: "custom",
         path: ["summary"],
-        message: "Revision reviews may describe evidence, not grades or mastery.",
+        message:
+          "Revision reviews may describe evidence, not correctness, grades, authorship, or learning outcomes.",
       });
     }
   });

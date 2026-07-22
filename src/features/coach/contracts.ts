@@ -2,6 +2,7 @@ import { z } from "zod";
 
 import { ScenarioIdSchema } from "./scenario-ids";
 import { getScenario } from "./scenarios";
+import { containsProhibitedEvidenceVerdict } from "../evidence-claims";
 
 export const DomainIdSchema = z.enum([
   "formal-logic",
@@ -189,12 +190,12 @@ export const CoachDiagnosisSchema = z
       });
     }
 
-    const claims = JSON.stringify(value).toLocaleLowerCase("en-US");
-    if (/\b(?:master(?:y|ed)?|proof of learning|grade(?:d)?)\b/u.test(claims)) {
+    if (containsProhibitedEvidenceVerdict(value)) {
       context.addIssue({
         code: "custom",
         path: ["limitation"],
-        message: "A diagnosis may describe evidence, not grades or mastery.",
+        message:
+          "A diagnosis may describe evidence, not correctness, grades, authorship, or learning outcomes.",
       });
     }
   });
