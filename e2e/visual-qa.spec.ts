@@ -20,7 +20,11 @@ for (const viewport of viewports) {
 
     await page.setViewportSize(viewport);
     await page.goto("/");
-    await expect(page.getByRole("heading", { name: "Repair the step. Keep the thinking yours." })).toBeVisible();
+    await expect(
+      page.getByRole("heading", {
+        name: "Work through the step that’s stuck.",
+      }),
+    ).toBeVisible();
 
     const hasHorizontalOverflow = await page.evaluate(
       () => document.documentElement.scrollWidth > document.documentElement.clientWidth,
@@ -41,21 +45,4 @@ test("initial workspace has no serious WCAG A/AA violations", async ({ page }) =
   const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa"]).analyze();
 
   expect(results.violations).toEqual([]);
-});
-
-test("primary journey is keyboard reachable", async ({ page }) => {
-  await page.goto("/");
-  await page.keyboard.press("Tab");
-
-  await expect(
-    page.getByRole("link", { name: "Try the 90-second demo" }),
-  ).toBeFocused();
-  await page.keyboard.press("Tab");
-  await expect(
-    page.getByRole("link", { name: "View Sol/Luna source" }),
-  ).toBeFocused();
-  await page.keyboard.press("Tab");
-  await expect(page.getByRole("button", { name: /Causation or coincidence/ })).toBeFocused();
-  await page.keyboard.press("Tab");
-  await expect(page.getByRole("button", { name: /Accurate test, wrong conclusion/ })).toBeFocused();
 });

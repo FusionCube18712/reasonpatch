@@ -27,7 +27,7 @@ export type TransferArtifact = Readonly<{
 }>;
 
 const primaryButton =
-  "inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-[#3557c4] px-5 text-sm font-semibold text-white transition hover:bg-[#2947a8] focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-[#3557c4] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-45";
+  "inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-[#3557c4] px-5 text-sm font-semibold text-white transition hover:bg-[#2947a8] focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-[#3557c4] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-[#666159] disabled:text-white disabled:hover:bg-[#666159]";
 
 const fieldClass =
   "mt-3 w-full rounded-[14px] border border-[#d8d1c6] bg-white px-4 py-3 text-[15px] leading-6 text-[#20201d] outline-none transition focus:border-[#3557c4] focus:ring-3 focus:ring-[#3557c4]/20";
