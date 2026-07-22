@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { OfficeHoursRequestSchema } from "./contracts";
+import { CoachDiagnosisSchema, OfficeHoursRequestSchema } from "./contracts";
 
 const SAMPLE_ATTEMPTS = {
   "logic-negation-introduction": `1. ¬p          Premise
@@ -145,6 +145,50 @@ describe("office-hours request contract", () => {
       OfficeHoursRequestSchema.parse({
         ...request,
         source: { ...request.source, scenarioId: "invented-scenario" },
+      }),
+    ).toThrow();
+  });
+});
+
+describe("coach diagnosis contract", () => {
+  const validDiagnosis = {
+    strengths: ["The learner begins from the supplied premise."],
+    hingeQuote: "2. x = √9",
+    issueTitle: "The negative square branch disappears",
+    issueLocation: "The first consequential break occurs on line two.",
+    explanation:
+      "The principal square root notation retains only one real branch.",
+    socraticQuestion:
+      "What other real number squares to nine besides positive three?",
+    whyThisQuestion:
+      "It tests the missing branch without supplying the full derivation.",
+    hints: [
+      { level: "location", text: "Inspect the transition on line two." },
+      { level: "concept", text: "An equation can have two square roots." },
+      { level: "strategy", text: "Factor the difference of two squares." },
+    ],
+    criteria: [
+      {
+        id: "positive-branch",
+        label: "Includes the positive branch",
+        state: "met",
+        evidence: "2. x = √9",
+      },
+      {
+        id: "negative-branch",
+        label: "Includes the negative branch",
+        state: "missing",
+        evidence: null,
+      },
+    ],
+    limitation: "This is a bounded formative review of submitted text.",
+  } as const;
+
+  it("rejects duplicate visible criterion identifiers", () => {
+    expect(() =>
+      CoachDiagnosisSchema.parse({
+        ...validDiagnosis,
+        criteria: [validDiagnosis.criteria[0], validDiagnosis.criteria[0]],
       }),
     ).toThrow();
   });

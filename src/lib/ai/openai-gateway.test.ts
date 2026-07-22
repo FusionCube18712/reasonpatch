@@ -6,7 +6,7 @@ import { createOpenAIModelGateway } from "./openai-gateway";
 
 const call = {
   model: "gpt-5.6-sol" as const,
-  task: "plan",
+  task: "coach:plan",
   schemaName: "reasonpatch_analysis_plan",
   schema: AnalysisPlanSchema,
   instructions: "Locate the reasoning hinge.",
@@ -70,10 +70,17 @@ describe("OpenAI model gateway", () => {
     const parse = vi.fn().mockResolvedValue({ output_parsed: validPlan });
     const gateway = createOpenAIModelGateway({ responses: { parse } });
 
-    await gateway.generate({ ...call, model: "gpt-5.6-luna" });
+    await gateway.generate({
+      ...call,
+      model: "gpt-5.6-luna",
+      task: "coach:probe:rubric",
+    });
 
     expect(parse).toHaveBeenCalledWith(
-      expect.objectContaining({ reasoning: { effort: "low" } }),
+      expect.objectContaining({
+        reasoning: { effort: "low" },
+        max_output_tokens: 800,
+      }),
     );
   });
 

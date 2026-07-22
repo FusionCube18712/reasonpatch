@@ -25,14 +25,16 @@ describe("ReasonPatch page", () => {
     expect(screen.getByText("3 Revision")).toBeVisible();
     expect(screen.getByText("4 Apply")).toBeVisible();
     expect(
-      screen.getByText(/Orchestrated by GPT-5\.6 Sol with parallel Luna probes/iu),
+      screen.getByText(
+        /Live mode uses GPT-5\.6 Sol with parallel Luna probes; guided examples use deterministic fixtures with zero model calls/iu,
+      ),
     ).toBeVisible();
   });
 
   it("states the privacy and educational boundaries before learner input", () => {
     render(<Page />);
 
-    expect(screen.getByText("Private in this tab")).toBeVisible();
+    expect(screen.getByText("Not saved by ReasonPatch")).toBeVisible();
     expect(screen.getByText(/won’t complete the work for you/iu)).toBeVisible();
     expect(
       screen.getByText(/Formative evidence, not a grade or proof of learning/iu),

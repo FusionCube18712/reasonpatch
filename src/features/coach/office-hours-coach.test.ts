@@ -173,4 +173,28 @@ describe("office-hours coach", () => {
       ),
     ).toBe(true);
   });
+
+  it("rejects prose evidence that only matches after case or whitespace normalization", async () => {
+    const coach = createOfficeHoursCoach({
+      gateway: new ScriptedGateway(),
+      createId: () => "coach_exact_grounding_test",
+      now: () => 100,
+    });
+
+    await expect(
+      coach.diagnose({
+        source: {
+          kind: "custom",
+          domain: "formal-logic",
+          assignment:
+            "Review the following symbolic derivation and locate its first invalid inference.",
+          attempt: "RETURN   SUM(NUMS) / LEN(NUMS)",
+          constraints: "Quote exact learner text when identifying evidence.",
+        },
+        mode: "live",
+        coachStyle: "socratic",
+        forceLunaFallback: false,
+      }),
+    ).rejects.toThrow(/not found/iu);
+  });
 });

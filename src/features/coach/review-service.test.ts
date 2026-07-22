@@ -213,6 +213,67 @@ describe("custom live revision review", () => {
     ).rejects.toThrow();
   });
 
+  it("rejects contradictory criterion state and evidence", async () => {
+    const gateway: ModelGateway = {
+      generate: vi.fn().mockResolvedValue({
+        ...modelReview,
+        criteria: [
+          {
+            ...modelReview.criteria[0],
+            state: "missing",
+          },
+          modelReview.criteria[1],
+        ],
+      }),
+    };
+
+    await expect(
+      reviewCustomRevision({ gateway, request: customRequest }),
+    ).rejects.toThrow();
+  });
+
+  it("rejects an evidence-observed status unless every criterion is met", async () => {
+    const gateway: ModelGateway = {
+      generate: vi.fn().mockResolvedValue({
+        ...modelReview,
+        criteria: [
+          {
+            ...modelReview.criteria[0],
+            state: "missing",
+            evidence: null,
+          },
+          modelReview.criteria[1],
+        ],
+      }),
+    };
+
+    await expect(
+      reviewCustomRevision({ gateway, request: customRequest }),
+    ).rejects.toThrow();
+  });
+
+  it("rejects duplicate client diagnosis criterion identifiers", async () => {
+    const generate = vi.fn().mockResolvedValue(modelReview);
+    const gateway: ModelGateway = { generate };
+
+    await expect(
+      reviewCustomRevision({
+        gateway,
+        request: {
+          ...customRequest,
+          diagnosis: {
+            ...customRequest.diagnosis,
+            criteria: [
+              customRequest.diagnosis.criteria[0],
+              customRequest.diagnosis.criteria[0],
+            ],
+          },
+        },
+      }),
+    ).rejects.toThrow();
+    expect(generate).not.toHaveBeenCalled();
+  });
+
   it.each(["mastered", "graded", "authorship", "proof of learning"])(
     "rejects the unsafe model claim %s",
     async (claim) => {

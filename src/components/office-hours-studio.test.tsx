@@ -262,7 +262,7 @@ describe("OfficeHoursStudio", () => {
       screen.getByText(/Paste the problem and your attempt/iu),
     ).toBeVisible();
     expect(screen.getByText(/won’t complete the work for you/iu)).toBeVisible();
-    expect(screen.getByText("Private in this tab")).toBeVisible();
+    expect(screen.getByText("Not saved by ReasonPatch")).toBeVisible();
     expect(
       screen.getByRole("heading", {
         name: "Bring the draft, not just the question.",
