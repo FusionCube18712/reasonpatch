@@ -56,8 +56,7 @@ const diagnoseEnvelope = (nextDiagnosis: CoachDiagnosis = diagnosis) => ({
     source: {
       kind: "custom",
       domain: "formal-logic",
-      assignment:
-        "Using Fitch-style natural deduction, prove ¬p ⊢ ¬(p ∧ q).",
+      assignment: "Using Fitch-style natural deduction, prove ¬p ⊢ ¬(p ∧ q).",
       constraints: "Use Fitch-style natural deduction.",
     },
     diagnosis: nextDiagnosis,
@@ -71,6 +70,86 @@ const diagnoseEnvelope = (nextDiagnosis: CoachDiagnosis = diagnosis) => ({
   },
   error: null,
 });
+
+const guidedRevision = `1. ¬p                 Premise
+2. | p ∧ q            Assumption
+3. | p                ∧E 2
+4. | ⊥                ¬E 1,3
+5. ¬(p ∧ q)          ¬I 2-4`;
+
+const guidedReview = {
+  status: "evidence-observed" as const,
+  summary: "Evidence was observed for every guided-scenario criterion.",
+  receipt: {
+    source: {
+      kind: "guided" as const,
+      scenarioId: "logic-negation-introduction" as const,
+    },
+    originalAttempt: getScenario("logic-negation-introduction").attempt,
+    revision: guidedRevision,
+    criteria: [
+      {
+        id: "scoped-assumption",
+        label: "Opens the conjunction as a scoped assumption",
+        state: "met" as const,
+        evidence: "| p ∧ q            Assumption",
+      },
+      {
+        id: "explicit-contradiction",
+        label: "Derives an explicit contradiction",
+        state: "met" as const,
+        evidence: "⊥                ¬E",
+      },
+      {
+        id: "negation-introduction",
+        label: "Discharges the full subproof with negation introduction",
+        state: "met" as const,
+        evidence: "¬I 2-4",
+      },
+    ],
+    provenance: {
+      mode: "demo" as const,
+      source: "deterministic-verifier" as const,
+      scope: "guided-scenario-only" as const,
+      scenarioId: "logic-negation-introduction" as const,
+    },
+    caveat:
+      "This records evidence in one guided revision and does not establish broader outcomes.",
+  },
+};
+
+const guidedTransferResponse =
+  "Assume r ∧ s, extract r, and combine r with ¬r to derive a contradiction. Then discharge the assumption by negation introduction.";
+
+const guidedTransfer = {
+  status: "evidence-observed" as const,
+  summary: "Evidence was observed in the fresh, isolated case.",
+  criteria: [
+    {
+      id: "fresh-assumption",
+      label: "Opens the fresh conjunction assumption",
+      state: "met" as const,
+      evidence: "Assume r ∧ s",
+    },
+    {
+      id: "fresh-contradiction",
+      label: "Derives a contradiction from r and ¬r",
+      state: "met" as const,
+      evidence: "extract r, and combine r with ¬r to derive a contradiction",
+    },
+    {
+      id: "fresh-discharge",
+      label: "Discharges the fresh assumption",
+      state: "met" as const,
+      evidence: "discharge the assumption by negation introduction",
+    },
+  ],
+  provenance: {
+    source: "deterministic-verifier" as const,
+    scope: "guided-scenario-only" as const,
+    scenarioId: "logic-negation-introduction" as const,
+  },
+};
 
 const jsonResponse = (payload: unknown, status = 200) =>
   new Response(JSON.stringify(payload), {
@@ -133,6 +212,34 @@ const diagnoseCustomDraft = async () => {
   return { user, ...fields };
 };
 
+const reviewGuidedDraft = async () => {
+  const user = userEvent.setup();
+  const scenario = getScenario("logic-negation-introduction");
+  const fetchMock = vi
+    .spyOn(globalThis, "fetch")
+    .mockResolvedValueOnce(jsonResponse(diagnoseEnvelope()))
+    .mockResolvedValueOnce(
+      jsonResponse({ success: true, data: guidedReview, error: null }),
+    );
+  render(<OfficeHoursStudio />);
+
+  await user.click(
+    screen.getByRole("button", { name: "Try the formal logic example" }),
+  );
+  await user.click(
+    screen.getByRole("button", { name: "Find the first break" }),
+  );
+  await screen.findByText(diagnosis.socraticQuestion);
+  await user.click(screen.getByRole("button", { name: "Revise this attempt" }));
+  const revision = screen.getByLabelText("Edit your own draft");
+  await user.clear(revision);
+  await user.type(revision, guidedRevision);
+  await user.click(screen.getByRole("button", { name: "Check my revision" }));
+  await screen.findByText(guidedReview.summary);
+
+  return { user, fetchMock, scenario, revision };
+};
+
 const collectKeys = (value: unknown): string[] => {
   if (Array.isArray(value)) return value.flatMap(collectKeys);
   if (value === null || typeof value !== "object") return [];
@@ -154,9 +261,7 @@ describe("OfficeHoursStudio", () => {
     expect(
       screen.getByText(/Paste the problem and your attempt/iu),
     ).toBeVisible();
-    expect(
-      screen.getByText(/won’t complete the work for you/iu),
-    ).toBeVisible();
+    expect(screen.getByText(/won’t complete the work for you/iu)).toBeVisible();
     expect(screen.getByText("Private in this tab")).toBeVisible();
     expect(
       screen.getByRole("heading", {
@@ -204,9 +309,9 @@ describe("OfficeHoursStudio", () => {
       scenario.attempt,
     );
     await openConstraints(user);
-    expect(
-      screen.getByLabelText(/Course rules or constraints/iu),
-    ).toHaveValue(scenario.constraints);
+    expect(screen.getByLabelText(/Course rules or constraints/iu)).toHaveValue(
+      scenario.constraints,
+    );
   });
 
   it("accepts a learner's assignment, attempt, and optional constraints", async () => {
@@ -302,22 +407,16 @@ describe("OfficeHoursStudio", () => {
     expect(screen.queryByText(secondHint.text)).not.toBeInTheDocument();
     expect(screen.queryByText(thirdHint.text)).not.toBeInTheDocument();
 
-    await user.click(
-      screen.getByRole("button", { name: /nudge|hint/iu }),
-    );
+    await user.click(screen.getByRole("button", { name: /nudge|hint/iu }));
     expect(screen.getByText(firstHint.text)).toBeVisible();
     expect(screen.queryByText(secondHint.text)).not.toBeInTheDocument();
     expect(screen.queryByText(thirdHint.text)).not.toBeInTheDocument();
 
-    await user.click(
-      screen.getByRole("button", { name: /nudge|hint/iu }),
-    );
+    await user.click(screen.getByRole("button", { name: /nudge|hint/iu }));
     expect(screen.getByText(secondHint.text)).toBeVisible();
     expect(screen.queryByText(thirdHint.text)).not.toBeInTheDocument();
 
-    await user.click(
-      screen.getByRole("button", { name: /nudge|hint/iu }),
-    );
+    await user.click(screen.getByRole("button", { name: /nudge|hint/iu }));
     expect(screen.getByText(thirdHint.text)).toBeVisible();
   });
 
@@ -333,6 +432,126 @@ describe("OfficeHoursStudio", () => {
       exactAttempt,
     );
     expect(screen.getByText(/Every edit remains yours/iu)).toBeVisible();
+  });
+
+  it("posts the learner's guided revision to the same-origin review boundary", async () => {
+    const { fetchMock, scenario } = await reviewGuidedDraft();
+
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    const [url, init] = fetchMock.mock.calls[1] ?? [];
+    expect(url).toBe("/api/coach/review");
+    expect(init).toMatchObject({ method: "POST" });
+    expect(new Headers(init?.headers).get("Content-Type")).toBe(
+      "application/json",
+    );
+    expect(new Headers(init?.headers).get("X-ReasonPatch-Mode")).toBe("demo");
+    expect(new Headers(init?.headers).has("Authorization")).toBe(false);
+    expect(JSON.parse(String(init?.body))).toEqual({
+      source: {
+        kind: "guided",
+        scenarioId: scenario.id,
+        attempt: scenario.attempt,
+      },
+      revision: guidedRevision,
+      mode: "demo",
+    });
+  });
+
+  it("renders a bounded revision receipt with exact learner evidence", async () => {
+    await reviewGuidedDraft();
+
+    const receipt = screen.getByRole("region", { name: "Revision evidence" });
+    expect(within(receipt).getByText(guidedReview.summary)).toBeVisible();
+    for (const criterion of guidedReview.receipt.criteria) {
+      expect(within(receipt).getByText(criterion.label)).toBeVisible();
+      expect(within(receipt).getByText(criterion.evidence)).toBeVisible();
+      expect(guidedRevision).toContain(criterion.evidence);
+    }
+    expect(
+      within(receipt).getByText(guidedReview.receipt.caveat),
+    ).toBeVisible();
+    expect(receipt).toHaveTextContent(/guided scenario/iu);
+  });
+
+  it("isolates the fresh transfer case and sends only fresh-case fields", async () => {
+    const { user, fetchMock, scenario } = await reviewGuidedDraft();
+    fetchMock.mockResolvedValueOnce(
+      jsonResponse({ success: true, data: guidedTransfer, error: null }),
+    );
+
+    await user.click(screen.getByRole("button", { name: "Try a fresh case" }));
+
+    const transfer = screen.getByRole("region", {
+      name: "Fresh transfer case",
+    });
+    expect(within(transfer).getByText(scenario.transferPrompt)).toBeVisible();
+    expect(
+      screen.queryByText(diagnosis.socraticQuestion),
+    ).not.toBeInTheDocument();
+    expect(screen.queryByText(diagnosis.hingeQuote)).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("region", { name: "Revision evidence" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByLabelText("Edit your own draft"),
+    ).not.toBeInTheDocument();
+    expect(screen.queryByDisplayValue(guidedRevision)).not.toBeInTheDocument();
+
+    await user.type(
+      within(transfer).getByLabelText("Your response to the fresh case"),
+      guidedTransferResponse,
+    );
+    await user.click(
+      within(transfer).getByRole("button", { name: "Check this fresh case" }),
+    );
+    await screen.findByText(guidedTransfer.summary);
+
+    expect(fetchMock).toHaveBeenCalledTimes(3);
+    const [url, init] = fetchMock.mock.calls[2] ?? [];
+    expect(url).toBe("/api/coach/transfer");
+    expect(init).toMatchObject({ method: "POST" });
+    expect(new Headers(init?.headers).get("Content-Type")).toBe(
+      "application/json",
+    );
+    expect(new Headers(init?.headers).get("X-ReasonPatch-Mode")).toBe("demo");
+    expect(new Headers(init?.headers).has("Authorization")).toBe(false);
+    expect(JSON.parse(String(init?.body))).toEqual({
+      scenarioId: scenario.id,
+      response: guidedTransferResponse,
+      mode: "demo",
+    });
+  });
+
+  it("describes completion as scenario evidence rather than correctness or mastery", async () => {
+    const { user, fetchMock } = await reviewGuidedDraft();
+    fetchMock.mockResolvedValueOnce(
+      jsonResponse({ success: true, data: guidedTransfer, error: null }),
+    );
+
+    await user.click(screen.getByRole("button", { name: "Try a fresh case" }));
+    const transfer = screen.getByRole("region", {
+      name: "Fresh transfer case",
+    });
+    await user.type(
+      within(transfer).getByLabelText("Your response to the fresh case"),
+      guidedTransferResponse,
+    );
+    await user.click(
+      within(transfer).getByRole("button", { name: "Check this fresh case" }),
+    );
+
+    const completion = await screen.findByRole("status", {
+      name: "Fresh-case evidence result",
+    });
+    expect(completion).toHaveTextContent(
+      "Evidence was observed in the fresh, isolated case.",
+    );
+    expect(completion).toHaveTextContent(
+      "This checks only the guided scenario criteria.",
+    );
+    expect(completion.textContent).not.toMatch(
+      /\b(?:correct|master(?:y|ed)?|proves? learning|grade(?:d)?)\b/iu,
+    );
   });
 
   it("clears stale coaching when the source attempt changes", async () => {
@@ -364,7 +583,7 @@ describe("OfficeHoursStudio", () => {
     const maliciousMarkup =
       '<img src=x onerror="window.__reasonPatchXss = true">';
     const maliciousQuestion =
-      '<script>window.__reasonPatchXss = true</script> What assumption is unsupported?';
+      "<script>window.__reasonPatchXss = true</script> What assumption is unsupported?";
     const hostileDiagnosis = {
       ...diagnosis,
       strengths: [`The learner included ${maliciousMarkup} as plain text.`],
