@@ -11,6 +11,7 @@ export type PublicScenario = Readonly<{
   attempt: string;
   transferPrompt: string;
   criteria: ReadonlyArray<Readonly<{ id: string; label: string }>>;
+  transferCriteria: ReadonlyArray<Readonly<{ id: string; label: string }>>;
 }>;
 
 const SCENARIOS: ReadonlyArray<PublicScenario> = [
@@ -43,6 +44,20 @@ const SCENARIOS: ReadonlyArray<PublicScenario> = [
         label: "Discharges the full subproof with negation introduction",
       },
     ],
+    transferCriteria: [
+      {
+        id: "fresh-assumption",
+        label: "Opens the fresh conjunction assumption",
+      },
+      {
+        id: "fresh-contradiction",
+        label: "Derives a contradiction from r and ¬r",
+      },
+      {
+        id: "fresh-discharge",
+        label: "Discharges the fresh assumption",
+      },
+    ],
   },
   {
     id: "algebra-square-branches",
@@ -64,6 +79,20 @@ const SCENARIOS: ReadonlyArray<PublicScenario> = [
         label: "Justifies both square branches",
       },
     ],
+    transferCriteria: [
+      {
+        id: "fresh-positive",
+        label: "Names the positive fresh-case solution",
+      },
+      {
+        id: "fresh-negative",
+        label: "Names the negative fresh-case solution",
+      },
+      {
+        id: "fresh-branches",
+        label: "Explains why both fresh-case branches matter",
+      },
+    ],
   },
   {
     id: "python-empty-aggregate",
@@ -77,7 +106,7 @@ const SCENARIOS: ReadonlyArray<PublicScenario> = [
     attempt: `def average(nums):
     return sum(nums) / len(nums)`,
     transferPrompt:
-      "A function returns max(values) - min(values). What must it do before calling max and min, and why?",
+      "A function returns max(values) - min(values). What must it do before calling max and min, why, and what explicit empty-input policy should it use?",
     criteria: [
       {
         id: "guard-before-division",
@@ -87,6 +116,20 @@ const SCENARIOS: ReadonlyArray<PublicScenario> = [
       {
         id: "non-empty-behavior",
         label: "Preserves the non-empty average calculation",
+      },
+    ],
+    transferCriteria: [
+      {
+        id: "fresh-empty-input",
+        label: "Identifies the fresh empty-input boundary",
+      },
+      {
+        id: "fresh-order",
+        label: "Places the fresh guard before max and min",
+      },
+      {
+        id: "fresh-policy",
+        label: "Names an explicit fresh-case policy",
       },
     ],
   },
@@ -102,7 +145,7 @@ const SCENARIOS: ReadonlyArray<PublicScenario> = [
     attempt:
       "The data show that students who use flashcards score higher, so flashcards definitely cause better exam performance.",
     transferPrompt:
-      "Neighborhoods with more firefighters often have more fire damage. Why does that not show that firefighters cause the damage?",
+      "Neighborhoods with more firefighters often have more fire damage. Why does that not show firefighters cause the damage, and what severity-aware comparison would be stronger?",
     criteria: [
       {
         id: "calibrated-claim",
@@ -114,12 +157,29 @@ const SCENARIOS: ReadonlyArray<PublicScenario> = [
       },
       { id: "stronger-evidence", label: "Requests stronger causal evidence" },
     ],
+    transferCriteria: [
+      {
+        id: "fresh-causal-caution",
+        label: "Rejects the fresh direct-causal conclusion",
+      },
+      {
+        id: "fresh-common-cause",
+        label: "Identifies fire severity as a common cause",
+      },
+      {
+        id: "fresh-evidence",
+        label: "Requests a severity-aware comparison",
+      },
+    ],
   },
 ] as const;
 
 const cloneScenario = (scenario: PublicScenario): PublicScenario => ({
   ...scenario,
   criteria: scenario.criteria.map((criterion) => ({ ...criterion })),
+  transferCriteria: scenario.transferCriteria.map((criterion) => ({
+    ...criterion,
+  })),
 });
 
 export const listScenarios = (): ReadonlyArray<PublicScenario> =>

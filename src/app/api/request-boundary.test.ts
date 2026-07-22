@@ -88,8 +88,8 @@ describe("API request boundary", () => {
     let cancelled = false;
     const body = new ReadableStream<Uint8Array>({
       start(controller) {
-        controller.enqueue(encoder.encode(`{"text":"${"x".repeat(9_000)}`));
-        controller.enqueue(encoder.encode("x".repeat(9_000)));
+        controller.enqueue(encoder.encode(`{"text":"${"x".repeat(50_000)}`));
+        controller.enqueue(encoder.encode("x".repeat(50_000)));
         controller.enqueue(encoder.encode('"}'));
         controller.close();
       },

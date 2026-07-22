@@ -45,7 +45,7 @@ const guidedJourneys: ReadonlyArray<GuidedJourney> = [
         raise ValueError("average requires at least one value")
     return sum(nums) / len(nums)`,
     transferPrompt:
-      "A function returns max(values) - min(values). What must it do before calling max and min, and why?",
+      "A function returns max(values) - min(values). What must it do before calling max and min, why, and what explicit empty-input policy should it use?",
     transferResponse:
       "Check whether values are empty before calling max or min. If there are no values, raise a ValueError as an explicit policy.",
   },
@@ -56,7 +56,7 @@ const guidedJourneys: ReadonlyArray<GuidedJourney> = [
     revision:
       "This observational association does not establish causation. Students who choose flashcards may study longer or be more motivated. A randomized controlled study or a comparison that controls for prior achievement would provide stronger causal evidence.",
     transferPrompt:
-      "Neighborhoods with more firefighters often have more fire damage. Why does that not show that firefighters cause the damage?",
+      "Neighborhoods with more firefighters often have more fire damage. Why does that not show firefighters cause the damage, and what severity-aware comparison would be stronger?",
     transferResponse:
       "The association does not show that firefighters cause damage. Fire severity drives both the number of firefighters and the damage. A comparison controlling for severity would be stronger.",
   },
@@ -119,8 +119,8 @@ const completeGuidedJourney = async (
   await expect(provenance.locator("pre")).not.toBeVisible();
 
   await page.getByRole("button", { name: "Revise this attempt" }).click();
-  await expect(page.getByLabel("Edit your own draft")).not.toHaveValue("");
-  await page.getByLabel("Edit your own draft").fill(journey.revision);
+  await expect(page.getByLabel("Edit the guided draft")).not.toHaveValue("");
+  await page.getByLabel("Edit the guided draft").fill(journey.revision);
 
   const reviewResponse = page.waitForResponse(
     (response) =>
@@ -197,7 +197,7 @@ test("major office-hours stages have no WCAG A/AA violations", async ({
   await expectWcagAAndAA(page);
 
   await page.getByRole("button", { name: "Revise this attempt" }).click();
-  await page.getByLabel("Edit your own draft").fill(journey.revision);
+  await page.getByLabel("Edit the guided draft").fill(journey.revision);
   await expectWcagAAndAA(page);
 
   await page.getByRole("button", { name: "Check my revision" }).click();

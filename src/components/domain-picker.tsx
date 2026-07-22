@@ -28,7 +28,12 @@ const DOMAINS: ReadonlyArray<
 export function DomainPicker({
   value,
   onChange,
-}: Readonly<{ value: DomainId; onChange: (domain: DomainId) => void }>) {
+  disabled = false,
+}: Readonly<{
+  value: DomainId;
+  onChange: (domain: DomainId) => void;
+  disabled?: boolean;
+}>) {
   return (
     <fieldset>
       <legend className="mb-3 text-sm font-semibold text-[#20201d]">
@@ -40,10 +45,12 @@ export function DomainPicker({
           return (
             <label
               key={domain.id}
-              className={`relative flex min-h-20 cursor-pointer flex-col justify-center rounded-[14px] border px-4 py-3 transition focus-within:ring-3 focus-within:ring-[#3557c4] focus-within:ring-offset-2 ${
+              className={`relative flex min-h-20 flex-col justify-center rounded-[14px] border px-4 py-3 transition focus-within:ring-3 focus-within:ring-[#3557c4] focus-within:ring-offset-2 ${
+                disabled ? "cursor-not-allowed opacity-70" : "cursor-pointer"
+              } ${
                 selected
                   ? "border-[#3557c4] bg-[#e9edfa] text-[#20201d]"
-                  : "border-[#d8d1c6] bg-[#fbf8f1] text-[#69645d] hover:border-[#3557c4]/55"
+                  : "border-[#b8afa3] bg-[#fbf8f1] text-[#69645d] hover:border-[#3557c4]"
               }`}
             >
               <input
@@ -51,6 +58,7 @@ export function DomainPicker({
                 name="reasoning-domain"
                 value={domain.id}
                 checked={selected}
+                disabled={disabled}
                 onChange={() => onChange(domain.id)}
                 className="sr-only"
               />

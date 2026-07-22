@@ -14,9 +14,9 @@ export function HintLadder({
   const buttonLabel =
     revealed === 0
       ? "Give me a nudge"
-      : revealed === 1
-        ? "One more hint"
-        : "Show the final hint";
+      : revealed + 1 === hints.length
+        ? "Show the final hint"
+        : "One more hint";
 
   return (
     <div className="mt-5 border-t border-[#d8d1c6] pt-5">

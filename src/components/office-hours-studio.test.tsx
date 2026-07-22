@@ -1,4 +1,4 @@
-import { render, screen, within } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 
@@ -239,7 +239,7 @@ const reviewGuidedDraft = async () => {
   );
   await screen.findByText(diagnosis.socraticQuestion);
   await user.click(screen.getByRole("button", { name: "Revise this attempt" }));
-  const revision = screen.getByLabelText("Edit your own draft");
+  const revision = screen.getByLabelText("Edit the guided draft");
   await user.clear(revision);
   await user.type(revision, guidedRevision);
   await user.click(screen.getByRole("button", { name: "Check my revision" }));
@@ -506,7 +506,7 @@ describe("OfficeHoursStudio", () => {
     );
     await screen.findByText(diagnosis.socraticQuestion);
     await user.click(screen.getByRole("button", { name: "Revise this attempt" }));
-    const revision = screen.getByLabelText("Edit your own draft");
+    const revision = screen.getByLabelText("Edit the guided draft");
     await user.clear(revision);
     await user.type(revision, guidedRevision);
 
@@ -671,15 +671,20 @@ describe("OfficeHoursStudio", () => {
   });
 
   it("clears stale coaching when the source attempt changes", async () => {
-    const { user, attempt } = await diagnoseCustomDraft();
+    await diagnoseCustomDraft();
+    const attempt = screen.getByLabelText("Your current attempt");
 
-    await user.type(attempt, "\n5. I changed the source draft.");
+    fireEvent.change(attempt, {
+      target: {
+        value: `${(attempt as HTMLTextAreaElement).value}\n5. I changed the source draft.`,
+      },
+    });
 
     expect(
       screen.queryByText(diagnosis.socraticQuestion),
     ).not.toBeInTheDocument();
     expect(screen.queryByText(diagnosis.hingeQuote)).not.toBeInTheDocument();
-    expect(screen.getByRole("status")).toHaveTextContent(
+    expect(await screen.findByRole("status")).toHaveTextContent(
       "This draft changed, so the previous coaching was cleared.",
     );
   });

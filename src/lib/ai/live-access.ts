@@ -11,7 +11,7 @@ export const assertLiveModeEnabled = (
 const modeHeader = "x-reasonpatch-mode";
 
 export const isLiveModeRequest = (request: Request): boolean =>
-  request.headers.get(modeHeader) !== "demo";
+  request.headers.get(modeHeader) === "live";
 
 export const hasMatchingDeclaredMode = (
   request: Request,

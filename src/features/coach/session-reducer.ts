@@ -77,18 +77,28 @@ export const createInitialSession = (): CoachSessionState => ({
 const clearCoaching = (
   state: CoachSessionState,
   patch: Partial<CoachSessionState>,
-): CoachSessionState => ({
-  ...state,
-  ...patch,
-  status: "composing",
-  diagnosis: null,
-  revealedHints: 0,
-  revision: "",
-  review: null,
-  transferResponse: "",
-  transfer: null,
-  notice: "This draft changed, so the previous coaching was cleared.",
-});
+): CoachSessionState => {
+  const hadCoaching =
+    state.diagnosis !== null ||
+    state.review !== null ||
+    state.transfer !== null ||
+    state.revision.length > 0 ||
+    state.transferResponse.length > 0;
+  return {
+    ...state,
+    ...patch,
+    status: "composing",
+    diagnosis: null,
+    revealedHints: 0,
+    revision: "",
+    review: null,
+    transferResponse: "",
+    transfer: null,
+    notice: hadCoaching
+      ? "This draft changed, so the previous coaching was cleared."
+      : null,
+  };
+};
 
 export const reduceCoachSession = (
   state: CoachSessionState,
@@ -150,7 +160,7 @@ export const reduceCoachSession = (
       return {
         ...state,
         status: "revising",
-        revision: state.attempt,
+        revision: state.revision || state.attempt,
         review: null,
         transferResponse: "",
         transfer: null,

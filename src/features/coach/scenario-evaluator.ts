@@ -56,6 +56,8 @@ const revisionRules: Readonly<Record<ScenarioId, RuleSet>> = {
         id: "explicit-contradiction",
         label: "Derives an explicit contradiction",
         supports: /(?:⊥[^\n]{0,40}(?:¬e|contradict)|\bcontradiction\b)/iu,
+        contradicts:
+          /(?:\b(?:cannot|can't|does not|doesn't|never)\b[^.!?\n]{0,60}\b(?:derive|reach|obtain|yield)[^.!?\n]{0,30}\bcontradiction\b|\bno\s+contradiction\b|\bcontradiction\b[^.!?\n]{0,35}\b(?:cannot|can't|is not|isn't)\b)/iu,
       },
       {
         id: "negation-introduction",
@@ -70,6 +72,8 @@ const revisionRules: Readonly<Record<ScenarioId, RuleSet>> = {
         id: "positive-solution",
         label: "Includes the positive solution",
         supports: /\bx\s*=\s*3\b/iu,
+        contradicts:
+          /\bx\s*=\s*3\b[^.!?\n]{0,45}\b(?:is\s+not|isn't|invalid|extraneous|not\s+a\s+solution)\b/iu,
       },
       {
         id: "negative-solution",
@@ -82,7 +86,9 @@ const revisionRules: Readonly<Record<ScenarioId, RuleSet>> = {
         id: "branch-justification",
         label: "Justifies both square branches",
         supports:
-          /(?:zero[- ]product|\(x\s*[-−]\s*3\)\s*\(x\s*\+\s*3\)|±\s*(?:√|sqrt))/iu,
+          /(?:zero[- ]product|\(x\s*[-−]\s*3\)\s*\(x\s*\+\s*3\)|±\s*(?:√|sqrt)|both[^.!?\n]{0,80}(?:square\s+to\s+9|solutions?))/iu,
+        contradicts:
+          /\bboth\b[^.!?\n]{0,60}\b(?:branches?|solutions?)\b[^.!?\n]{0,30}\b(?:invalid|extraneous|wrong)\b/iu,
       },
     ],
   },
@@ -92,19 +98,19 @@ const revisionRules: Readonly<Record<ScenarioId, RuleSet>> = {
         id: "guard-before-division",
         label: "Places an empty-input guard before division",
         supports:
-          /(?:if\s+(?:not\s+nums|len\s*\(\s*nums\s*\)\s*==\s*0)|if\s+nums\s*==\s*\[\s*\])[^]*?return\s+sum\s*\(\s*nums\s*\)\s*\/\s*len\s*\(\s*nums\s*\)/iu,
+          /(?:if\s+(?:not\s+nums|len\s*\(\s*nums\s*\)\s*==\s*0)|if\s+nums\s*==\s*\[\s*\])[^]*?return\s+sum\s*\(\s*nums\s*\)\s*\/\s*len\s*\(\s*nums\s*\)/u,
       },
       {
         id: "explicit-policy",
         label: "Uses an explicit empty-input policy",
         supports:
-          /(?:if\s+(?:not\s+nums|len\s*\(\s*nums\s*\)\s*==\s*0)|if\s+nums\s*==\s*\[\s*\])[^\n]*\n\s+(?:raise\s+[A-Za-z]+Error|return\s+(?:None|null|0))/iu,
+          /(?:if\s+(?:not\s+nums|len\s*\(\s*nums\s*\)\s*==\s*0)|if\s+nums\s*==\s*\[\s*\])[^\n]*\n\s+(?:raise\s+[A-Za-z]+Error|return\s+(?:None|0))/u,
       },
       {
         id: "non-empty-behavior",
         label: "Preserves the non-empty average calculation",
         supports:
-          /return\s+sum\s*\(\s*nums\s*\)\s*\/\s*len\s*\(\s*nums\s*\)/iu,
+          /return\s+sum\s*\(\s*nums\s*\)\s*\/\s*len\s*\(\s*nums\s*\)/u,
       },
     ],
   },
@@ -123,6 +129,8 @@ const revisionRules: Readonly<Record<ScenarioId, RuleSet>> = {
         label: "Names a plausible alternative explanation",
         supports:
           /(?:study longer|motivat\w*|prior achievement|self[- ]select\w*|students? who choose)/iu,
+        contradicts:
+          /(?:motivat\w*[^.!?\n]{0,60}\b(?:is\s+not|isn't|cannot\s+be|not\s+a)\b[^.!?\n]{0,45}\b(?:plausible|alternative|explanation)|students?\s+who\s+choose[^.!?\n]{0,80}\b(?:are\s+not|aren't|do\s+not|don't)\b[^.!?\n]{0,45}\b(?:motivat\w*|study|differ))/iu,
       },
       {
         id: "stronger-evidence",
@@ -130,7 +138,7 @@ const revisionRules: Readonly<Record<ScenarioId, RuleSet>> = {
         supports:
           /(?:randomi[sz]ed|controlled (?:study|comparison|experiment)|control for|adjust for)/iu,
         contradicts:
-          /\b(?:no|not)\s+(?:randomi[sz]ed|controlled)[^.!?\n]{0,40}\b(?:needed|required|necessary)\b/iu,
+          /(?:\b(?:no|not)\s+(?:randomi[sz]ed|controlled)[^.!?\n]{0,40}\b(?:needed|required|necessary)\b|\b(?:randomi[sz]ed|controlled)[^.!?\n]{0,50}\b(?:is|are)\s+not\s+(?:needed|required|necessary)\b)/iu,
       },
     ],
   },
@@ -153,6 +161,8 @@ const transferRules: Readonly<Record<ScenarioId, RuleSet>> = {
         label: "Derives a contradiction from r and ¬r",
         supports:
           /(?:extract|derive|obtain)[^.!?\n]{0,50}\br\b[^.!?\n]{0,100}(?:¬r|not r)[^.!?\n]{0,80}(?:⊥|contradict)/iu,
+        contradicts:
+          /\b(?:cannot|can't|does\s+not|doesn't|never)\b[^.!?\n]{0,80}\b(?:derive|yield|reach)[^.!?\n]{0,40}\b(?:⊥|contradiction)\b/iu,
       },
       {
         id: "fresh-discharge",
@@ -171,16 +181,22 @@ const transferRules: Readonly<Record<ScenarioId, RuleSet>> = {
         id: "fresh-positive",
         label: "Names the positive fresh-case solution",
         supports: /\by\s*=\s*4\b/iu,
+        contradicts:
+          /\by\s*=\s*4\b[^.!?\n]{0,45}\b(?:is\s+not|isn't|invalid|extraneous|not\s+a\s+solution)\b/iu,
       },
       {
         id: "fresh-negative",
         label: "Names the negative fresh-case solution",
         supports: /\by\s*=\s*[-−]\s*4\b/iu,
+        contradicts:
+          /\by\s*=\s*[-−]\s*4\b[^.!?\n]{0,45}\b(?:is\s+not|isn't|invalid|extraneous|not\s+a\s+solution)\b/iu,
       },
       {
         id: "fresh-branches",
         label: "Explains why both fresh-case branches matter",
         supports: /(?:both[^.!?\n]{0,60}square|±\s*√?\s*16|factor|zero[- ]product)/iu,
+        contradicts:
+          /\bboth\b[^.!?\n]{0,60}\b(?:branches?|solutions?)\b[^.!?\n]{0,30}\b(?:invalid|extraneous|wrong)\b/iu,
       },
     ],
   },
@@ -200,11 +216,15 @@ const transferRules: Readonly<Record<ScenarioId, RuleSet>> = {
         label: "Places the fresh guard before max and min",
         supports:
           /(?:check|guard|detect|handle)[^.!?\n]{0,80}\bempty\b[^.!?\n]{0,80}\bbefore\b[^.!?\n]{0,80}(?:max|min)/iu,
+        contradicts:
+          /(?:\b(?:do\s+not|don't|need\s+not|should\s+not|shouldn't)\b[^.!?\n]{0,45}\b(?:check|guard|detect|handle)\b[^.!?\n]{0,100}\b(?:empty|before)\b|\b(?:check|guard|detect|handle)\b[^.!?\n]{0,100}\b(?:unnecessary|not\s+(?:needed|required|necessary))\b)/iu,
       },
       {
         id: "fresh-policy",
         label: "Names an explicit fresh-case policy",
         supports: /(?:raise|exception|sentinel|documented policy|explicit policy)/iu,
+        contradicts:
+          /\b(?:exception|sentinel|documented\s+policy|explicit\s+policy)\b[^.!?\n]{0,50}\b(?:unnecessary|not\s+(?:needed|required|necessary))\b/iu,
       },
     ],
   },
@@ -225,11 +245,15 @@ const transferRules: Readonly<Record<ScenarioId, RuleSet>> = {
         label: "Identifies fire severity as a common cause",
         supports:
           /(?:severity|larger fires?|fire size)[^.!?\n]{0,100}(?:both|drives?|causes?)[^.!?\n]{0,100}(?:firefighters?|damage)/iu,
+        contradicts:
+          /(?:severity|larger fires?|fire size)[^.!?\n]{0,60}\b(?:does\s+not|doesn't|cannot|can't|is\s+not|isn't)\b[^.!?\n]{0,80}\b(?:drive|cause|affect|explain)\b/iu,
       },
       {
         id: "fresh-evidence",
         label: "Requests a severity-aware comparison",
         supports: /(?:control(?:ling)? for|account(?:ing)? for|adjust(?:ing)? for)[^.!?\n]{0,60}severity/iu,
+        contradicts:
+          /(?:control(?:ling)? for|account(?:ing)? for|adjust(?:ing)? for)[^.!?\n]{0,60}severity[^.!?\n]{0,50}\b(?:unnecessary|not\s+(?:needed|required|necessary))\b/iu,
       },
     ],
   },

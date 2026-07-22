@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 
+import { evaluateScenarioTransfer } from "./scenario-evaluator";
 import { getScenario, listScenarios } from "./scenarios";
 
 const EXPECTED_ATTEMPTS = {
@@ -48,6 +49,15 @@ describe("public guided scenarios", () => {
     expect(getScenario("logic-negation-introduction").attempt).toBe(
       EXPECTED_ATTEMPTS["logic-negation-introduction"],
     );
+  });
+
+  it("keeps every visible fresh-case criterion aligned with its verifier", () => {
+    for (const scenario of listScenarios()) {
+      const evaluation = evaluateScenarioTransfer(scenario.id, "");
+      expect(evaluation.criteria.map(({ id, label }) => ({ id, label }))).toEqual(
+        scenario.transferCriteria,
+      );
+    }
   });
 
   it("keeps reference revisions and private answer keys out of the public catalog", () => {

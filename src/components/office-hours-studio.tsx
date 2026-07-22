@@ -40,7 +40,7 @@ const primaryButton =
   "inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-[#3557c4] px-5 text-sm font-semibold text-white transition hover:bg-[#2947a8] focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-[#3557c4] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-[#666159] disabled:text-white disabled:hover:bg-[#666159]";
 
 const fieldClass =
-  "mt-2 w-full rounded-[14px] border border-[#d8d1c6] bg-white px-4 py-3 text-[15px] leading-6 text-[#20201d] outline-none transition placeholder:text-[#8b857d] focus:border-[#3557c4] focus:ring-3 focus:ring-[#3557c4]/20";
+  "mt-2 w-full rounded-[14px] border border-[#a89f93] bg-white px-4 py-3 text-[15px] leading-6 text-[#20201d] outline-none transition placeholder:text-[#756f67] focus:border-[#3557c4] focus:ring-3 focus:ring-[#3557c4]/20 disabled:cursor-not-allowed disabled:bg-[#eeeae2]";
 
 const scenarioForDomain = (domain: DomainId) =>
   listScenarios().find((scenario) => scenario.domain === domain) ??
@@ -59,6 +59,7 @@ export function OfficeHoursStudio({
   const [transferChecking, setTransferChecking] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [trace, setTrace] = useState<unknown>(null);
+  const requestVersion = useRef(0);
   const diagnosisHeading = useRef<HTMLHeadingElement>(null);
   const selectedExample = useMemo(
     () => scenarioForDomain(state.domain),
@@ -74,6 +75,10 @@ export function OfficeHoursStudio({
   const activeScenario = state.scenarioId
     ? getScenario(state.scenarioId)
     : null;
+  const revisionCriteria =
+    isGuided && activeScenario
+      ? activeScenario.criteria
+      : (state.diagnosis?.criteria ?? []);
   const canAnalyze =
     state.assignment.trim().length >= 12 &&
     state.attempt.trim().length >= 8 &&
@@ -87,6 +92,7 @@ export function OfficeHoursStudio({
     field: "assignment" | "constraints" | "attempt",
     value: string,
   ) => {
+    requestVersion.current += 1;
     setLiveConsent(false);
     setError(null);
     setTrace(null);
@@ -100,6 +106,7 @@ export function OfficeHoursStudio({
     ) {
       return;
     }
+    requestVersion.current += 1;
     setLiveConsent(false);
     setError(null);
     setTrace(null);
@@ -107,6 +114,7 @@ export function OfficeHoursStudio({
   };
 
   const loadExample = () => {
+    requestVersion.current += 1;
     setLiveConsent(false);
     setError(null);
     setTrace(null);
@@ -124,6 +132,7 @@ export function OfficeHoursStudio({
     }
 
     setError(null);
+    const requestId = ++requestVersion.current;
     dispatch({ type: "diagnosis.started" });
     const body = isGuided
       ? {
@@ -164,12 +173,14 @@ export function OfficeHoursStudio({
           envelope.error?.message ?? "Coaching is temporarily unavailable.",
         );
       }
+      if (requestId !== requestVersion.current) return;
       setTrace(envelope.data.trace ?? envelope.data.provenance ?? null);
       dispatch({
         type: "diagnosis.received",
         diagnosis: envelope.data.diagnosis,
       });
     } catch (caught) {
+      if (requestId !== requestVersion.current) return;
       dispatch({ type: "diagnosis.failed" });
       setError(
         caught instanceof Error
@@ -179,7 +190,9 @@ export function OfficeHoursStudio({
     }
   };
 
-  const startRevision = () => dispatch({ type: "revision.started" });
+  const startRevision = () => {
+    if (state.status === "diagnosed") dispatch({ type: "revision.started" });
+  };
 
   const reviewRevision = async () => {
     if (
@@ -192,6 +205,7 @@ export function OfficeHoursStudio({
     }
 
     setError(null);
+    const requestId = ++requestVersion.current;
     dispatch({ type: "review.started" });
     const body = isGuided
       ? {
@@ -238,8 +252,10 @@ export function OfficeHoursStudio({
           envelope.error?.message ?? "Revision review is temporarily unavailable.",
         );
       }
+      if (requestId !== requestVersion.current) return;
       dispatch({ type: "review.received", review: envelope.data });
     } catch (caught) {
+      if (requestId !== requestVersion.current) return;
       dispatch({ type: "review.failed" });
       setError(
         caught instanceof Error
@@ -250,6 +266,7 @@ export function OfficeHoursStudio({
   };
 
   const startTransfer = () => {
+    requestVersion.current += 1;
     setError(null);
     setTrace(null);
     dispatch({ type: "transfer.started" });
@@ -262,6 +279,7 @@ export function OfficeHoursStudio({
     }
 
     setError(null);
+    const requestId = ++requestVersion.current;
     setTransferChecking(true);
     try {
       const response = await fetch("/api/coach/transfer", {
@@ -282,8 +300,10 @@ export function OfficeHoursStudio({
           envelope.error?.message ?? "The fresh-case check is temporarily unavailable.",
         );
       }
+      if (requestId !== requestVersion.current) return;
       dispatch({ type: "transfer.received", transfer: envelope.data });
     } catch (caught) {
+      if (requestId !== requestVersion.current) return;
       dispatch({ type: "transfer.failed" });
       setError(
         caught instanceof Error
@@ -291,8 +311,18 @@ export function OfficeHoursStudio({
           : "The fresh-case check is temporarily unavailable. Your response was not lost.",
       );
     } finally {
-      setTransferChecking(false);
+      if (requestId === requestVersion.current) setTransferChecking(false);
     }
+  };
+
+  const resetSession = () => {
+    requestVersion.current += 1;
+    setLiveConsent(false);
+    setConstraintsOpen(false);
+    setTransferChecking(false);
+    setError(null);
+    setTrace(null);
+    dispatch({ type: "session.reset" });
   };
 
   return (
@@ -311,7 +341,7 @@ export function OfficeHoursStudio({
           <p className="mt-3 max-w-[66ch] text-[15px] leading-7 text-[#69645d]">
             Paste the problem and your attempt. ReasonPatch will preserve what
             works, point to the first consequential break, and ask one
-            question—it won’t complete the work for you.
+            question. It is designed to keep the work in your hands.
           </p>
         </div>
         <div className="flex items-center gap-2 text-xs font-medium text-[#426c50]">
@@ -380,6 +410,7 @@ export function OfficeHoursStudio({
                 dispatch({ type: "transfer.changed", value })
               }
               onCheck={() => void checkTransfer()}
+              onReset={resetSession}
             />
           ) : state.status === "reviewed" && review ? (
             <ReviewReceiptPanel
@@ -393,6 +424,8 @@ export function OfficeHoursStudio({
           ) : state.status === "revising" || isReviewing ? (
             <RevisionPanel
               revision={state.revision}
+              criteria={revisionCriteria}
+              isGuided={isGuided}
               isChecking={isReviewing}
               onChange={(value) =>
                 dispatch({ type: "revision.changed", value })
@@ -407,7 +440,29 @@ export function OfficeHoursStudio({
               }}
               aria-busy={isLoading}
             >
-              <DomainPicker value={state.domain} onChange={changeDomain} />
+              {!liveModeAvailable && !isGuided ? (
+                <div className="mb-6 rounded-[16px] border border-[#9eaddf] bg-[#e9edfa] p-4">
+                  <p className="text-sm font-semibold text-[#243b87]">
+                    Start with the credential-free guided path
+                  </p>
+                  <p className="mt-1 text-xs leading-5 text-[#4e5f91]">
+                    It runs locally with deterministic fixtures and zero model calls.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={loadExample}
+                    className="mt-3 min-h-11 rounded-full border border-[#3557c4] bg-white px-4 text-sm font-semibold text-[#2947a8] focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-[#3557c4]"
+                  >
+                    Try the {selectedExample.shortLabel.toLowerCase()} example
+                  </button>
+                </div>
+              ) : null}
+
+              <DomainPicker
+                value={state.domain}
+                onChange={changeDomain}
+                disabled={isLoading}
+              />
 
               <div className="mt-6">
                 <label
@@ -423,6 +478,7 @@ export function OfficeHoursStudio({
                   id="coach-assignment"
                   value={state.assignment}
                   readOnly={isGuided}
+                  disabled={isLoading}
                   onChange={(event) =>
                     changeDraft("assignment", event.target.value)
                   }
@@ -445,6 +501,7 @@ export function OfficeHoursStudio({
                   id="coach-attempt"
                   value={state.attempt}
                   readOnly={isGuided}
+                  disabled={isLoading}
                   onChange={(event) => changeDraft("attempt", event.target.value)}
                   placeholder="Bring the draft, not just the question…"
                   className={`${fieldClass} min-h-56 ${state.domain === "python" || state.domain === "formal-logic" ? "font-mono" : ""}`}
@@ -454,6 +511,7 @@ export function OfficeHoursStudio({
               <div className="mt-5 overflow-hidden rounded-[14px] border border-[#d8d1c6] bg-white">
                 <button
                   type="button"
+                  disabled={isLoading}
                   aria-expanded={constraintsOpen}
                   aria-controls="coach-constraints-panel"
                   onClick={() => setConstraintsOpen((open) => !open)}
@@ -473,6 +531,7 @@ export function OfficeHoursStudio({
                       id="coach-constraints"
                       value={state.constraints}
                       readOnly={isGuided}
+                      disabled={isLoading}
                       onChange={(event) =>
                         changeDraft("constraints", event.target.value)
                       }
@@ -487,6 +546,7 @@ export function OfficeHoursStudio({
                   <input
                     type="checkbox"
                     checked={liveConsent}
+                    disabled={isLoading}
                     onChange={(event) => setLiveConsent(event.target.checked)}
                     className="mt-1 size-4 accent-[#3557c4]"
                   />
@@ -523,7 +583,7 @@ export function OfficeHoursStudio({
           )}
         </div>
 
-        <aside className="min-h-[520px] bg-[#f7f4ed] p-5 sm:p-7 lg:p-8" aria-live="polite">
+        <aside className="min-h-[520px] bg-[#f7f4ed] p-5 sm:p-7 lg:p-8">
           {isTransferStage ? (
             <div className="grid min-h-[450px] place-content-center">
               <div className="max-w-sm">
@@ -540,7 +600,11 @@ export function OfficeHoursStudio({
               </div>
             </div>
           ) : isLoading ? (
-            <div className="space-y-4" aria-label="Analyzing learner work">
+            <div
+              className="space-y-4"
+              role="status"
+              aria-label="Analyzing learner work"
+            >
               <div className="skeleton-line h-4 w-28 rounded-full" />
               <div className="skeleton-line h-14 rounded-xl" />
               <div className="skeleton-line h-24 rounded-xl" />
@@ -608,13 +672,31 @@ export function OfficeHoursStudio({
                 onReveal={() => dispatch({ type: "hint.revealed" })}
               />
 
-              <button
-                type="button"
-                onClick={startRevision}
-                className={`${primaryButton} mt-6 w-full sm:w-auto`}
-              >
-                Revise this attempt <ArrowRight aria-hidden="true" size={16} />
-              </button>
+              <section className="mt-6 rounded-[14px] border border-[#b8afa3] bg-white p-4">
+                <h2 className="text-sm font-semibold text-[#20201d]">
+                  Visible revision criteria
+                </h2>
+                <ul className="mt-3 grid gap-2 text-sm leading-6 text-[#4e4a44]">
+                  {revisionCriteria.map((criterion) => (
+                    <li key={criterion.id} className="flex gap-2">
+                      <span aria-hidden="true" className="text-[#3557c4]">
+                        •
+                      </span>
+                      {criterion.label}
+                    </li>
+                  ))}
+                </ul>
+              </section>
+
+              {state.status === "diagnosed" ? (
+                <button
+                  type="button"
+                  onClick={startRevision}
+                  className={`${primaryButton} mt-6 w-full sm:w-auto`}
+                >
+                  Revise this attempt <ArrowRight aria-hidden="true" size={16} />
+                </button>
+              ) : null}
 
               {trace ? (
                 <details className="mt-6 border-t border-[#d8d1c6] pt-4 text-xs text-[#69645d]">
@@ -643,13 +725,15 @@ export function OfficeHoursStudio({
                   I’ll preserve what already works, locate one blocking step,
                   and ask a focused question.
                 </p>
-                <button
-                  type="button"
-                  onClick={loadExample}
-                  className="mt-5 min-h-11 rounded-full border border-[#3557c4]/35 bg-white px-4 text-sm font-semibold text-[#2947a8] transition hover:bg-[#e9edfa] focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-[#3557c4]"
-                >
-                  Try the {selectedExample.shortLabel.toLowerCase()} example
-                </button>
+                {liveModeAvailable ? (
+                  <button
+                    type="button"
+                    onClick={loadExample}
+                    className="mt-5 min-h-11 rounded-full border border-[#3557c4] bg-white px-4 text-sm font-semibold text-[#2947a8] transition hover:bg-[#e9edfa] focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-[#3557c4]"
+                  >
+                    Try the {selectedExample.shortLabel.toLowerCase()} example
+                  </button>
+                ) : null}
               </div>
             </div>
           )}
