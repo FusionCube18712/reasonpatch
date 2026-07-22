@@ -106,22 +106,53 @@ describe("API rate limiting", () => {
   });
 
   it.each([
-    [{ "x-forwarded-for": "203.0.113.10, 10.0.0.1" }, "forwarded"],
-    [{ "x-real-ip": "203.0.113.11" }, "real"],
-    [{}, "anonymous"],
+    ["x-forwarded-for", "203.0.113.10, 10.0.0.1", "198.51.100.20, 10.0.0.1"],
+    ["x-real-ip", "203.0.113.11", "198.51.100.21"],
   ])(
-    "derives a privacy-preserving default key for %s requests",
-    async (headers, label) => {
-      expect(label).toBeTruthy();
-      const limiter = createSlidingWindowLimiter({ limit: 1, windowMs: 60_000 });
+    "does not trust caller-controlled %s values for the default identity",
+    async (headerName, firstValue, rotatedValue) => {
+      const limiter = createSlidingWindowLimiter({
+        limit: 1,
+        windowMs: 60_000,
+        now: () => 10,
+      });
       const guarded = withRateLimit(
         async () => Response.json({ success: true }),
         { limiter },
       );
-      const request = new Request("http://localhost/api/analyze", { headers });
+      const firstRequest = new Request("http://localhost/api/analyze", {
+        headers: { [headerName]: firstValue },
+      });
+      const rotatedRequest = new Request("http://localhost/api/analyze", {
+        headers: { [headerName]: rotatedValue },
+      });
 
-      expect((await guarded(request.clone())).status).toBe(200);
-      expect((await guarded(request.clone())).status).toBe(429);
+      expect((await guarded(firstRequest)).status).toBe(200);
+      expect((await guarded(rotatedRequest)).status).toBe(429);
     },
   );
+
+  it("uses proxy identity only through an explicitly configured trusted adapter", async () => {
+    const limiter = createSlidingWindowLimiter({
+      limit: 1,
+      windowMs: 60_000,
+      now: () => 10,
+    });
+    const trustedProxyKeyFor = (request: Request) =>
+      request.headers.get("x-real-ip") ?? "anonymous";
+    const guarded = withRateLimit(
+      async () => Response.json({ success: true }),
+      { limiter, keyFor: trustedProxyKeyFor },
+    );
+    const firstProxyIdentity = new Request("http://localhost/api/analyze", {
+      headers: { "x-real-ip": "203.0.113.11" },
+    });
+    const secondProxyIdentity = new Request("http://localhost/api/analyze", {
+      headers: { "x-real-ip": "198.51.100.21" },
+    });
+
+    expect((await guarded(firstProxyIdentity.clone())).status).toBe(200);
+    expect((await guarded(secondProxyIdentity)).status).toBe(200);
+    expect((await guarded(firstProxyIdentity)).status).toBe(429);
+  });
 });
