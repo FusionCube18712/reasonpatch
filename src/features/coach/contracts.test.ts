@@ -192,4 +192,15 @@ describe("coach diagnosis contract", () => {
       }),
     ).toThrow();
   });
+
+  it.each([
+    "The answer is correct.",
+    "This proves the learner understands the concept.",
+    "This confirms the revision's accuracy.",
+    "This is learner-authored work.",
+  ])("rejects categorical diagnosis verdicts: %s", (claim) => {
+    expect(() =>
+      CoachDiagnosisSchema.parse({ ...validDiagnosis, explanation: claim }),
+    ).toThrow();
+  });
 });

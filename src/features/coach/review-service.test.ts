@@ -274,7 +274,16 @@ describe("custom live revision review", () => {
     expect(generate).not.toHaveBeenCalled();
   });
 
-  it.each(["mastered", "graded", "authorship", "proof of learning"])(
+  it.each([
+    "mastered",
+    "graded",
+    "authorship",
+    "proof of learning",
+    "a correct answer",
+    "proven understanding",
+    "confirmed accuracy",
+    "learner-authored work",
+  ])(
     "rejects the unsafe model claim %s",
     async (claim) => {
       const gateway: ModelGateway = {
