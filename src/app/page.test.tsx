@@ -4,37 +4,38 @@ import { describe, expect, it } from "vitest";
 import Page from "./page";
 
 describe("ReasonPatch page", () => {
-  it("frames one complete Explain, Repair, Receipt, Transfer journey", () => {
+  it("opens directly on the four-domain office-hours workspace", () => {
     render(<Page />);
 
     expect(screen.getByText("ReasonPatch")).toBeVisible();
-    expect(screen.getByText("Repair the step. Keep the thinking yours.")).toBeVisible();
-    expect(screen.getByText("01 Explain")).toBeVisible();
-    expect(screen.getByText("02 Repair")).toBeVisible();
-    expect(screen.getByText("03 Receipt")).toBeVisible();
-    expect(screen.getByText("04 Transfer")).toBeVisible();
+    expect(screen.getByText("AI office hours · Education track")).toBeVisible();
+    expect(
+      screen.getByRole("heading", {
+        name: "Work through the step that’s stuck.",
+      }),
+    ).toBeVisible();
+    expect(screen.getAllByRole("radio")).toHaveLength(4);
   });
 
-  it("gives judges above-the-fold shortcuts to the demo and implementation", () => {
+  it("keeps the learning journey and provenance visible without a marketing gate", () => {
     render(<Page />);
 
+    expect(screen.getByText("1 Attempt")).toBeVisible();
+    expect(screen.getByText("2 Question")).toBeVisible();
+    expect(screen.getByText("3 Revision")).toBeVisible();
+    expect(screen.getByText("4 Apply")).toBeVisible();
     expect(
-      screen.getByRole("link", { name: "Try the 90-second demo" }),
-    ).toHaveAttribute("href", "#reasoning-workspace");
-    expect(
-      screen.getByRole("link", { name: "View Sol/Luna source" }),
-    ).toHaveAttribute(
-      "href",
-      "https://github.com/FusionCube18712/reasonpatch/blob/main/src/features/repair/orchestrator.ts",
-    );
+      screen.getByText(/Orchestrated by GPT-5\.6 Sol with parallel Luna probes/iu),
+    ).toBeVisible();
   });
 
-  it("states the privacy and grading boundary before learner input", () => {
+  it("states the privacy and educational boundaries before learner input", () => {
     render(<Page />);
 
-    expect(screen.getByText(/No accounts or automatic browser storage/)).toBeVisible();
-    expect(screen.getByText(/saved only when you choose to download/)).toBeVisible();
-    expect(screen.getByText(/storage disabled/)).toBeVisible();
-    expect(screen.getByText(/not grades or verdicts/i)).toBeVisible();
+    expect(screen.getByText("Private in this tab")).toBeVisible();
+    expect(screen.getByText(/won’t complete the work for you/iu)).toBeVisible();
+    expect(
+      screen.getByText(/Formative evidence, not a grade or proof of learning/iu),
+    ).toBeVisible();
   });
 });
