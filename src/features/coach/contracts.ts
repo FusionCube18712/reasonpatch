@@ -1,5 +1,8 @@
 import { z } from "zod";
 
+import { ScenarioIdSchema } from "./scenario-ids";
+import { getScenario } from "./scenarios";
+
 export const DomainIdSchema = z.enum([
   "formal-logic",
   "algebra",
@@ -23,7 +26,24 @@ export const CustomWorkSourceSchema = z
   })
   .strict();
 
-export const OfficeHoursRequestSchema = z
+export const GuidedWorkSourceSchema = z
+  .object({
+    kind: z.literal("guided"),
+    scenarioId: ScenarioIdSchema,
+    attempt: z.string().min(8).max(6_000),
+  })
+  .strict()
+  .superRefine((value, context) => {
+    if (value.attempt !== getScenario(value.scenarioId).attempt) {
+      context.addIssue({
+        code: "custom",
+        path: ["attempt"],
+        message: "Guided mode requires the scenario's exact starting attempt.",
+      });
+    }
+  });
+
+const LiveOfficeHoursRequestSchema = z
   .object({
     source: CustomWorkSourceSchema,
     mode: z.literal("live"),
@@ -31,6 +51,20 @@ export const OfficeHoursRequestSchema = z
     forceLunaFallback: z.literal(false),
   })
   .strict();
+
+const GuidedOfficeHoursRequestSchema = z
+  .object({
+    source: GuidedWorkSourceSchema,
+    mode: z.literal("demo"),
+    coachStyle: z.literal("socratic"),
+    forceLunaFallback: z.boolean(),
+  })
+  .strict();
+
+export const OfficeHoursRequestSchema = z.discriminatedUnion("mode", [
+  LiveOfficeHoursRequestSchema,
+  GuidedOfficeHoursRequestSchema,
+]);
 
 const ProbeJobSchema = z
   .object({
