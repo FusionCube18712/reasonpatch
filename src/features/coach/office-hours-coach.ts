@@ -149,7 +149,7 @@ export const createOfficeHoursCoach = ({
 
   const diagnose = async (rawRequest: unknown): Promise<OfficeHoursResult> => {
     const request = OfficeHoursRequestSchema.parse(rawRequest);
-    if (request.source.kind !== "custom") {
+    if (request.mode !== "live") {
       throw new ModelGatewayError(
         "Guided scenarios must use the credential-free fixture coach.",
         "invalid_output",

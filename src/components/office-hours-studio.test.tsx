@@ -110,6 +110,11 @@ const fillCustomDraft = async (user: ReturnType<typeof userEvent.setup>) => {
     constraints,
     "Preserve non-empty behavior and choose an empty-input policy.",
   );
+  await user.click(
+    screen.getByRole("checkbox", {
+      name: /send this text to OpenAI for processing/iu,
+    }),
+  );
 
   return { assignment, attempt, constraints };
 };
@@ -276,7 +281,9 @@ describe("OfficeHoursStudio", () => {
         name: "First place the reasoning breaks",
       }),
     ).toBeVisible();
-    expect(screen.getByText(diagnosis.hingeQuote)).toBeVisible();
+    const hinge = screen.getByLabelText("Quoted hinge from your attempt");
+    expect(hinge).toBeVisible();
+    expect(hinge.textContent).toBe(diagnosis.hingeQuote);
     expect(
       screen.getByRole("heading", {
         name: "Question to answer before you revise",
