@@ -464,7 +464,11 @@ describe("OfficeHoursStudio", () => {
     expect(within(receipt).getByText(guidedReview.summary)).toBeVisible();
     for (const criterion of guidedReview.receipt.criteria) {
       expect(within(receipt).getByText(criterion.label)).toBeVisible();
-      expect(within(receipt).getByText(criterion.evidence)).toBeVisible();
+      const evidence = within(receipt).getByLabelText(
+        `Evidence for ${criterion.label}`,
+      );
+      expect(evidence).toBeVisible();
+      expect(evidence.textContent).toBe(criterion.evidence);
       expect(guidedRevision).toContain(criterion.evidence);
     }
     expect(

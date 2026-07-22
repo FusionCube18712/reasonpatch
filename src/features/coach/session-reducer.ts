@@ -38,15 +38,18 @@ export type CoachSessionAction =
   | Readonly<{ type: "draft.changed"; field: DraftField; value: string }>
   | Readonly<{ type: "diagnosis.started" }>
   | Readonly<{ type: "diagnosis.received"; diagnosis: CoachDiagnosis }>
+  | Readonly<{ type: "diagnosis.failed" }>
   | Readonly<{ type: "hint.revealed" }>
   | Readonly<{ type: "revision.started" }>
   | Readonly<{ type: "revision.changed"; value: string }>
   | Readonly<{ type: "review.started" }>
+  | Readonly<{ type: "review.failed" }>
   | Readonly<{
       type: "review.received";
       review: ScenarioEvaluation | Readonly<{ status: string }>;
     }>
   | Readonly<{ type: "transfer.started" }>
+  | Readonly<{ type: "transfer.failed" }>
   | Readonly<{ type: "transfer.changed"; value: string }>
   | Readonly<{
       type: "transfer.received";
@@ -133,6 +136,8 @@ export const reduceCoachSession = (
         transfer: null,
         notice: null,
       };
+    case "diagnosis.failed":
+      return { ...state, status: "composing" };
     case "hint.revealed":
       return {
         ...state,
@@ -161,6 +166,8 @@ export const reduceCoachSession = (
       };
     case "review.started":
       return { ...state, status: "reviewing", notice: null };
+    case "review.failed":
+      return { ...state, status: "revising" };
     case "review.received":
       return {
         ...state,
@@ -177,6 +184,8 @@ export const reduceCoachSession = (
         transfer: null,
         notice: null,
       };
+    case "transfer.failed":
+      return { ...state, status: "transferring" };
     case "transfer.changed":
       return {
         ...state,

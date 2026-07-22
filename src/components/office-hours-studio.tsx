@@ -12,6 +12,13 @@ import { getScenario, listScenarios } from "@/features/coach/scenarios";
 
 import { DomainPicker } from "./domain-picker";
 import { HintLadder } from "./hint-ladder";
+import {
+  ReviewReceiptPanel,
+  RevisionPanel,
+  TransferPanel,
+  type ReviewArtifact,
+  type TransferArtifact,
+} from "./review-transfer-panels";
 
 type DiagnosisEnvelope = Readonly<{
   success: boolean;
@@ -20,6 +27,12 @@ type DiagnosisEnvelope = Readonly<{
     trace?: unknown;
     provenance?: unknown;
   }> | null;
+  error: Readonly<{ code: string; message: string }> | null;
+}>;
+
+type ResultEnvelope<T> = Readonly<{
+  success: boolean;
+  data: T | null;
   error: Readonly<{ code: string; message: string }> | null;
 }>;
 
@@ -43,6 +56,7 @@ export function OfficeHoursStudio({
   );
   const [liveConsent, setLiveConsent] = useState(false);
   const [constraintsOpen, setConstraintsOpen] = useState(false);
+  const [transferChecking, setTransferChecking] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [trace, setTrace] = useState<unknown>(null);
   const diagnosisHeading = useRef<HTMLHeadingElement>(null);
@@ -52,6 +66,14 @@ export function OfficeHoursStudio({
   );
   const isGuided = state.mode === "demo" && state.scenarioId !== null;
   const isLoading = state.status === "diagnosing";
+  const isReviewing = state.status === "reviewing";
+  const isTransferStage =
+    state.status === "transferring" || state.status === "complete";
+  const review = state.review as ReviewArtifact | null;
+  const transfer = state.transfer as TransferArtifact | null;
+  const activeScenario = state.scenarioId
+    ? getScenario(state.scenarioId)
+    : null;
   const canAnalyze =
     state.assignment.trim().length >= 12 &&
     state.attempt.trim().length >= 8 &&
@@ -148,7 +170,7 @@ export function OfficeHoursStudio({
         diagnosis: envelope.data.diagnosis,
       });
     } catch (caught) {
-      dispatch({ type: "session.reset" });
+      dispatch({ type: "diagnosis.failed" });
       setError(
         caught instanceof Error
           ? caught.message
@@ -158,6 +180,120 @@ export function OfficeHoursStudio({
   };
 
   const startRevision = () => dispatch({ type: "revision.started" });
+
+  const reviewRevision = async () => {
+    if (
+      state.revision.trim().length < 12 ||
+      state.revision.trim() === state.attempt.trim() ||
+      !state.diagnosis
+    ) {
+      setError("Change the broken step in your own words before checking it.");
+      return;
+    }
+
+    setError(null);
+    dispatch({ type: "review.started" });
+    const body = isGuided
+      ? {
+          source: {
+            kind: "guided" as const,
+            scenarioId: state.scenarioId,
+            attempt: state.attempt,
+          },
+          revision: state.revision,
+          mode: "demo" as const,
+        }
+      : {
+          source: {
+            kind: "custom" as const,
+            domain: state.domain,
+            assignment: state.assignment,
+            attempt: state.attempt,
+            constraints: state.constraints,
+          },
+          diagnosis: {
+            hingeQuote: state.diagnosis.hingeQuote,
+            issueTitle: state.diagnosis.issueTitle,
+            criteria: state.diagnosis.criteria.map(({ id, label }) => ({
+              id,
+              label,
+            })),
+          },
+          revision: state.revision,
+          mode: "live" as const,
+        };
+
+    try {
+      const response = await fetch("/api/coach/review", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-ReasonPatch-Mode": body.mode,
+        },
+        body: JSON.stringify(body),
+      });
+      const envelope = (await response.json()) as ResultEnvelope<ReviewArtifact>;
+      if (!response.ok || !envelope.success || !envelope.data) {
+        throw new Error(
+          envelope.error?.message ?? "Revision review is temporarily unavailable.",
+        );
+      }
+      dispatch({ type: "review.received", review: envelope.data });
+    } catch (caught) {
+      dispatch({ type: "review.failed" });
+      setError(
+        caught instanceof Error
+          ? caught.message
+          : "Revision review is temporarily unavailable. Your revision was not lost.",
+      );
+    }
+  };
+
+  const startTransfer = () => {
+    setError(null);
+    setTrace(null);
+    dispatch({ type: "transfer.started" });
+  };
+
+  const checkTransfer = async () => {
+    if (!state.scenarioId || state.transferResponse.trim().length < 12) {
+      setError("Explain the fresh case in your own words before checking it.");
+      return;
+    }
+
+    setError(null);
+    setTransferChecking(true);
+    try {
+      const response = await fetch("/api/coach/transfer", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-ReasonPatch-Mode": "demo",
+        },
+        body: JSON.stringify({
+          scenarioId: state.scenarioId,
+          response: state.transferResponse,
+          mode: "demo",
+        }),
+      });
+      const envelope = (await response.json()) as ResultEnvelope<TransferArtifact>;
+      if (!response.ok || !envelope.success || !envelope.data) {
+        throw new Error(
+          envelope.error?.message ?? "The fresh-case check is temporarily unavailable.",
+        );
+      }
+      dispatch({ type: "transfer.received", transfer: envelope.data });
+    } catch (caught) {
+      dispatch({ type: "transfer.failed" });
+      setError(
+        caught instanceof Error
+          ? caught.message
+          : "The fresh-case check is temporarily unavailable. Your response was not lost.",
+      );
+    } finally {
+      setTransferChecking(false);
+    }
+  };
 
   return (
     <section
@@ -190,10 +326,12 @@ export function OfficeHoursStudio({
       >
         {["Attempt", "Question", "Revision", "Apply"].map((step, index) => {
           const activeIndex = state.diagnosis
-            ? state.status === "revising" || state.status === "reviewing"
-              ? 2
-              : state.status === "transferring" || state.status === "complete"
-                ? 3
+            ? state.status === "transferring" || state.status === "complete"
+              ? 3
+              : state.status === "revising" ||
+                  state.status === "reviewing" ||
+                  state.status === "reviewed"
+                ? 2
                 : 1
             : 0;
           return (
@@ -221,38 +359,46 @@ export function OfficeHoursStudio({
         </p>
       ) : null}
 
+      {error ? (
+        <p
+          role="alert"
+          className="mb-4 rounded-xl bg-[#f8e8e5] px-4 py-3 text-sm text-[#7b3d36]"
+        >
+          {error}
+        </p>
+      ) : null}
+
       <div className="overflow-hidden rounded-[24px] border border-[#d8d1c6] bg-[#fbf8f1] shadow-[0_24px_70px_rgba(62,55,43,0.08)] lg:grid lg:grid-cols-[minmax(0,1.05fr)_minmax(390px,.95fr)]">
         <div className="border-b border-[#d8d1c6] p-5 sm:p-7 lg:border-b-0 lg:border-r lg:p-8">
-          {state.status === "revising" ? (
-            <div>
-              <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.15em] text-[#3557c4]">
-                Student-authored revision
-              </p>
-              <label
-                htmlFor="coach-revision"
-                className="mt-3 block text-sm font-semibold text-[#20201d]"
-              >
-                Edit your own draft
-              </label>
-              <textarea
-                id="coach-revision"
-                value={state.revision}
-                onChange={(event) =>
-                  dispatch({
-                    type: "revision.changed",
-                    value: event.target.value,
-                  })
-                }
-                className={`${fieldClass} min-h-72 font-mono`}
-              />
-              <p className="mt-2 text-xs leading-5 text-[#69645d]">
-                We copied your original so you can change only the broken step.
-                Every edit remains yours.
-              </p>
-              <button type="button" className={`${primaryButton} mt-5`}>
-                Check my revision <ArrowRight aria-hidden="true" size={16} />
-              </button>
-            </div>
+          {isTransferStage && activeScenario ? (
+            <TransferPanel
+              scenario={activeScenario}
+              response={state.transferResponse}
+              evaluation={transfer}
+              isChecking={transferChecking}
+              onChange={(value) =>
+                dispatch({ type: "transfer.changed", value })
+              }
+              onCheck={() => void checkTransfer()}
+            />
+          ) : state.status === "reviewed" && review ? (
+            <ReviewReceiptPanel
+              review={review}
+              isGuided={isGuided}
+              onReviseAgain={() =>
+                dispatch({ type: "revision.changed", value: state.revision })
+              }
+              onTransfer={startTransfer}
+            />
+          ) : state.status === "revising" || isReviewing ? (
+            <RevisionPanel
+              revision={state.revision}
+              isChecking={isReviewing}
+              onChange={(value) =>
+                dispatch({ type: "revision.changed", value })
+              }
+              onCheck={() => void reviewRevision()}
+            />
           ) : (
             <form
               onSubmit={(event) => {
@@ -360,15 +506,6 @@ export function OfficeHoursStudio({
                 </p>
               ) : null}
 
-              {error ? (
-                <p
-                  role="alert"
-                  className="mt-4 rounded-xl bg-[#f8e8e5] px-4 py-3 text-sm text-[#7b3d36]"
-                >
-                  {error}
-                </p>
-              ) : null}
-
               <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
                 <button
                   type="submit"
@@ -387,7 +524,22 @@ export function OfficeHoursStudio({
         </div>
 
         <aside className="min-h-[520px] bg-[#f7f4ed] p-5 sm:p-7 lg:p-8" aria-live="polite">
-          {isLoading ? (
+          {isTransferStage ? (
+            <div className="grid min-h-[450px] place-content-center">
+              <div className="max-w-sm">
+                <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.15em] text-[#426c50]">
+                  Isolation boundary active
+                </p>
+                <h2 className="mt-3 text-xl font-semibold tracking-[-0.025em] text-[#20201d]">
+                  Only the fresh prompt and your new response are checked.
+                </h2>
+                <p className="mt-2 text-sm leading-6 text-[#69645d]">
+                  The original attempt, question, hints, and revision are not
+                  sent to this check.
+                </p>
+              </div>
+            </div>
+          ) : isLoading ? (
             <div className="space-y-4" aria-label="Analyzing learner work">
               <div className="skeleton-line h-4 w-28 rounded-full" />
               <div className="skeleton-line h-14 rounded-xl" />
