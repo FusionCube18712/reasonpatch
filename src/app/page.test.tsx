@@ -35,7 +35,9 @@ describe("ReasonPatch page", () => {
     render(<Page />);
 
     expect(screen.getByText("Not saved by ReasonPatch")).toBeVisible();
-    expect(screen.getByText(/won’t complete the work for you/iu)).toBeVisible();
+    expect(
+      screen.getByText(/designed to keep the work in your hands/iu),
+    ).toBeVisible();
     expect(
       screen.getByText(/Formative evidence, not a grade or proof of learning/iu),
     ).toBeVisible();

@@ -30,8 +30,8 @@ describe("live model access policy", () => {
 
     expect(isLiveModeRequest(request("live"))).toBe(true);
     expect(isLiveModeRequest(request("demo"))).toBe(false);
-    expect(isLiveModeRequest(request())).toBe(true);
-    expect(isLiveModeRequest(request("unexpected"))).toBe(true);
+    expect(isLiveModeRequest(request())).toBe(false);
+    expect(isLiveModeRequest(request("unexpected"))).toBe(false);
   });
 
   it("requires an exact client mode declaration matching validated JSON", () => {

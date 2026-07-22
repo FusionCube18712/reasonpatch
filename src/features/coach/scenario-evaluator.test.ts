@@ -87,6 +87,46 @@ describe("guided scenario evaluator", () => {
     },
   );
 
+  it.each([
+    [
+      "logic-negation-introduction",
+      "2. | p ∧ q Assumption\n3. p\n4. No contradiction can be derived.\n5. ¬(p ∧ q) ¬I 2-4",
+      ["explicit-contradiction"],
+    ],
+    [
+      "algebra-square-branches",
+      "By the zero-product property, x = 3 is not a solution but x = -3 is.",
+      ["positive-solution"],
+    ],
+    [
+      "python-empty-aggregate",
+      "DEF average(nums):\n    IF NOT nums:\n        RETURN null\n    RETURN SUM(nums) / LEN(nums)",
+      ["guard-before-division", "explicit-policy", "non-empty-behavior"],
+    ],
+    [
+      "causal-observational-claim",
+      "The observational association does not establish causation. Motivation is not a plausible alternative explanation. A randomized study is not required.",
+      ["alternative-explanation", "stronger-evidence"],
+    ],
+    [
+      "causal-observational-claim",
+      "The observational association does not establish causation. Students who choose flashcards are not more motivated. A randomized study is not required.",
+      ["alternative-explanation", "stronger-evidence"],
+    ],
+  ])(
+    "rejects negated or syntactically invalid revision evidence for %s",
+    (scenarioId, revision, missingIds) => {
+      const result = evaluateScenarioRevision(scenarioId, revision);
+
+      expect(result.status).toBe("needs-work");
+      for (const id of missingIds) {
+        expect(result.criteria).toContainEqual(
+          expect.objectContaining({ id, state: "missing", evidence: null }),
+        );
+      }
+    },
+  );
+
   it.each(Object.entries(validTransfers))(
     "checks only fresh-case evidence for %s",
     (scenarioId, response) => {
@@ -119,6 +159,46 @@ describe("guided scenario evaluator", () => {
 
       expect(result.status).toBe("needs-work");
       expect(result.criteria.some(({ state }) => state === "missing")).toBe(true);
+    },
+  );
+
+  it.each([
+    [
+      "logic-negation-introduction",
+      "Assume r ∧ s. Extract r, but r with ¬r cannot derive a contradiction. Discharge the assumption by negation introduction.",
+      ["fresh-contradiction"],
+    ],
+    [
+      "algebra-square-branches",
+      "For y² = 16, y = 4 is not a solution and y = -4 is not a solution; both square branches are invalid.",
+      ["fresh-positive", "fresh-negative", "fresh-branches"],
+    ],
+    [
+      "python-empty-aggregate",
+      "The values need not check empty input before max or min, and an exception policy is unnecessary.",
+      ["fresh-order", "fresh-policy"],
+    ],
+    [
+      "python-empty-aggregate",
+      "Do not check whether values are empty before max or min; use an exception policy.",
+      ["fresh-order"],
+    ],
+    [
+      "causal-observational-claim",
+      "This does not show firefighters cause damage. Fire severity does not drive either firefighters or damage. Control for severity is unnecessary.",
+      ["fresh-common-cause", "fresh-evidence"],
+    ],
+  ])(
+    "rejects negated fresh-case evidence for %s",
+    (scenarioId, response, missingIds) => {
+      const result = evaluateScenarioTransfer(scenarioId, response);
+
+      expect(result.status).toBe("needs-work");
+      for (const id of missingIds) {
+        expect(result.criteria).toContainEqual(
+          expect.objectContaining({ id, state: "missing", evidence: null }),
+        );
+      }
     },
   );
 

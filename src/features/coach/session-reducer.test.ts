@@ -51,6 +51,16 @@ const diagnosedState = (): CoachSessionState => {
 };
 
 describe("coach session reducer", () => {
+  it("does not announce stale coaching while the learner is composing the first draft", () => {
+    const next = reduceCoachSession(createInitialSession(), {
+      type: "draft.changed",
+      field: "attempt",
+      value: "My first unfinished attempt",
+    });
+
+    expect(next.notice).toBeNull();
+  });
+
   it("loads a guided scenario without mutating the previous state", () => {
     const initial = createInitialSession();
     const snapshot = structuredClone(initial);
@@ -118,6 +128,18 @@ describe("coach session reducer", () => {
 
     expect(next.status).toBe("revising");
     expect(next.revision).toBe(state.attempt);
+  });
+
+  it("does not overwrite an in-progress learner revision when revision begins again", () => {
+    const state = {
+      ...diagnosedState(),
+      status: "revising" as const,
+      revision: "My in-progress learner revision",
+    };
+
+    const next = reduceCoachSession(state, { type: "revision.started" });
+
+    expect(next.revision).toBe("My in-progress learner revision");
   });
 
   it("clears review and transfer evidence when the learner edits a revision", () => {

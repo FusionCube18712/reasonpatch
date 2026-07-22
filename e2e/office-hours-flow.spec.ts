@@ -114,7 +114,9 @@ const completeGuidedJourney = async (
   await expect(page.getByRole("list", { name: "Revealed hints" })).toContainText(
     "Location",
   );
-  await expect(page.getByText(/Guided fixture|modelCalls|model calls/i)).not.toBeVisible();
+  const provenance = page.getByText("How this was checked").locator("..");
+  await expect(provenance).toContainText(/modelCalls/iu);
+  await expect(provenance.locator("pre")).not.toBeVisible();
 
   await page.getByRole("button", { name: "Revise this attempt" }).click();
   await expect(page.getByLabel("Edit your own draft")).not.toHaveValue("");

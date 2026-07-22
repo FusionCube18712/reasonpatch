@@ -157,6 +157,14 @@ const jsonResponse = (payload: unknown, status = 200) =>
     headers: { "Content-Type": "application/json" },
   });
 
+const deferred = <T,>() => {
+  let resolve!: (value: T) => void;
+  const promise = new Promise<T>((nextResolve) => {
+    resolve = nextResolve;
+  });
+  return { promise, resolve } as const;
+};
+
 const openConstraints = async (user: ReturnType<typeof userEvent.setup>) => {
   await user.click(
     screen.getByRole("button", {
@@ -261,7 +269,12 @@ describe("OfficeHoursStudio", () => {
     expect(
       screen.getByText(/Paste the problem and your attempt/iu),
     ).toBeVisible();
-    expect(screen.getByText(/won’t complete the work for you/iu)).toBeVisible();
+    expect(
+      screen.getByText(/designed to keep the work in your hands/iu),
+    ).toBeVisible();
+    expect(
+      screen.queryByText(/won’t complete the work for you/iu),
+    ).not.toBeInTheDocument();
     expect(screen.getByText("Not saved by ReasonPatch")).toBeVisible();
     expect(
       screen.getByRole("heading", {
@@ -395,6 +408,41 @@ describe("OfficeHoursStudio", () => {
       }),
     ).toBeVisible();
     expect(screen.getByText(diagnosis.socraticQuestion)).toBeVisible();
+    for (const criterion of diagnosis.criteria) {
+      expect(screen.getByText(criterion.label)).toBeVisible();
+    }
+  });
+
+  it("shows the guided path before the custom composer when live mode is unavailable", () => {
+    render(<OfficeHoursStudio liveModeAvailable={false} />);
+
+    const guidedAction = screen.getByRole("button", {
+      name: "Try the formal logic example",
+    });
+    const assignment = screen.getByLabelText("Problem or assignment");
+    expect(
+      guidedAction.compareDocumentPosition(assignment) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+  });
+
+  it("locks the diagnosis request snapshot while coaching is pending", async () => {
+    const user = userEvent.setup();
+    const pending = deferred<Response>();
+    vi.spyOn(globalThis, "fetch").mockReturnValueOnce(pending.promise);
+    render(<OfficeHoursStudio />);
+    const { assignment, attempt, constraints } = await fillCustomDraft(user);
+
+    await user.click(
+      screen.getByRole("button", { name: "Find the first break" }),
+    );
+
+    expect(assignment).toBeDisabled();
+    expect(attempt).toBeDisabled();
+    expect(constraints).toBeDisabled();
+    expect(screen.getAllByRole("radio").every((radio) => radio.hasAttribute("disabled"))).toBe(true);
+    pending.resolve(jsonResponse(diagnoseEnvelope()));
+    await screen.findByText(diagnosis.socraticQuestion);
   });
 
   it("keeps hints hidden and reveals them one at a time in order", async () => {
@@ -432,6 +480,43 @@ describe("OfficeHoursStudio", () => {
       exactAttempt,
     );
     expect(screen.getByText(/Every edit remains yours/iu)).toBeVisible();
+    expect(
+      screen.queryByRole("button", { name: "Revise this attempt" }),
+    ).not.toBeInTheDocument();
+    const revisionPanel = screen.getByRole("region", {
+      name: "Learner revision",
+    });
+    for (const criterion of diagnosis.criteria) {
+      expect(within(revisionPanel).getByText(criterion.label)).toBeVisible();
+    }
+  });
+
+  it("locks the learner revision while its exact snapshot is being reviewed", async () => {
+    const user = userEvent.setup();
+    const pending = deferred<Response>();
+    vi.spyOn(globalThis, "fetch")
+      .mockResolvedValueOnce(jsonResponse(diagnoseEnvelope()))
+      .mockReturnValueOnce(pending.promise);
+    render(<OfficeHoursStudio />);
+    await user.click(
+      screen.getByRole("button", { name: "Try the formal logic example" }),
+    );
+    await user.click(
+      screen.getByRole("button", { name: "Find the first break" }),
+    );
+    await screen.findByText(diagnosis.socraticQuestion);
+    await user.click(screen.getByRole("button", { name: "Revise this attempt" }));
+    const revision = screen.getByLabelText("Edit your own draft");
+    await user.clear(revision);
+    await user.type(revision, guidedRevision);
+
+    await user.click(screen.getByRole("button", { name: "Check my revision" }));
+
+    expect(revision).toBeDisabled();
+    pending.resolve(
+      jsonResponse({ success: true, data: guidedReview, error: null }),
+    );
+    await screen.findByText(guidedReview.summary);
   });
 
   it("posts the learner's guided revision to the same-origin review boundary", async () => {
@@ -556,6 +641,33 @@ describe("OfficeHoursStudio", () => {
     expect(completion.textContent).not.toMatch(
       /\b(?:correct|master(?:y|ed)?|proves? learning|grade(?:d)?)\b/iu,
     );
+    expect(
+      screen.getByRole("button", { name: "Start another problem" }),
+    ).toBeVisible();
+  });
+
+  it("locks the fresh response while checking and can reset after completion", async () => {
+    const { user, fetchMock } = await reviewGuidedDraft();
+    const pending = deferred<Response>();
+    fetchMock.mockReturnValueOnce(pending.promise);
+    await user.click(screen.getByRole("button", { name: "Try a fresh case" }));
+    const response = screen.getByLabelText("Your response to the fresh case");
+    await user.type(response, guidedTransferResponse);
+
+    await user.click(
+      screen.getByRole("button", { name: "Check this fresh case" }),
+    );
+
+    expect(response).toBeDisabled();
+    pending.resolve(
+      jsonResponse({ success: true, data: guidedTransfer, error: null }),
+    );
+    await screen.findByText(guidedTransfer.summary);
+    await user.click(
+      screen.getByRole("button", { name: "Start another problem" }),
+    );
+    expect(screen.getByLabelText("Problem or assignment")).toHaveValue("");
+    expect(screen.getByLabelText("Your current attempt")).toHaveValue("");
   });
 
   it("clears stale coaching when the source attempt changes", async () => {
