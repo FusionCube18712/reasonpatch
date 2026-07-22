@@ -34,7 +34,7 @@ describe("live model access policy", () => {
     expect(isLiveModeRequest(request("unexpected"))).toBe(true);
   });
 
-  it("rejects a client mode declaration that disagrees with validated JSON", () => {
+  it("requires an exact client mode declaration matching validated JSON", () => {
     const request = (mode?: string) =>
       new Request("http://localhost/api/analyze", {
         headers: mode ? { "X-ReasonPatch-Mode": mode } : undefined,
@@ -42,7 +42,7 @@ describe("live model access policy", () => {
 
     expect(hasMatchingDeclaredMode(request("demo"), "demo")).toBe(true);
     expect(hasMatchingDeclaredMode(request("live"), "live")).toBe(true);
-    expect(hasMatchingDeclaredMode(request(), "live")).toBe(true);
+    expect(hasMatchingDeclaredMode(request(), "live")).toBe(false);
     expect(hasMatchingDeclaredMode(request("demo"), "live")).toBe(false);
     expect(hasMatchingDeclaredMode(request("live"), "demo")).toBe(false);
   });

@@ -105,6 +105,20 @@ describe("POST /api/coach/diagnose handler", () => {
     expect(diagnoseLive).not.toHaveBeenCalled();
   });
 
+  it("rejects a missing mode header before invoking either coach", async () => {
+    const diagnoseGuided = vi.fn(async () => resultFor("guided"));
+    const diagnoseLive = vi.fn(async () => resultFor("custom"));
+    const handler = createCoachDiagnoseHandler({ diagnoseGuided, diagnoseLive });
+    const request = requestFor(guidedRequest(), "demo");
+    request.headers.delete("X-ReasonPatch-Mode");
+
+    const response = await handler(request);
+
+    expect(response.status).toBe(400);
+    expect(diagnoseGuided).not.toHaveBeenCalled();
+    expect(diagnoseLive).not.toHaveBeenCalled();
+  });
+
   it("returns generic errors without leaking provider details", async () => {
     const handler = createCoachDiagnoseHandler({
       diagnoseGuided: vi.fn(async () => {
