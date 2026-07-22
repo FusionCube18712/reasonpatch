@@ -5,9 +5,9 @@ import { GeistSans } from "geist/font/sans";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "ReasonPatch — Repair the step",
+  title: "ReasonPatch — AI office hours for reasoning",
   description:
-    "A reasoning-repair studio that helps learners revise the earliest unsupported inference, then apply it to a fresh case without receiving the answer.",
+    "Bring your formal logic, algebra, Python, or causal-reasoning attempt. Find the first consequential break, revise it yourself, and try a fresh case.",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

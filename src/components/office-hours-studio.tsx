@@ -206,7 +206,7 @@ export function OfficeHoursStudio({
                   : "text-[#777168]"
               }`}
             >
-              <span className="mr-1">{index + 1}</span> {step}
+              {index + 1} {step}
             </li>
           );
         })}
