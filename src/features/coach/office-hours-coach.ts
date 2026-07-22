@@ -28,6 +28,8 @@ type CoachDependencies = Readonly<{
   now?: () => number;
 }>;
 
+type LiveOfficeHoursRequest = Extract<OfficeHoursRequest, { mode: "live" }>;
+
 type ProbeRun = Readonly<{
   output: CoachProbe;
   trace: CoachProbeTrace;
@@ -39,7 +41,7 @@ const classifyFailure = (error: unknown): ModelErrorKind =>
   error instanceof ModelGatewayError ? error.kind : "upstream";
 
 const assertGroundedQuote = (
-  domain: OfficeHoursRequest["source"]["domain"],
+  domain: LiveOfficeHoursRequest["source"]["domain"],
   attempt: string,
   quote: string,
   label: string,
@@ -76,7 +78,7 @@ export const createOfficeHoursCoach = ({
     role: ProbeRole,
     model: SupportedModel,
     input: Readonly<Record<string, unknown>>,
-    request: OfficeHoursRequest,
+    request: LiveOfficeHoursRequest,
   ): Promise<CoachProbe> => {
     const rawProbe = await gateway.generate({
       model,
@@ -105,7 +107,7 @@ export const createOfficeHoursCoach = ({
   const executeProbe = async (
     role: ProbeRole,
     input: Readonly<Record<string, unknown>>,
-    request: OfficeHoursRequest,
+    request: LiveOfficeHoursRequest,
   ): Promise<ProbeRun> => {
     const startedAt = now();
     try {
@@ -145,9 +147,7 @@ export const createOfficeHoursCoach = ({
     }
   };
 
-  const diagnose = async (
-    rawRequest: OfficeHoursRequest,
-  ): Promise<OfficeHoursResult> => {
+  const diagnose = async (rawRequest: unknown): Promise<OfficeHoursResult> => {
     const request = OfficeHoursRequestSchema.parse(rawRequest);
     if (request.source.kind !== "custom") {
       throw new ModelGatewayError(

@@ -110,9 +110,6 @@ const GuidedReviewRequestSchema = z
     }
   });
 
-type GuidedReviewRequest = z.infer<typeof GuidedReviewRequestSchema>;
-type CustomReviewRequest = z.infer<typeof CustomReviewRequestSchema>;
-
 const assertExactEvidence = (
   source: string,
   excerpt: string,
@@ -126,7 +123,7 @@ const assertExactEvidence = (
   }
 };
 
-export const reviewGuidedRevision = (rawRequest: GuidedReviewRequest) => {
+export const reviewGuidedRevision = (rawRequest: unknown) => {
   const request = GuidedReviewRequestSchema.parse(rawRequest);
   const scenario = getScenario(request.source.scenarioId);
   const evaluation = evaluateScenarioRevision(
@@ -175,7 +172,7 @@ export const reviewCustomRevision = async ({
   request: rawRequest,
 }: Readonly<{
   gateway: ModelGateway;
-  request: CustomReviewRequest;
+  request: unknown;
 }>) => {
   const request = CustomReviewRequestSchema.parse(rawRequest);
   const rawReview = await gateway.generate({
