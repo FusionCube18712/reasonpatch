@@ -22,8 +22,8 @@ const classify = (error: unknown) => {
 };
 
 const outputBudgetFor = (task: string): number => {
-  if (task === "plan") return 1_000;
-  if (task.startsWith("probe:")) return 800;
+  if (task === "plan" || task.endsWith(":plan")) return 1_000;
+  if (task.startsWith("probe:") || task.includes(":probe:")) return 800;
   return 1_300;
 };
 

@@ -30,7 +30,10 @@ export default function Page() {
 
       <footer className="px-4 pb-8 sm:px-6 lg:px-8">
         <div className="mx-auto flex max-w-[1320px] flex-col gap-3 border-t border-[#d8d1c6] pt-5 text-xs leading-5 text-[#69645d] sm:flex-row sm:items-center sm:justify-between">
-          <span>Orchestrated by GPT-5.6 Sol with parallel Luna probes.</span>
+          <span>
+            Live mode uses GPT-5.6 Sol with parallel Luna probes; guided
+            examples use deterministic fixtures with zero model calls.
+          </span>
           <span>Formative evidence, not a grade or proof of learning.</span>
         </div>
       </footer>

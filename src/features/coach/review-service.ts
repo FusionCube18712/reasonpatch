@@ -20,7 +20,23 @@ const ReviewCriterionSchema = z
     state: CriterionStateSchema,
     evidence: z.string().min(3).max(500).nullable(),
   })
-  .strict();
+  .strict()
+  .superRefine((value, context) => {
+    if (value.state === "missing" && value.evidence !== null) {
+      context.addIssue({
+        code: "custom",
+        path: ["evidence"],
+        message: "Missing criteria cannot claim learner evidence.",
+      });
+    }
+    if (value.state !== "missing" && value.evidence === null) {
+      context.addIssue({
+        code: "custom",
+        path: ["evidence"],
+        message: "Observed criteria require learner evidence.",
+      });
+    }
+  });
 
 const ReviewChangeSchema = z
   .object({
@@ -44,6 +60,17 @@ const ModelReviewSchema = z
   })
   .strict()
   .superRefine((value, context) => {
+    const allCriteriaMet = value.criteria.every(({ state }) => state === "met");
+    if (
+      (value.status === "evidence-observed" && !allCriteriaMet) ||
+      (value.status === "needs-work" && allCriteriaMet)
+    ) {
+      context.addIssue({
+        code: "custom",
+        path: ["status"],
+        message: "Review status must match the visible criterion states.",
+      });
+    }
     if (UnsafeClaims.test(JSON.stringify(value))) {
       context.addIssue({
         code: "custom",

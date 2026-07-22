@@ -41,25 +41,13 @@ const classifyFailure = (error: unknown): ModelErrorKind =>
   error instanceof ModelGatewayError ? error.kind : "upstream";
 
 const assertGroundedQuote = (
-  domain: LiveOfficeHoursRequest["source"]["domain"],
   attempt: string,
   quote: string,
   label: string,
 ): void => {
-  const grounded =
-    domain === "python"
-      ? attempt.replace(/\r\n/gu, "\n").includes(quote.replace(/\r\n/gu, "\n"))
-      : attempt
-          .normalize("NFKC")
-          .toLocaleLowerCase("en-US")
-          .replace(/\s+/gu, " ")
-          .includes(
-            quote
-              .normalize("NFKC")
-              .toLocaleLowerCase("en-US")
-              .replace(/\s+/gu, " ")
-              .trim(),
-          );
+  const grounded = attempt
+    .replace(/\r\n/gu, "\n")
+    .includes(quote.replace(/\r\n/gu, "\n"));
 
   if (!grounded || quote.trim().length < 3) {
     throw new ModelGatewayError(
@@ -96,7 +84,6 @@ export const createOfficeHoursCoach = ({
       );
     }
     assertGroundedQuote(
-      request.source.domain,
       request.source.attempt,
       probe.evidenceQuote,
       `${role} evidence`,
@@ -172,7 +159,6 @@ export const createOfficeHoursCoach = ({
     });
     const plan = CoachPlanSchema.parse(rawPlan);
     assertGroundedQuote(
-      request.source.domain,
       request.source.attempt,
       plan.hingeQuote,
       "Plan hinge",
@@ -208,7 +194,6 @@ export const createOfficeHoursCoach = ({
     });
     const diagnosis = CoachDiagnosisSchema.parse(rawDiagnosis);
     assertGroundedQuote(
-      request.source.domain,
       request.source.attempt,
       diagnosis.hingeQuote,
       "Diagnosis hinge",
@@ -216,7 +201,6 @@ export const createOfficeHoursCoach = ({
     diagnosis.criteria.forEach((criterion) => {
       if (criterion.evidence !== null) {
         assertGroundedQuote(
-          request.source.domain,
           request.source.attempt,
           criterion.evidence,
           `${criterion.label} evidence`,

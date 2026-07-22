@@ -162,6 +162,14 @@ export const CoachDiagnosisSchema = z
   })
   .strict()
   .superRefine((value, context) => {
+    if (new Set(value.criteria.map(({ id }) => id)).size !== value.criteria.length) {
+      context.addIssue({
+        code: "custom",
+        path: ["criteria"],
+        message: "Diagnosis criterion identifiers must be unique.",
+      });
+    }
+
     const questionMarks = value.socraticQuestion.match(/\?/gu)?.length ?? 0;
     if (!value.socraticQuestion.endsWith("?") || questionMarks !== 1) {
       context.addIssue({

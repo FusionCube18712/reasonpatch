@@ -316,7 +316,7 @@ export function OfficeHoursStudio({
         </div>
         <div className="flex items-center gap-2 text-xs font-medium text-[#426c50]">
           <LockKey aria-hidden="true" size={16} weight="bold" />
-          Private in this tab
+          Not saved by ReasonPatch
         </div>
       </div>
 

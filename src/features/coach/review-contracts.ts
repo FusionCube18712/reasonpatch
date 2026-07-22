@@ -18,7 +18,16 @@ const DiagnosisReferenceSchema = z
       .min(2)
       .max(4),
   })
-  .strict();
+  .strict()
+  .superRefine((value, context) => {
+    if (new Set(value.criteria.map(({ id }) => id)).size !== value.criteria.length) {
+      context.addIssue({
+        code: "custom",
+        path: ["criteria"],
+        message: "Diagnosis criterion identifiers must be unique.",
+      });
+    }
+  });
 
 export const CustomReviewRequestSchema = z
   .object({
