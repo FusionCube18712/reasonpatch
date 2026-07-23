@@ -457,7 +457,7 @@ export function OfficeHoursStudio({
                     Start with the credential-free guided path
                   </p>
                   <p className="mt-1 text-xs leading-5 text-[#4e5f91]">
-                    It runs locally with deterministic fixtures and zero model calls.
+                    Guided mode uses deterministic fixtures with zero model calls.
                   </p>
                   <button
                     type="button"
@@ -573,8 +573,8 @@ export function OfficeHoursStudio({
               {!liveModeAvailable && !isGuided ? (
                 <p className="mt-4 flex items-start gap-2 rounded-xl bg-[#f8e8e5] px-4 py-3 text-xs leading-5 text-[#7b3d36]">
                   <WarningCircle aria-hidden="true" className="mt-0.5 shrink-0" />
-                  Custom live coaching is disabled locally. Load a guided example
-                  to use the credential-free path.
+                  Custom live coaching is disabled. Load a guided example to use
+                  the credential-free path.
                 </p>
               ) : null}
 

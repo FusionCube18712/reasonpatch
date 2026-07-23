@@ -276,7 +276,7 @@ test("live-mode-disabled boundary never sends custom learner text", async ({
 
   await page.goto("/");
   await expect(
-    page.getByText("Custom live coaching is disabled locally."),
+    page.getByText("Custom live coaching is disabled."),
   ).toBeVisible();
   await page
     .getByLabel("Problem or assignment")
