@@ -12,8 +12,9 @@ ReasonPatch helps a learner bring a real assignment, its constraints, and a curr
 It preserves what already works, locates the first consequential break, and asks one focused question. Hints appear progressively. The learner—not the model—edits the draft, after which ReasonPatch creates an evidence-bound revision receipt. Curated guided examples end with a fresh-context check that receives none of the prior coaching context.
 
 This v2 branch is deployed in guided-only mode at
-[`reasonpatch.vercel.app`](https://reasonpatch.vercel.app). It has not been
-pushed, and the frozen Build Week source branch remains unchanged.
+[`reasonpatch.vercel.app`](https://reasonpatch.vercel.app). Its source is on
+the `codex/reasonpatch-v2` branch, and the frozen Build Week source branch
+remains unchanged.
 
 ## Product flow
 
