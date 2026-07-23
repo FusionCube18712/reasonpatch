@@ -1,6 +1,6 @@
 # Build Week submission kit
 
-> **Archived v1 submission artifact — do not deploy or resubmit from this file.** The local-only v2 is intentionally separate from the frozen public submission. Its current product contract, local run steps, and limitations are in the repository [README](../README.md).
+> **Archived v1 Build Week submission artifact — do not reuse this copy for the Product Hunt launch.** The guided-only v2 is separate from the frozen Build Week source submission. Its current product contract, run steps, deployment URL, and limitations are in the repository [README](../README.md).
 
 ## Core fields
 

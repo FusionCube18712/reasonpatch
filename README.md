@@ -11,7 +11,9 @@ ReasonPatch helps a learner bring a real assignment, its constraints, and a curr
 
 It preserves what already works, locates the first consequential break, and asks one focused question. Hints appear progressively. The learner—not the model—edits the draft, after which ReasonPatch creates an evidence-bound revision receipt. Curated guided examples end with a fresh-context check that receives none of the prior coaching context.
 
-This v2 branch is local-only. It has not been pushed or deployed, and it does not change the submitted public build.
+This v2 branch is deployed in guided-only mode at
+[`reasonpatch.vercel.app`](https://reasonpatch.vercel.app). It has not been
+pushed, and the frozen Build Week source branch remains unchanged.
 
 ## Product flow
 
@@ -105,7 +107,7 @@ The v2 suite includes schema, orchestration, fallback, grounding, immutable-stat
 
 - Deterministic guided checks are narrow scenario fixtures, not general proof, algebra, code, or causal-analysis validators.
 - Live output is formative and fail-closed when structured output or evidence grounding cannot be verified.
-- The in-process limiter is suitable for this local build, not a multi-instance school deployment.
+- The in-process limiter is suitable for the guided demo, not a multi-instance school or paid-live deployment.
 - Fresh transfer is available only for curated scenarios and is immediate response evidence, not a validated measure of retention.
 - A real educational deployment still requires institutional privacy review, authenticated authorization, durable budgets, distributed abuse controls, educator evaluation, and a learner-outcomes study.
 

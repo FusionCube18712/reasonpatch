@@ -1,6 +1,6 @@
 # Demo script — final cut 2:27
 
-> **Archived v1 demo script.** It refers to the frozen deployed submission, not the local-only v2. Do not run its deployment-oriented recording workflow for v2.
+> **Archived v1 demo script.** It refers to the frozen Build Week presentation, not the guided-only v2 now deployed for Product Hunt. Do not reuse its v1 narration for v2.
 
 The rules require a public YouTube video under three minutes with audio, a clear product demo, and visible Codex/GPT-5.6 usage.
 

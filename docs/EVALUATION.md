@@ -1,6 +1,6 @@
 # Evaluation protocol
 
-> **Archived v1 public-build artifact.** The calibration counts and three-lab paths below belong to the frozen submitted build. The local-only v2 uses four office-hours domains and the suites under `src/features/coach`, `src/components`, and `e2e`; see the repository [README](../README.md). No v1 result is presented as v2 validation.
+> **Archived v1 public-build artifact.** The calibration counts and three-lab paths below belong to the frozen submitted build. The guided-only v2 uses four office-hours domains and the suites under `src/features/coach`, `src/components`, and `e2e`; see the repository [README](../README.md). No v1 result is presented as v2 validation.
 
 ## What is measured
 
