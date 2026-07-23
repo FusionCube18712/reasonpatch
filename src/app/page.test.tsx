@@ -41,6 +41,17 @@ describe("ReasonPatch page", () => {
     expect(
       screen.getByText(/Formative evidence, not a grade or proof of learning/iu),
     ).toBeVisible();
+    expect(
+      screen.getByText(
+        "Guided mode uses deterministic fixtures with zero model calls.",
+      ),
+    ).toBeVisible();
+    expect(
+      screen.getByText(
+        "Custom live coaching is disabled. Load a guided example to use the credential-free path.",
+      ),
+    ).toBeVisible();
+    expect(screen.queryByText(/\b(?:runs|disabled) locally\b/iu)).toBeNull();
   });
 
   it("exposes top-level banner, main, and content-info landmarks", () => {
